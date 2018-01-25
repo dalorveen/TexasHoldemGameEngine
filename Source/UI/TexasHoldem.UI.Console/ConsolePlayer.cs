@@ -75,6 +75,12 @@
             }
         }
 
+        public override void EndHand(IEndHandContext context)
+        {
+            base.EndHand(context);
+            Console.ReadKey();
+        }
+
         private int RaiseAmount(int moneyLeft, int minRaise, int moneyToCall, int currentMaxBet)
         {
             var wholeMinRaise = minRaise + currentMaxBet;

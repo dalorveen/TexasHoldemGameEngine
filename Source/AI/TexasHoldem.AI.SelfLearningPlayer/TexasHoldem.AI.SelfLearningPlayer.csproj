@@ -40,12 +40,27 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cheater.cs" />
-    <Compile Include="IPlayingStyle.cs" />
+    <Compile Include="Helpers\Distribution.cs" />
+    <Compile Include="Statistics\IStats.cs" />
+    <Compile Include="Strategy\BaseBehavior.cs" />
+    <Compile Include="Strategy\HandEconomy.cs" />
+    <Compile Include="Strategy\IPlayerEconomy.cs" />
+    <Compile Include="Strategy\PlayerEconomy.cs" />
+    <Compile Include="Statistics\Stats.cs" />
+    <Compile Include="Champion.cs" />
+    <Compile Include="Strategy\IPlayingStyle.cs" />
     <Compile Include="Learner.cs" />
+    <Compile Include="Strategy\PlayingStyle.cs" />
     <Compile Include="PokerMath\Calculator.cs" />
     <Compile Include="PokerMath\ICalculator.cs" />
+    <Compile Include="Helpers\CardAdapter.cs" />
+    <Compile Include="PokerMath\HandStrength.cs" />
+    <Compile Include="PokerMath\IPocket.cs" />
+    <Compile Include="PokerMath\Pocket.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Strategy\PostflopBehavior.cs" />
+    <Compile Include="Strategy\PreflopBehavior.cs" />
+    <Compile Include="Strategy\StartingHand.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\TexasHoldem.Logic\TexasHoldem.Logic.csproj">
