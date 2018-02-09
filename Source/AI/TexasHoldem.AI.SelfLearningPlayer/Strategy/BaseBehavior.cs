@@ -4,33 +4,33 @@
     using System.Linq;
 
     using TexasHoldem.AI.SelfLearningPlayer.PokerMath;
-    using TexasHoldem.AI.SelfLearningPlayer.Statistics;
     using TexasHoldem.Logic.Cards;
     using TexasHoldem.Logic.Players;
+    using TexasHoldem.Statistics;
 
     public abstract class BaseBehavior
     {
         private readonly IPocket pocket;
 
-        private readonly IPlayingStyle playingStyle;
+        private readonly IStats playingStyle;
 
         private readonly IGetTurnContext context;
 
         private readonly IReadOnlyCollection<Card> communityCards;
 
-        private readonly Stats stats;
+        private readonly Tracker tracker;
 
         public BaseBehavior(
-            IPocket pocket, IPlayingStyle playingStyle, IGetTurnContext context, IReadOnlyCollection<Card> communityCards)
+            IPocket pocket, IStats playingStyle, IGetTurnContext context, IReadOnlyCollection<Card> communityCards)
         {
             this.playingStyle = playingStyle;
             this.pocket = pocket;
             this.context = context;
             this.communityCards = communityCards;
-            this.stats = new Stats(context);
+            this.tracker = new Tracker(context);
         }
 
-        public IPlayingStyle PlayingStyle
+        public IStats PlayingStyle
         {
             get
             {
@@ -46,11 +46,11 @@
             }
         }
 
-        public Stats Stats
+        public Tracker Tracker
         {
             get
             {
-                return this.stats;
+                return this.tracker;
             }
         }
 

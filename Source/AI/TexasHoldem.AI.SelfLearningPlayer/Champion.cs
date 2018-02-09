@@ -5,16 +5,18 @@
     using TexasHoldem.AI.SelfLearningPlayer.PokerMath;
     using TexasHoldem.AI.SelfLearningPlayer.Strategy;
     using TexasHoldem.Logic.Players;
+    using TexasHoldem.Statistics;
 
     public class Champion : BasePlayer
     {
-        private readonly IPlayingStyle playingStyle;
+        private readonly IStats playingStyle;
 
         private IPocket pocket;
 
-        public Champion(IPlayingStyle playingStyle)
+        public Champion(IStats playingStyle, int buyIn)
         {
             this.playingStyle = playingStyle;
+            this.BuyIn = buyIn;
         }
 
         public override string Name { get; } = "Champion_" + Guid.NewGuid();
@@ -29,7 +31,7 @@
         public override void StartHand(IStartHandContext context)
         {
             base.StartHand(context);
-            this.pocket = new Pocket(new[] { this.FirstCard, this.SecondCard });
+            this.pocket = new Pocket(new[] { context.FirstCard, context.SecondCard });
         }
 
         public override PlayerAction GetTurn(IGetTurnContext context)

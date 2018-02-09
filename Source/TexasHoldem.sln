@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.AI.SelfLearning
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.AI.SelfLearningPlayer.Tests", "Tests\TexasHoldem.AI.SelfLearningPlayer.Tests\TexasHoldem.AI.SelfLearningPlayer.Tests.csproj", "{F047F180-00E9-4A84-8276-E079D783F33E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.Statistics", "TexasHoldem.Statistics\TexasHoldem.Statistics.csproj", "{95B47AC4-01DD-48C3-B536-648CA22E3002}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{F047F180-00E9-4A84-8276-E079D783F33E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F047F180-00E9-4A84-8276-E079D783F33E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F047F180-00E9-4A84-8276-E079D783F33E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95B47AC4-01DD-48C3-B536-648CA22E3002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95B47AC4-01DD-48C3-B536-648CA22E3002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95B47AC4-01DD-48C3-B536-648CA22E3002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95B47AC4-01DD-48C3-B536-648CA22E3002}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

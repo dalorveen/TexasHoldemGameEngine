@@ -90,7 +90,7 @@
                 player.StartGame(new StartGameContext(playerNames, player.BuyIn == -1 ? this.initialMoney : player.BuyIn));
             }
 
-            this.PlayHand();
+            this.PlayGame();
 
             var winner = this.allPlayers.FirstOrDefault(x => x.PlayerMoney.Money > 0);
             foreach (var player in this.allPlayers)
@@ -101,7 +101,19 @@
             return winner;
         }
 
-        private void PlayHand()
+        private void Rebuy()
+        {
+            var playerNames = this.allPlayers.Select(x => x.Name).ToList().AsReadOnly();
+            foreach (var player in this.allPlayers)
+            {
+                if (player.PlayerMoney.Money <= 0)
+                {
+                    player.StartGame(new StartGameContext(playerNames, player.BuyIn == -1 ? this.initialMoney : player.BuyIn));
+                }
+            }
+        }
+
+        private void PlayGame()
         {
             var shifted = this.allPlayers.ToList();
 
@@ -111,7 +123,8 @@
                 this.HandsPlayed++;
 
                 // Every 10 hands the blind increases
-                var smallBlind = SmallBlinds[(this.HandsPlayed - 1) / 10];
+                // var smallBlind = SmallBlinds[(this.HandsPlayed - 1) / 10];
+                var smallBlind = SmallBlinds[0];
 
                 // Players are shifted in order of priority to make a move
                 shifted.Add(shifted.First());
@@ -121,6 +134,8 @@
                 IHandLogic hand = new HandLogic(shifted, this.HandsPlayed, smallBlind);
 
                 hand.Play();
+
+                this.Rebuy();
             }
         }
     }

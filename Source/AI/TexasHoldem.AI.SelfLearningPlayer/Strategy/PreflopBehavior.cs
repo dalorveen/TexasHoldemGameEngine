@@ -4,15 +4,17 @@
     using System.Collections.Generic;
 
     using TexasHoldem.AI.SelfLearningPlayer.PokerMath;
+    using TexasHoldem.Logic;
     using TexasHoldem.Logic.Cards;
     using TexasHoldem.Logic.Players;
+    using TexasHoldem.Statistics;
 
     public class PreflopBehavior : BaseBehavior
     {
         private readonly StartingHand startingHand;
 
         public PreflopBehavior(
-            IPocket pocket, IPlayingStyle playingStyle, IGetTurnContext context, IReadOnlyCollection<Card> communityCards)
+            IPocket pocket, IStats playingStyle, IGetTurnContext context, IReadOnlyCollection<Card> communityCards)
             : base(pocket, playingStyle, context, communityCards)
         {
             this.startingHand = new StartingHand(pocket, context);
@@ -20,15 +22,15 @@
 
         public override PlayerAction OptimalAction()
         {
-            if (this.Stats.PreflopFourBetAndMoreOpportunity)
+            if (this.Tracker.FourBetAndMoreOpportunity(GameRoundType.PreFlop))
             {
                 return this.ReactionToFourBetAndMoreOpportunity();
             }
-            else if (this.Stats.PreflopThreeBetOpportunity)
+            else if (this.Tracker.ThreeBetOpportunity(GameRoundType.PreFlop))
             {
                 return this.ReactionToThreeBetOpportunity();
             }
-            else if (this.Stats.OpenRaiseOpportunity)
+            else if (this.Tracker.OpenRaiseOpportunity)
             {
                 return this.ReactionToOpenRaiseOpportunity();
             }
@@ -40,7 +42,7 @@
 
         private PlayerAction ReactionToFourBetAndMoreOpportunity()
         {
-            if (this.startingHand.IsPlayablePocket(this.PlayingStyle.PreflopThreeBet))
+            if (this.startingHand.IsPlayablePocket(this.PlayingStyle.FourBetAndMore.PF))
             {
                 if (this.Context.AvailablePlayerOptions.Contains(PlayerActionType.Raise))
                 {
@@ -62,7 +64,7 @@
 
         private PlayerAction ReactionToThreeBetOpportunity()
         {
-            if (this.startingHand.IsPlayablePocket(this.PlayingStyle.PreflopThreeBet))
+            if (this.startingHand.IsPlayablePocket(this.PlayingStyle.ThreeBet.PF))
             {
                 if (this.Context.AvailablePlayerOptions.Contains(PlayerActionType.Raise))
                 {
@@ -102,7 +104,7 @@
             }
             else
             {
-                return this.RaiseOrAllIn(moneyToRaise + (this.Stats.Callers * this.Context.MoneyToCall));
+                return this.RaiseOrAllIn(moneyToRaise + (this.Tracker.Callers * this.Context.MoneyToCall));
             }
         }
     }

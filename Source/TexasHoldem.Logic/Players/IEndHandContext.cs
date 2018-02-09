@@ -6,5 +6,7 @@ namespace TexasHoldem.Logic.Players
     public interface IEndHandContext
     {
         Dictionary<string, ICollection<Card>> ShowdownCards { get; }
+
+        int MoneyLeft { get; }
     }
 }

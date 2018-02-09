@@ -7,13 +7,14 @@
     using TexasHoldem.Logic.Cards;
     using TexasHoldem.Logic.Extensions;
     using TexasHoldem.Logic.Players;
+    using TexasHoldem.Statistics;
 
     public class PostflopBehavior : BaseBehavior
     {
         private readonly PlayerEconomy playerEconomy;
 
         public PostflopBehavior(
-            IPocket pocket, IPlayingStyle playingStyle, IGetTurnContext context, IReadOnlyCollection<Card> communityCards)
+            IPocket pocket, IStats playingStyle, IGetTurnContext context, IReadOnlyCollection<Card> communityCards)
             : base(pocket, playingStyle, context, communityCards)
         {
             this.playerEconomy = this.PlayerEconomy();
@@ -39,7 +40,7 @@
         {
             if (this.Context.AvailablePlayerOptions.Contains(PlayerActionType.Raise))
             {
-                if (this.Stats.OutOfPosition || this.Context.RoundType == Logic.GameRoundType.River)
+                if (this.Tracker.OutOfPosition || this.Context.RoundType == Logic.GameRoundType.River)
                 {
                     return this.ToValueBet();
                 }
@@ -92,14 +93,18 @@
                 {
                     if (!this.IsPush(investment - this.Context.MoneyToCall))
                     {
-                        if (this.Stats.InPosition)
+                        // TODO: make use of Aggression Factor = (Raise% + Bet%) / Call%
+                        if (this.Tracker.InPosition)
                         {
-                            return this.RaiseOrAllIn(investment - this.Context.MoneyToCall);
+                            if (this.Context.MoneyToCall == 0 || RandomProvider.Next(0, 3) == 0)
+                            {
+                                return this.RaiseOrAllIn(investment - this.Context.MoneyToCall);
+                            }
                         }
                         else
                         {
                             var quotient = (double)investment / (double)this.Context.CurrentPot;
-                            if (quotient > 0.416)
+                            if (quotient > 0.416 && RandomProvider.Next(0, 3) == 0)
                             {
                                 return this.RaiseOrAllIn(investment - this.Context.MoneyToCall);
                             }

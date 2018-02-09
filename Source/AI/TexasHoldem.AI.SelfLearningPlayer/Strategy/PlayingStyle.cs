@@ -1,27 +1,33 @@
 ﻿namespace TexasHoldem.AI.SelfLearningPlayer.Strategy
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
+    using Logic;
+    using TexasHoldem.Statistics;
 
-    using TexasHoldem.AI.SelfLearningPlayer.PokerMath;
-
-    public class PlayingStyle : IPlayingStyle
+    public class PlayingStyle : IStats
     {
-        public PlayingStyle(double vpip, double pfr, double preflopThreeBet, double preflopFourBetAndMore)
+        private readonly double threeBetPF;
+
+        private readonly double fourBetAndMorePF;
+
+        public PlayingStyle(double vpip, double pfr, Proportion threeBet, Proportion fourBetAndMore)
         {
             this.VPIP = vpip;
             this.PFR = pfr;
-            this.PreflopThreeBet = preflopThreeBet;
-            this.PreflopFourBetAndMore = preflopFourBetAndMore;
+            this.ThreeBet = threeBet;
+            this.FourBetAndMore = fourBetAndMore;
         }
 
         public double VPIP { get; }
 
         public double PFR { get; }
 
-        public double PreflopThreeBet { get; }
+        public double AF { get; }
 
-        public double PreflopFourBetAndMore { get; }
+        public double BBPer100 { get; }
+
+        public Proportion ThreeBet { get; }
+
+        public Proportion FourBetAndMore { get; }
     }
 }

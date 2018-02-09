@@ -74,7 +74,7 @@
 
             foreach (var player in this.players)
             {
-                player.EndHand(new EndHandContext(this.showdownCards));
+                player.EndHand(new EndHandContext(this.showdownCards, player.PlayerMoney.Money));
             }
         }
 
