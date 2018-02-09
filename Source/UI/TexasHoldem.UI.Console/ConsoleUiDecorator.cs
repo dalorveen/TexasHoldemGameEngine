@@ -94,7 +94,7 @@
 
             var lastAction = action.Type + (action.Type == PlayerActionType.Fold
                 ? string.Empty
-                : "(" + (action.Money + ((context.MoneyToCall < 0) ? 0 : context.MoneyToCall + context.MyMoneyInTheRound) + ")"));
+                : "(" + (action.Money + ((context.MoneyToCall < 0) ? 0 : context.MoneyToCall) + ")"));
 
             ConsoleHelper.WriteOnConsole(this.row + 3, 2, new string(' ', this.width - 3));
             ConsoleHelper.WriteOnConsole(this.row + 3, 2, "Last action: " + lastAction);
