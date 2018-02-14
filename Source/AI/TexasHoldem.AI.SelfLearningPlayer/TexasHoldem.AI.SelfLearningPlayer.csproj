@@ -52,8 +52,8 @@
     <Compile Include="PokerMath\ICalculator.cs" />
     <Compile Include="Helpers\CardAdapter.cs" />
     <Compile Include="PokerMath\HandStrength.cs" />
-    <Compile Include="PokerMath\IPocket.cs" />
-    <Compile Include="PokerMath\Pocket.cs" />
+    <Compile Include="Helpers\IPocket.cs" />
+    <Compile Include="Helpers\Pocket.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Strategy\PostflopBehavior.cs" />
     <Compile Include="Strategy\PreflopBehavior.cs" />

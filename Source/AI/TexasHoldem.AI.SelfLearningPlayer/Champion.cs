@@ -2,7 +2,7 @@
 {
     using System;
 
-    using TexasHoldem.AI.SelfLearningPlayer.PokerMath;
+    using TexasHoldem.AI.SelfLearningPlayer.Helpers;
     using TexasHoldem.AI.SelfLearningPlayer.Strategy;
     using TexasHoldem.Logic.Players;
     using TexasHoldem.Statistics;
@@ -13,10 +13,16 @@
 
         private IPocket pocket;
 
+        private BaseBehavior preflopBehavior;
+
+        private BaseBehavior postflopBehavior;
+
         public Champion(IStats playingStyle, int buyIn)
         {
             this.playingStyle = playingStyle;
             this.BuyIn = buyIn;
+            this.preflopBehavior = new PreflopBehavior(playingStyle);
+            this.postflopBehavior = new PostflopBehavior(playingStyle);
         }
 
         public override string Name { get; } = "Champion_" + Guid.NewGuid();
@@ -36,15 +42,20 @@
 
         public override PlayerAction GetTurn(IGetTurnContext context)
         {
-            if (context.RoundType == Logic.GameRoundType.PreFlop)
+            if (context is IGetTurnExtendedContext)
             {
-                var preflop = new PreflopBehavior(this.pocket, this.playingStyle, context, this.CommunityCards);
-                return preflop.OptimalAction();
+                if (context.RoundType == Logic.GameRoundType.PreFlop)
+                {
+                    return this.preflopBehavior.OptimalAction(this.pocket, (IGetTurnExtendedContext)context, this.CommunityCards);
+                }
+                else
+                {
+                    return this.postflopBehavior.OptimalAction(this.pocket, (IGetTurnExtendedContext)context, this.CommunityCards);
+                }
             }
             else
             {
-                var postflop = new PostflopBehavior(this.pocket, this.playingStyle, context, this.CommunityCards);
-                return postflop.OptimalAction();
+                throw new ArgumentException("Context should have an extended interface", nameof(context));
             }
         }
     }

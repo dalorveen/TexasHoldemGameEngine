@@ -9,6 +9,7 @@
     using TexasHoldem.AI.SmartPlayer;
     using TexasHoldem.Logic.GameMechanics;
     using TexasHoldem.Statistics;
+    using TexasHoldem.Statistics.Indicators;
 
     public static class Program
     {
@@ -24,8 +25,8 @@
             // var game = HumanVsDummy(4);
             // var game = HumanVsHuman(6);
             // var game = HumanVsSmart(6);
-            var game = HumanVsChampion(6);
-            // var game = ChampionVsChampion(6);
+            // var game = HumanVsChampion(6);
+            var game = ChampionVsChampion(6);
 
             game.Start();
         }
@@ -49,11 +50,13 @@
                             new ConsolePlayer(row, "Human_" + i + 1, 250 - (i * 20)), row, GameWidth, 1));
                         break;
                     case 4:
-                        var looseAggressivePlayer = new PlayingStyle(
-                            0.26,
-                            0.22,
-                            new Proportion(0.09, 0, 0, 0),
-                            new Proportion(0.05, 0, 0, 0));
+                        var looseAggressivePlayer = new PlayingStyle();
+                        looseAggressivePlayer.VPIP = new VPIP($"champion#{i}", 100, 26);
+                        looseAggressivePlayer.PFR = new PFR($"champion#{i}", 100, 22);
+                        looseAggressivePlayer.ThreeBet = new ThreeBet(
+                            100, new StreetStorage(9, 0, 0, 0), new StreetStorage(100, 0, 0, 0));
+                        looseAggressivePlayer.FourBet = new FourBet(
+                            100, new StreetStorage(5, 0, 0, 0), new StreetStorage(100, 0, 0, 0));
                         var stats = new Stats(new Champion(looseAggressivePlayer, 100 - (i * 4)));
                         players.Add(new ConsoleUiDecorator(stats, (6 * i) + NumberOfCommonRows, GameWidth, 1));
                         break;

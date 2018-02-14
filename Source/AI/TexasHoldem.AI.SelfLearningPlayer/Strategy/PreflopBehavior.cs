@@ -1,9 +1,9 @@
 ﻿namespace TexasHoldem.AI.SelfLearningPlayer.Strategy
 {
-    using System;
     using System.Collections.Generic;
+    using System.Linq;
 
-    using TexasHoldem.AI.SelfLearningPlayer.PokerMath;
+    using TexasHoldem.AI.SelfLearningPlayer.Helpers;
     using TexasHoldem.Logic;
     using TexasHoldem.Logic.Cards;
     using TexasHoldem.Logic.Players;
@@ -11,49 +11,56 @@
 
     public class PreflopBehavior : BaseBehavior
     {
-        private readonly StartingHand startingHand;
+        private int lastFourBetTotalOpportunitiesPF;
 
-        public PreflopBehavior(
-            IPocket pocket, IStats playingStyle, IGetTurnContext context, IReadOnlyCollection<Card> communityCards)
-            : base(pocket, playingStyle, context, communityCards)
+        private int lastThreeBetTotalOpportunitiesPF;
+
+        public PreflopBehavior(IStats playingStyle)
+            : base(playingStyle)
         {
-            this.startingHand = new StartingHand(pocket, context);
         }
 
-        public override PlayerAction OptimalAction()
+        public override PlayerAction OptimalAction(
+            IPocket pocket, IGetTurnExtendedContext context, IReadOnlyCollection<Card> communityCards)
         {
-            if (this.Tracker.FourBetAndMoreOpportunity(GameRoundType.PreFlop))
+            var startingHand = new StartingHand(pocket);
+
+            if (this.lastFourBetTotalOpportunitiesPF != context.CurrentStats.FourBet.TotalOpportunities.PF)
             {
-                return this.ReactionToFourBetAndMoreOpportunity();
+                this.lastFourBetTotalOpportunitiesPF = context.CurrentStats.FourBet.TotalOpportunities.PF;
+                return this.ReactionToFourBetOpportunity(context, communityCards, startingHand);
             }
-            else if (this.Tracker.ThreeBetOpportunity(GameRoundType.PreFlop))
+            else if (this.lastThreeBetTotalOpportunitiesPF != context.CurrentStats.ThreeBet.TotalOpportunities.PF)
             {
-                return this.ReactionToThreeBetOpportunity();
+                this.lastThreeBetTotalOpportunitiesPF = context.CurrentStats.ThreeBet.TotalOpportunities.PF;
+                return this.ReactionToThreeBetOpportunity(context, startingHand);
             }
-            else if (this.Tracker.OpenRaiseOpportunity)
+            else if (context.PreviousRoundActions.Count(x => x.Action.Type == PlayerActionType.Raise) == 0)
             {
-                return this.ReactionToOpenRaiseOpportunity();
+                return this.ReactionToOpenRaiseOpportunity(context, startingHand);
             }
             else
             {
-                throw new NotImplementedException();
+                // faced with four bet and more
+                return this.ReactionToFourBetOpportunity(context, communityCards, startingHand);
             }
         }
 
-        private PlayerAction ReactionToFourBetAndMoreOpportunity()
+        private PlayerAction ReactionToFourBetOpportunity(
+            IGetTurnExtendedContext context, IReadOnlyCollection<Card> communityCards, StartingHand startingHand)
         {
-            if (this.startingHand.IsPlayablePocket(this.PlayingStyle.FourBetAndMore.PF))
+            if (startingHand.IsPlayablePocket(this.PlayingStyle.FourBet.Percentage(GameRoundType.PreFlop)))
             {
-                if (this.Context.AvailablePlayerOptions.Contains(PlayerActionType.Raise))
+                if (context.AvailablePlayerOptions.Contains(PlayerActionType.Raise))
                 {
-                    return this.ToRaise(this.Context.MinRaise * 3);
+                    return this.ToRaise(context.MinRaise * 3, context);
                 }
             }
-            else if (this.startingHand.IsPlayablePocket(this.PlayingStyle.VPIP, 0.2))
+            else if (startingHand.IsPlayablePocket(this.PlayingStyle.VPIP.Percentage, 0.2, context))
             {
-                var playerEconomy = this.PlayerEconomy();
-                var investment = (int)playerEconomy.OptimalInvestment(this.Context.CurrentPot);
-                if (investment >= this.Context.MoneyToCall)
+                var playerEconomy = this.PlayerEconomy(startingHand.Pocket, context, communityCards);
+                var investment = (int)playerEconomy.OptimalInvestment(context.CurrentPot);
+                if (investment >= context.MoneyToCall)
                 {
                     return PlayerAction.CheckOrCall();
                 }
@@ -62,16 +69,16 @@
             return PlayerAction.Fold();
         }
 
-        private PlayerAction ReactionToThreeBetOpportunity()
+        private PlayerAction ReactionToThreeBetOpportunity(IGetTurnExtendedContext context, StartingHand startingHand)
         {
-            if (this.startingHand.IsPlayablePocket(this.PlayingStyle.ThreeBet.PF))
+            if (startingHand.IsPlayablePocket(this.PlayingStyle.ThreeBet.Percentage(GameRoundType.PreFlop)))
             {
-                if (this.Context.AvailablePlayerOptions.Contains(PlayerActionType.Raise))
+                if (context.AvailablePlayerOptions.Contains(PlayerActionType.Raise))
                 {
-                    return this.ToRaise(this.Context.MinRaise * 3);
+                    return this.ToRaise(context.MinRaise * 3, context);
                 }
             }
-            else if (this.startingHand.IsPlayablePocket(this.PlayingStyle.VPIP, 0.2))
+            else if (startingHand.IsPlayablePocket(this.PlayingStyle.VPIP.Percentage, 0.2, context))
             {
                 return PlayerAction.CheckOrCall();
             }
@@ -79,16 +86,16 @@
             return PlayerAction.Fold();
         }
 
-        private PlayerAction ReactionToOpenRaiseOpportunity()
+        private PlayerAction ReactionToOpenRaiseOpportunity(IGetTurnExtendedContext context, StartingHand startingHand)
         {
-            if (this.startingHand.IsPlayablePocket(this.PlayingStyle.PFR, 0.3))
+            if (startingHand.IsPlayablePocket(this.PlayingStyle.PFR.Percentage, 0.3, context))
             {
-                if (this.Context.AvailablePlayerOptions.Contains(PlayerActionType.Raise))
+                if (context.AvailablePlayerOptions.Contains(PlayerActionType.Raise))
                 {
-                    return this.ToRaise(this.Context.MinRaise * 2);
+                    return this.ToRaise(context.MinRaise * 2, context);
                 }
             }
-            else if (this.startingHand.IsPlayablePocket(this.PlayingStyle.VPIP, 0.2))
+            else if (startingHand.IsPlayablePocket(this.PlayingStyle.VPIP.Percentage, 0.2, context))
             {
                 return PlayerAction.CheckOrCall();
             }
@@ -96,15 +103,18 @@
             return PlayerAction.Fold();
         }
 
-        private PlayerAction ToRaise(int moneyToRaise)
+        private PlayerAction ToRaise(int moneyToRaise, IGetTurnExtendedContext context)
         {
-            if (this.IsPush(moneyToRaise))
+            if (this.IsPush(moneyToRaise, context))
             {
-                return this.RaiseOrAllIn(int.MaxValue);
+                return this.RaiseOrAllIn(int.MaxValue, context);
             }
             else
             {
-                return this.RaiseOrAllIn(moneyToRaise + (this.Tracker.Callers * this.Context.MoneyToCall));
+                var reverse = context.PreviousRoundActions.Reverse();
+                var callers = reverse
+                    .Count(x => x.Action.Type == PlayerActionType.CheckCall && x.Action.Type != PlayerActionType.Raise);
+                return this.RaiseOrAllIn(moneyToRaise + (callers * context.MoneyToCall), context);
             }
         }
     }

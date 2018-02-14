@@ -1,19 +1,23 @@
 ﻿namespace TexasHoldem.Statistics
 {
-    using TexasHoldem.Logic;
+    using TexasHoldem.Statistics.Indicators;
 
     public interface IStats
     {
-        double VPIP { get; }
+        VPIP VPIP { get; }
 
-        double PFR { get; }
+        PFR PFR { get; }
 
-        double AF { get; }
+        ThreeBet ThreeBet { get; }
 
-        double BBPer100 { get; }
+        FourBet FourBet { get; }
 
-        Proportion ThreeBet { get; }
+        CBet CBet { get; }
 
-        Proportion FourBetAndMore { get; }
+        AFq AFq { get; }
+
+        BBper100 BBper100 { get; }
+
+        WTSD WTSD { get; }
     }
 }

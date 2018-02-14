@@ -216,7 +216,7 @@
 
             foreach (var player in this.players)
             {
-                var endRoundContext = new EndRoundContext(this.bettingLogic.RoundBets);
+                var endRoundContext = new EndRoundContext(this.bettingLogic.HandBets, gameRoundType);
                 player.EndRound(endRoundContext);
             }
         }

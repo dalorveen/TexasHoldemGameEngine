@@ -3,6 +3,7 @@
     using System.Collections.Generic;
     using System.Linq;
 
+    using TexasHoldem.AI.SelfLearningPlayer.Helpers;
     using TexasHoldem.AI.SelfLearningPlayer.PokerMath;
     using TexasHoldem.Logic.Cards;
     using TexasHoldem.Logic.Players;
@@ -10,24 +11,11 @@
 
     public abstract class BaseBehavior
     {
-        private readonly IPocket pocket;
-
         private readonly IStats playingStyle;
 
-        private readonly IGetTurnContext context;
-
-        private readonly IReadOnlyCollection<Card> communityCards;
-
-        private readonly Tracker tracker;
-
-        public BaseBehavior(
-            IPocket pocket, IStats playingStyle, IGetTurnContext context, IReadOnlyCollection<Card> communityCards)
+        public BaseBehavior(IStats playingStyle)
         {
             this.playingStyle = playingStyle;
-            this.pocket = pocket;
-            this.context = context;
-            this.communityCards = communityCards;
-            this.tracker = new Tracker(context);
         }
 
         public IStats PlayingStyle
@@ -38,30 +26,15 @@
             }
         }
 
-        public IGetTurnContext Context
-        {
-            get
-            {
-                return this.context;
-            }
-        }
+        public abstract PlayerAction OptimalAction(
+            IPocket pocket, IGetTurnExtendedContext context, IReadOnlyCollection<Card> communityCards);
 
-        public Tracker Tracker
+        public PlayerAction RaiseOrAllIn(int moneyToRaise, IGetTurnExtendedContext context)
         {
-            get
-            {
-                return this.tracker;
-            }
-        }
-
-        public abstract PlayerAction OptimalAction();
-
-        public PlayerAction RaiseOrAllIn(int moneyToRaise)
-        {
-            if (moneyToRaise >= this.Context.MoneyLeft - this.Context.MoneyToCall)
+            if (moneyToRaise >= context.MoneyLeft - context.MoneyToCall)
             {
                 // All-In
-                return PlayerAction.Raise(this.Context.MoneyLeft - this.Context.MoneyToCall);
+                return PlayerAction.Raise(context.MoneyLeft - context.MoneyToCall);
             }
             else
             {
@@ -69,24 +42,26 @@
             }
         }
 
-        public PlayerEconomy PlayerEconomy()
+        public PlayerEconomy PlayerEconomy(
+            IPocket pocket, IGetTurnExtendedContext context, IReadOnlyCollection<Card> communityCards)
         {
-            var calculator = this.Calculator();
+            var calculator = this.Calculator(pocket, context, communityCards);
             var handEconomy = new HandEconomy(calculator);
-            return handEconomy.First(p => p.Hero.Pocket.Mask == this.pocket.Mask);
+            return handEconomy.First(p => p.Hero.Pocket.Mask == pocket.Mask);
         }
 
-        public bool IsPush(int moneyToRaise)
+        public bool IsPush(int moneyToRaise, IGetTurnExtendedContext context)
         {
-            return (double)(this.context.MoneyLeft - moneyToRaise) / (double)(moneyToRaise + this.context.CurrentPot) <= 0.5;
+            return (double)(context.MoneyLeft - moneyToRaise) / (double)(moneyToRaise + context.CurrentPot) <= 0.5;
         }
 
-        private ICalculator Calculator()
+        private ICalculator Calculator(
+            IPocket pocket, IGetTurnExtendedContext context, IReadOnlyCollection<Card> communityCards)
         {
             var holeCardsOfOpponentsWhoAreInHand = new List<IPocket>();
-            holeCardsOfOpponentsWhoAreInHand.Add(this.pocket);
+            holeCardsOfOpponentsWhoAreInHand.Add(pocket);
             var deadCards = new List<Card>();
-            foreach (var item in this.Context.Opponents)
+            foreach (var item in context.Opponents)
             {
                 if (item.InHand)
                 {
@@ -101,7 +76,7 @@
             return new Calculator(
                 holeCardsOfOpponentsWhoAreInHand,
                 deadCards,
-                this.communityCards.ToList());
+                communityCards.ToList());
         }
     }
 }

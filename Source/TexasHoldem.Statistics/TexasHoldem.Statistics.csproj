@@ -40,12 +40,21 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GetTurnExtendedContext.cs" />
+    <Compile Include="IGetTurnExtendedContext.cs" />
+    <Compile Include="Indicators\AFq.cs" />
+    <Compile Include="Indicators\BBper100.cs" />
+    <Compile Include="Indicators\CBet.cs" />
+    <Compile Include="Indicators\FourBet.cs" />
+    <Compile Include="Indicators\BaseIndicator.cs" />
+    <Compile Include="Indicators\PFR.cs" />
+    <Compile Include="Indicators\ThreeBet.cs" />
+    <Compile Include="Indicators\VPIP.cs" />
+    <Compile Include="Indicators\WTSD.cs" />
     <Compile Include="IStats.cs" />
-    <Compile Include="ITracker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Proportion.cs" />
+    <Compile Include="StreetStorage.cs" />
     <Compile Include="Stats.cs" />
-    <Compile Include="Tracker.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TexasHoldem.Logic\TexasHoldem.Logic.csproj">

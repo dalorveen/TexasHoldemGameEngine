@@ -1,5 +1,7 @@
 ﻿namespace TexasHoldem.AI.SelfLearningPlayer.PokerMath
 {
+    using TexasHoldem.AI.SelfLearningPlayer.Helpers;
+
     public struct HandStrength
     {
         public HandStrength(IPocket pocket, double equity)

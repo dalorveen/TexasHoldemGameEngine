@@ -1,33 +1,24 @@
 ﻿namespace TexasHoldem.AI.SelfLearningPlayer.Strategy
 {
-    using System;
-    using Logic;
     using TexasHoldem.Statistics;
+    using TexasHoldem.Statistics.Indicators;
 
     public class PlayingStyle : IStats
     {
-        private readonly double threeBetPF;
+        public VPIP VPIP { get; set; }
 
-        private readonly double fourBetAndMorePF;
+        public PFR PFR { get; set; }
 
-        public PlayingStyle(double vpip, double pfr, Proportion threeBet, Proportion fourBetAndMore)
-        {
-            this.VPIP = vpip;
-            this.PFR = pfr;
-            this.ThreeBet = threeBet;
-            this.FourBetAndMore = fourBetAndMore;
-        }
+        public ThreeBet ThreeBet { get; set; }
 
-        public double VPIP { get; }
+        public FourBet FourBet { get; set; }
 
-        public double PFR { get; }
+        public CBet CBet { get; set; }
 
-        public double AF { get; }
+        public AFq AFq { get; set; }
 
-        public double BBPer100 { get; }
+        public BBper100 BBper100 { get; set; }
 
-        public Proportion ThreeBet { get; }
-
-        public Proportion FourBetAndMore { get; }
+        public WTSD WTSD { get; set; }
     }
 }

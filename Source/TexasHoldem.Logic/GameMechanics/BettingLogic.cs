@@ -30,7 +30,7 @@
             this.initialPlayerIndex = players.Count == 2 ? 0 : 1;
             this.allPlayers = players;
             this.smallBlind = smallBlind;
-            this.RoundBets = new List<PlayerActionAndName>();
+            this.HandBets = new List<PlayerActionAndName>();
 
             this.lastRoundBet = 2 * smallBlind; // Big blind
             this.lastStepBet = this.lastRoundBet;
@@ -66,11 +66,10 @@
             }
         }
 
-        public List<PlayerActionAndName> RoundBets { get; }
+        public List<PlayerActionAndName> HandBets { get; }
 
         public void Bet(GameRoundType gameRoundType)
         {
-            this.RoundBets.Clear();
             var playerIndex = gameRoundType == GameRoundType.PreFlop
                 ? this.initialPlayerIndex
                 : 1;
@@ -115,7 +114,7 @@
                     player.GetTurn(
                         new GetTurnContext(
                             gameRoundType,
-                            this.RoundBets.AsReadOnly(),
+                            this.HandBets.AsReadOnly(),
                             this.smallBlind,
                             player.PlayerMoney.Money,
                             this.Pot,
@@ -128,7 +127,7 @@
                             this.InformationAboutOpponents(player.Name)));
 
                 action = player.PlayerMoney.DoPlayerAction(action, maxMoneyPerPlayer);
-                this.RoundBets.Add(new PlayerActionAndName(player.Name, action));
+                this.HandBets.Add(new PlayerActionAndName(player.Name, action, gameRoundType));
 
                 if (action.Type == PlayerActionType.Raise)
                 {
@@ -169,24 +168,26 @@
         private void PlaceBlinds()
         {
             // Small blind
-            this.RoundBets.Add(
+            this.HandBets.Add(
                 new PlayerActionAndName(
                     this.allPlayers[this.initialPlayerIndex].Name,
                     this.allPlayers[this.initialPlayerIndex].PostingBlind(
                         new PostingBlindContext(
                             this.allPlayers[this.initialPlayerIndex].PlayerMoney.DoPlayerAction(PlayerAction.Post(this.smallBlind), 0),
                             0,
-                            this.allPlayers[this.initialPlayerIndex].PlayerMoney.Money))));
+                            this.allPlayers[this.initialPlayerIndex].PlayerMoney.Money)),
+                    GameRoundType.PreFlop));
 
             // Big blind
-            this.RoundBets.Add(
+            this.HandBets.Add(
                 new PlayerActionAndName(
                     this.allPlayers[this.initialPlayerIndex + 1].Name,
                     this.allPlayers[this.initialPlayerIndex + 1].PostingBlind(
                         new PostingBlindContext(
                             this.allPlayers[this.initialPlayerIndex + 1].PlayerMoney.DoPlayerAction(PlayerAction.Post(2 * this.smallBlind), 0),
                             this.Pot,
-                            this.allPlayers[this.initialPlayerIndex + 1].PlayerMoney.Money))));
+                            this.allPlayers[this.initialPlayerIndex + 1].PlayerMoney.Money)),
+                    GameRoundType.PreFlop));
         }
 
         private void ReturnMoneyInCaseOfAllIn()
@@ -231,7 +232,7 @@
                     // full raise
                     this.lastStepBet = maxMoneyPerPlayer - this.lastRoundBet;
                     this.lastRoundBet = maxMoneyPerPlayer;
-                    this.aggressorName = this.RoundBets.Last().PlayerName;
+                    this.aggressorName = this.HandBets.Last().PlayerName;
                 }
                 else
                 {
@@ -263,7 +264,8 @@
                 return;
             }
 
-            if (this.allPlayers.Count(x => x.PlayerMoney.Money <= 0) >= this.allPlayers.Count - 1)
+            if (this.allPlayers.Count(x => x.PlayerMoney.Money <= 0) >= this.allPlayers.Count - 1
+                || !this.allPlayers.Any(x => x.PlayerMoney.CurrentRoundBet == this.boundsOfSidePots.Max))
             {
                 this.boundsOfSidePots.Remove(this.boundsOfSidePots.Max);
             }
