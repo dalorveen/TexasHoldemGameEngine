@@ -1,9 +1,9 @@
-﻿namespace TexasHoldem.AI.SelfLearningPlayer
+﻿namespace TexasHoldem.AI.Champion
 {
     using System;
 
-    using TexasHoldem.AI.SelfLearningPlayer.Helpers;
-    using TexasHoldem.AI.SelfLearningPlayer.Strategy;
+    using TexasHoldem.AI.Champion.Helpers;
+    using TexasHoldem.AI.Champion.Strategy;
     using TexasHoldem.Logic.Players;
     using TexasHoldem.Statistics;
 

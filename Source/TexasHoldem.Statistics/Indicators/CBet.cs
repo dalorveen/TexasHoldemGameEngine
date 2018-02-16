@@ -15,8 +15,6 @@
 
         private bool isPreflopRaiser;
 
-        private bool isChance;
-
         public CBet(string playerName, int hands = 0)
             : base(hands)
         {
@@ -38,6 +36,8 @@
             this.totalOpportunities[2] = totalOpportunities.T;
             this.totalOpportunities[3] = totalOpportunities.R;
         }
+
+        public bool IsOpportunity { get; private set; }
 
         public StreetStorage TotalTimes
         {
@@ -98,19 +98,19 @@
                     }
 
                     this.totalOpportunities[(int)context.RoundType]++;
-                    this.isChance = true;
+                    this.IsOpportunity = true;
                 }
             }
         }
 
         public override void MadeActionExtract(IGetTurnContext context, PlayerAction madeAction)
         {
-            if (this.isChance && madeAction.Type == PlayerActionType.Raise)
+            if (this.IsOpportunity && madeAction.Type == PlayerActionType.Raise)
             {
                 this.totalTimes[(int)context.RoundType]++;
             }
 
-            this.isChance = false;
+            this.IsOpportunity = false;
         }
 
         public override void EndRoundExtract(IEndRoundContext context)
@@ -143,7 +143,7 @@
         {
             var copy = new CBet(this.playerName, this.Hands, this.TotalTimes, this.TotalOpportunities);
             copy.isPreflopRaiser = this.isPreflopRaiser;
-            copy.isChance = this.isChance;
+            copy.IsOpportunity = this.IsOpportunity;
             return copy;
         }
     }

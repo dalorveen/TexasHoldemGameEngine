@@ -1,8 +1,8 @@
-﻿namespace TexasHoldem.AI.SelfLearningPlayer.Strategy
+﻿namespace TexasHoldem.AI.Champion.Strategy
 {
     using System.Collections.Generic;
 
-    using TexasHoldem.AI.SelfLearningPlayer.PokerMath;
+    using TexasHoldem.AI.Champion.PokerMath;
 
     public interface IPlayerEconomy
     {

@@ -181,8 +181,6 @@
             {
                 item.EndHandExtract(context);
             }
-
-            var t = this.ToString();
         }
 
         public void EndGame(IEndGameContext context)

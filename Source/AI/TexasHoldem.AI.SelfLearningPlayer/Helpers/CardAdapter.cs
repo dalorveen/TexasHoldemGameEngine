@@ -1,4 +1,4 @@
-﻿namespace TexasHoldem.AI.SelfLearningPlayer.Helpers
+﻿namespace TexasHoldem.AI.Champion.Helpers
 {
     using System;
     using System.Collections.Generic;

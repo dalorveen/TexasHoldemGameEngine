@@ -155,6 +155,9 @@
                     var remainingPots = sidePot.ToList();
                     if (mainPot != 0)
                     {
+                        // TODO: What if players left in the hand have zero money in their stacks?
+                        // How many participants then?
+                        // Is it possible that there are only one candidate for the main pot?
                         remainingPots.Add(
                             new SidePot(
                                 pot - remainingPots.Sum(x => x.Amount),

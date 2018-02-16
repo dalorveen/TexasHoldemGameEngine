@@ -1,10 +1,10 @@
-﻿namespace TexasHoldem.AI.SelfLearningPlayer.Strategy
+﻿namespace TexasHoldem.AI.Champion.Strategy
 {
     using System.Collections.Generic;
     using System.Linq;
 
-    using TexasHoldem.AI.SelfLearningPlayer.Helpers;
-    using TexasHoldem.AI.SelfLearningPlayer.PokerMath;
+    using TexasHoldem.AI.Champion.Helpers;
+    using TexasHoldem.AI.Champion.PokerMath;
     using TexasHoldem.Logic.Players;
     using TexasHoldem.Statistics;
 
@@ -42,6 +42,17 @@
 
         public IPocket Pocket { get; }
 
+        public bool IsPremiumHand
+        {
+            get
+            {
+                var premiumHands = HoldemHand.PocketHands.PocketCards169("AA")
+                    + HoldemHand.PocketHands.PocketCards169("KK")
+                    + HoldemHand.PocketHands.PocketCards169("AKs");
+                return premiumHands.Contains(this.Pocket.Mask);
+            }
+        }
+
         public int RelativePosition(IGetTurnExtendedContext context)
         {
             var playersInHand = context.Opponents.Where(x => x.InHand)
@@ -61,15 +72,18 @@
              * is quadratic.
             */
             var numberOfOpponentsInHand = context.Opponents.Where(x => x.InHand).Count();
+
             var frequency = Distribution.FrequencyOfActionFromASpecificPosition(
                 this.RelativePosition(context), numberOfOpponentsInHand, rangeInPercent / 100.0, slope);
-            var numberOfplayablePockets = (int)(1326.0 * (numberOfOpponentsInHand + 1) * frequency);
+
+            var numberOfplayablePockets = (int)(1326.0 * (numberOfOpponentsInHand + 1) * (frequency > 1.0 ? 1.0 : frequency));
             return new HoldemHand.PocketHands(
                 PocketsFromStrongToWeak.Select(s => s.Value).SelectMany(s => s).Take(numberOfplayablePockets).ToList());
         }
 
         public HoldemHand.PocketHands PlayablePockets(double rangeInPercent)
         {
+            rangeInPercent = rangeInPercent > 100 ? 100 : rangeInPercent;
             var numberOfplayablePockets = (int)(1326.0 * rangeInPercent / 100.0);
             return new HoldemHand.PocketHands(
                 PocketsFromStrongToWeak.Select(s => s.Value).SelectMany(s => s).Take(numberOfplayablePockets).ToList());

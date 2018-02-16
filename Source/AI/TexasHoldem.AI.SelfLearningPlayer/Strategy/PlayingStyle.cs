@@ -1,4 +1,4 @@
-﻿namespace TexasHoldem.AI.SelfLearningPlayer.Strategy
+﻿namespace TexasHoldem.AI.Champion.Strategy
 {
     using TexasHoldem.Statistics;
     using TexasHoldem.Statistics.Indicators;

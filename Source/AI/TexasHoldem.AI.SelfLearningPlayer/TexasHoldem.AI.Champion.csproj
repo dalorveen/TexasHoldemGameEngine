@@ -8,8 +8,8 @@
     <ProjectGuid>{9E0598F9-5092-484E-A8E8-70AEEBB96DC5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TexasHoldem.AI.SelfLearningPlayer</RootNamespace>
-    <AssemblyName>TexasHoldem.AI.SelfLearningPlayer</AssemblyName>
+    <RootNamespace>TexasHoldem.AI.Champion</RootNamespace>
+    <AssemblyName>TexasHoldem.AI.Champion</AssemblyName>
     <DefaultLanguage>ru-RU</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -41,12 +41,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helpers\Distribution.cs" />
+    <Compile Include="StatsCorrection\BaseStatsCorrection.cs" />
+    <Compile Include="StatsCorrection\FourBetCorrection.cs" />
+    <Compile Include="StatsCorrection\ThreeBetCorrection.cs" />
+    <Compile Include="StatsCorrection\VPIPCorrection.cs" />
+    <Compile Include="StatsCorrection\PFRCorrection.cs" />
     <Compile Include="Strategy\BaseBehavior.cs" />
     <Compile Include="Strategy\HandEconomy.cs" />
     <Compile Include="Strategy\IPlayerEconomy.cs" />
     <Compile Include="Strategy\PlayerEconomy.cs" />
     <Compile Include="Champion.cs" />
-    <Compile Include="Learner.cs" />
     <Compile Include="Strategy\PlayingStyle.cs" />
     <Compile Include="PokerMath\Calculator.cs" />
     <Compile Include="PokerMath\ICalculator.cs" />
@@ -59,9 +63,7 @@
     <Compile Include="Strategy\PreflopBehavior.cs" />
     <Compile Include="Strategy\StartingHand.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="NeuroEvolution\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Reference Include="HandEvaluator">
       <HintPath>PokerMath\HandEvaluator.dll</HintPath>

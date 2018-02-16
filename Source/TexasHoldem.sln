@@ -21,7 +21,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.AI.SmartPlayer"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.Tests.GameSimulations", "Tests\TexasHoldem.Tests.GameSimulations\TexasHoldem.Tests.GameSimulations.csproj", "{E4A11A76-0F2F-4A0F-80E8-6B5026BFB78A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.AI.SelfLearningPlayer", "AI\TexasHoldem.AI.SelfLearningPlayer\TexasHoldem.AI.SelfLearningPlayer.csproj", "{9E0598F9-5092-484E-A8E8-70AEEBB96DC5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.AI.Champion", "AI\TexasHoldem.AI.SelfLearningPlayer\TexasHoldem.AI.Champion.csproj", "{9E0598F9-5092-484E-A8E8-70AEEBB96DC5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.AI.SelfLearningPlayer.Tests", "Tests\TexasHoldem.AI.SelfLearningPlayer.Tests\TexasHoldem.AI.SelfLearningPlayer.Tests.csproj", "{F047F180-00E9-4A84-8276-E079D783F33E}"
 EndProject

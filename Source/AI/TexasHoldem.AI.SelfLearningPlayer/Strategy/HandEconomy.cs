@@ -1,11 +1,11 @@
-﻿namespace TexasHoldem.AI.SelfLearningPlayer.Strategy
+﻿namespace TexasHoldem.AI.Champion.Strategy
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
 
-    using TexasHoldem.AI.SelfLearningPlayer.PokerMath;
+    using TexasHoldem.AI.Champion.PokerMath;
 
     public class HandEconomy : IEnumerable<PlayerEconomy>
     {

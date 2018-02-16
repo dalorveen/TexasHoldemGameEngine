@@ -35,6 +35,7 @@
                 {
                     new PlayerActionAndName("opponent", PlayerAction.CheckOrCall(), GameRoundType.Flop)
                 });
+            mockedGetTurnContext.SetupGet(x => x.RoundType).Returns(GameRoundType.Flop);
             cbet.GetTurnExtract(mockedGetTurnContext.Object);
 
             Assert.IsTrue(cbet.TotalOpportunities.F == 1);

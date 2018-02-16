@@ -1,9 +1,9 @@
-﻿namespace TexasHoldem.AI.SelfLearningPlayer.Strategy
+﻿namespace TexasHoldem.AI.Champion.Strategy
 {
     using System.Collections.Generic;
     using System.Linq;
 
-    using TexasHoldem.AI.SelfLearningPlayer.PokerMath;
+    using TexasHoldem.AI.Champion.PokerMath;
 
     public class PlayerEconomy : IPlayerEconomy
     {
@@ -69,7 +69,7 @@
         {
             if (this.BestHand)
             {
-                // investment for +EV
+                // investment for +EV and reasonable for a caller
                 var maxEquity = this.hero.Equity;
                 var secondEquity = this.opponents.Where(p => p.Equity != maxEquity).Max(s => s.Equity);
                 return (pot * secondEquity) / ((1.0 - secondEquity) - secondEquity);
@@ -77,8 +77,13 @@
             else
             {
                 // investment for a neutral EV
-                return (pot * this.hero.Equity) / (1.0 - this.hero.Equity);
+                return this.NeutralEVInvestment(pot);
             }
+        }
+
+        public double NeutralEVInvestment(int pot)
+        {
+            return (pot * this.hero.Equity) / (1.0 - this.hero.Equity);
         }
     }
 }

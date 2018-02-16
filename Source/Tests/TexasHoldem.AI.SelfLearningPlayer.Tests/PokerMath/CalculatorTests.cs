@@ -1,4 +1,4 @@
-﻿namespace TexasHoldem.AI.SelfLearningPlayer.Tests.PokerMath
+﻿namespace TexasHoldem.AI.Champion.Tests.PokerMath
 {
     using System;
     using System.Collections.Generic;
@@ -6,8 +6,8 @@
 
     using Moq;
     using NUnit.Framework;
-    using TexasHoldem.AI.SelfLearningPlayer.Helpers;
-    using TexasHoldem.AI.SelfLearningPlayer.PokerMath;
+    using TexasHoldem.AI.Champion.Helpers;
+    using TexasHoldem.AI.Champion.PokerMath;
     using TexasHoldem.Logic.Cards;
 
     [TestFixture]

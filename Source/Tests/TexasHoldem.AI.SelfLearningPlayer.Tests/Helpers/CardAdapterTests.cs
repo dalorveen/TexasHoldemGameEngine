@@ -1,11 +1,11 @@
-﻿namespace TexasHoldem.AI.SelfLearningPlayer.Tests.Helpers
+﻿namespace TexasHoldem.AI.Champion.Tests.Helpers
 {
     using System;
     using System.Collections.Generic;
 
     using NUnit.Framework;
-    using TexasHoldem.AI.SelfLearningPlayer.Helpers;
-    using TexasHoldem.AI.SelfLearningPlayer.PokerMath;
+    using TexasHoldem.AI.Champion.Helpers;
+    using TexasHoldem.AI.Champion.PokerMath;
     using TexasHoldem.Logic.Cards;
 
     [TestFixture]

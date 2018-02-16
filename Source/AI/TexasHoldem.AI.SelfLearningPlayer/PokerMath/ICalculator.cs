@@ -1,4 +1,4 @@
-﻿namespace TexasHoldem.AI.SelfLearningPlayer.PokerMath
+﻿namespace TexasHoldem.AI.Champion.PokerMath
 {
     using System.Collections.Generic;
 

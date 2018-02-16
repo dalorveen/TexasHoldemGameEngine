@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // Общие сведения о сборке определяются следующим 
 // набором атрибутов. Измените значения этих атрибутов, чтобы изменить сведения,
 // связанные с этой сборкой.
-[assembly: AssemblyTitle("TexasHoldem.AI.SelfLearningPlayer")]
+[assembly: AssemblyTitle("TexasHoldem.AI.Champion")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("TexasHoldem.AI.SelfLearningPlayer")]
+[assembly: AssemblyProduct("TexasHoldem.AI.Champion")]
 [assembly: AssemblyCopyright("©  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

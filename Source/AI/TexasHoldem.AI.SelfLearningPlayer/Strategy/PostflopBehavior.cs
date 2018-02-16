@@ -1,16 +1,15 @@
-﻿namespace TexasHoldem.AI.SelfLearningPlayer.Strategy
+﻿namespace TexasHoldem.AI.Champion.Strategy
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 
-    using TexasHoldem.AI.SelfLearningPlayer.Helpers;
+    using TexasHoldem.AI.Champion.Helpers;
     using TexasHoldem.Logic.Cards;
     using TexasHoldem.Logic.Extensions;
     using TexasHoldem.Logic.Players;
     using TexasHoldem.Statistics;
 
-    public class PostflopBehavior : PreflopBehavior
+    public class PostflopBehavior : BaseBehavior
     {
         public PostflopBehavior(IStats playingStyle)
             : base(playingStyle)
@@ -40,8 +39,7 @@
         {
             if (context.AvailablePlayerOptions.Contains(PlayerActionType.Raise))
             {
-                if (!(context.Position > context.Opponents.Where(x => x.InHand).Max(s => s.Position))
-                    || context.RoundType == Logic.GameRoundType.River)
+                if (this.NeedAnRaiseToAdjustTheStats(context))
                 {
                     return this.ToValueBet(context, playerEconomy);
                 }
@@ -57,14 +55,17 @@
                 if (playerEconomy.HandsThatLoseToTheHero.Count > 0
                     && context.AvailablePlayerOptions.Contains(PlayerActionType.Raise))
                 {
-                    var investment = (int)playerEconomy.OptimalInvestment(context.CurrentPot);
-                    if (this.IsPush(investment - context.MoneyToCall, context))
+                    if (this.NeedAnRaiseToAdjustTheStats(context))
                     {
-                        return this.RaiseOrAllIn(int.MaxValue, context);
-                    }
-                    else
-                    {
-                        return this.RaiseOrAllIn(investment - context.MoneyToCall, context);
+                        var investment = (int)playerEconomy.OptimalInvestment(context.CurrentPot);
+                        if (this.IsPush(investment - context.MoneyToCall, context))
+                        {
+                            return this.RaiseOrAllIn(int.MaxValue, context);
+                        }
+                        else
+                        {
+                            return this.RaiseOrAllIn(investment - context.MoneyToCall, context);
+                        }
                     }
                 }
             }
@@ -72,7 +73,10 @@
             {
                 if (context.AvailablePlayerOptions.Contains(PlayerActionType.Raise))
                 {
-                    return this.ToValueBet(context, playerEconomy);
+                    if (this.NeedAnRaiseToAdjustTheStats(context))
+                    {
+                        return this.ToValueBet(context, playerEconomy);
+                    }
                 }
             }
 
@@ -92,23 +96,16 @@
             {
                 if (investment >= context.MoneyToCall + context.MinRaise)
                 {
-                    if (!this.IsPush(investment - context.MoneyToCall, context))
+                    if (this.NeedAnRaiseToAdjustTheStats(context))
                     {
-                        // TODO: make use of Aggression Factor = (Raise% + Bet%) / Call%
-                        if (context.Position > context.Opponents.Where(x => x.InHand).Max(s => s.Position))
+                        if (this.IsPush(investment - context.MoneyToCall, context))
                         {
-                            if (context.MoneyToCall == 0 || RandomProvider.Next(0, 3) == 0)
-                            {
-                                return this.RaiseOrAllIn(investment - context.MoneyToCall, context);
-                            }
+                            // very losing action
+                            return this.RaiseOrAllIn(int.MaxValue, context);
                         }
                         else
                         {
-                            var quotient = (double)investment / (double)context.CurrentPot;
-                            if (quotient > 0.416 && RandomProvider.Next(0, 3) == 0)
-                            {
-                                return this.RaiseOrAllIn(investment - context.MoneyToCall, context);
-                            }
+                            return this.RaiseOrAllIn(investment - context.MoneyToCall, context);
                         }
                     }
                 }
@@ -147,6 +144,26 @@
                     return this.RaiseOrAllIn((int)valueBet, context);
                 }
             }
+        }
+
+        private bool NeedAnRaiseToAdjustTheStats(IGetTurnExtendedContext context)
+        {
+            if (context.CurrentStats.CBet.IsOpportunity)
+            {
+                if (context.CurrentStats.CBet.Percentage(context.RoundType)
+                    < this.PlayingStyle.CBet.Percentage(context.RoundType))
+                {
+                    return true;
+                }
+            }
+
+            if (context.CurrentStats.AFq.Percentage(context.RoundType) < this.PlayingStyle.AFq.Percentage(context.RoundType))
+            {
+                // adjust the current stats of AFq to match the style of the player's game
+                return true;
+            }
+
+            return false;
         }
     }
 }

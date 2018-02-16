@@ -1,10 +1,10 @@
-﻿namespace TexasHoldem.AI.SelfLearningPlayer.Helpers
+﻿namespace TexasHoldem.AI.Champion.Helpers
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
 
-    using TexasHoldem.AI.SelfLearningPlayer.Helpers;
+    using TexasHoldem.AI.Champion.Helpers;
     using TexasHoldem.Logic.Cards;
 
     public class Pocket : IPocket

@@ -1,10 +1,10 @@
-﻿namespace TexasHoldem.AI.SelfLearningPlayer.Strategy
+﻿namespace TexasHoldem.AI.Champion.Strategy
 {
     using System.Collections.Generic;
     using System.Linq;
 
-    using TexasHoldem.AI.SelfLearningPlayer.Helpers;
-    using TexasHoldem.AI.SelfLearningPlayer.PokerMath;
+    using TexasHoldem.AI.Champion.Helpers;
+    using TexasHoldem.AI.Champion.PokerMath;
     using TexasHoldem.Logic.Cards;
     using TexasHoldem.Logic.Players;
     using TexasHoldem.Statistics;

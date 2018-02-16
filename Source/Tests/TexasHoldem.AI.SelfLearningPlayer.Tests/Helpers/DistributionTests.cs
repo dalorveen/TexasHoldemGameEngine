@@ -1,7 +1,7 @@
-﻿namespace TexasHoldem.AI.SelfLearningPlayer.Tests.Helpers
+﻿namespace TexasHoldem.AI.Champion.Tests.Helpers
 {
     using NUnit.Framework;
-    using TexasHoldem.AI.SelfLearningPlayer.Helpers;
+    using TexasHoldem.AI.Champion.Helpers;
 
     [TestFixture]
     public class DistributionTests
@@ -21,6 +21,13 @@
             Assert.AreEqual(0.33, sum[0], 0.001);
             Assert.AreEqual(0.04, sum[1], 0.001);
             Assert.AreEqual(0.41, sum[2], 0.001);
+        }
+
+        [Test]
+        public void FrequencyOfActionFromASpecificPositionShouldReturnZeroForZeroRange()
+        {
+            Assert.AreEqual(0, Distribution.FrequencyOfActionFromASpecificPosition(5, 6, 0, 0.3));
+            Assert.AreEqual(0, Distribution.FrequencyOfActionFromASpecificPosition(0, 6, 0, 1));
         }
     }
 }

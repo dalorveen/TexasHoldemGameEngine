@@ -1,6 +1,6 @@
-﻿namespace TexasHoldem.AI.SelfLearningPlayer.PokerMath
+﻿namespace TexasHoldem.AI.Champion.PokerMath
 {
-    using TexasHoldem.AI.SelfLearningPlayer.Helpers;
+    using TexasHoldem.AI.Champion.Helpers;
 
     public struct HandStrength
     {

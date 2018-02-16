@@ -4,8 +4,8 @@
     using System.Collections.Generic;
 
     using TexasHoldem.AI.DummyPlayer;
-    using TexasHoldem.AI.SelfLearningPlayer;
-    using TexasHoldem.AI.SelfLearningPlayer.Strategy;
+    using TexasHoldem.AI.Champion;
+    using TexasHoldem.AI.Champion.Strategy;
     using TexasHoldem.AI.SmartPlayer;
     using TexasHoldem.Logic.GameMechanics;
     using TexasHoldem.Statistics;
@@ -25,8 +25,8 @@
             // var game = HumanVsDummy(4);
             // var game = HumanVsHuman(6);
             // var game = HumanVsSmart(6);
-            // var game = HumanVsChampion(6);
-            var game = ChampionVsChampion(6);
+            var game = HumanVsChampion(6);
+            // var game = ChampionVsChampion(6);
 
             game.Start();
         }
@@ -51,13 +51,21 @@
                         break;
                     case 4:
                         var looseAggressivePlayer = new PlayingStyle();
-                        looseAggressivePlayer.VPIP = new VPIP($"champion#{i}", 100, 26);
-                        looseAggressivePlayer.PFR = new PFR($"champion#{i}", 100, 22);
+                        looseAggressivePlayer.VPIP = new VPIP($"champion#{i}", 100, 29);
+                        looseAggressivePlayer.PFR = new PFR($"champion#{i}", 100, 21);
                         looseAggressivePlayer.ThreeBet = new ThreeBet(
-                            100, new StreetStorage(9, 0, 0, 0), new StreetStorage(100, 0, 0, 0));
+                            1000, new StreetStorage(87, 0, 0, 0), new StreetStorage(1000, 0, 0, 0));
                         looseAggressivePlayer.FourBet = new FourBet(
-                            100, new StreetStorage(5, 0, 0, 0), new StreetStorage(100, 0, 0, 0));
-                        var stats = new Stats(new Champion(looseAggressivePlayer, 100 - (i * 4)));
+                            100, new StreetStorage(4, 0, 0, 0), new StreetStorage(100, 0, 0, 0));
+                        looseAggressivePlayer.CBet = new CBet(
+                            $"champion#{i}", 100, new StreetStorage(0, 58, 51, 50), new StreetStorage(0, 100, 100, 100));
+                        looseAggressivePlayer.AFq = new AFq(
+                            100,
+                            new StreetStorage(0, 100, 100, 100),
+                            new StreetStorage(0, 170, 212, 284),
+                            new StreetStorage(0, 0, 0, 0));
+
+                        var stats = new Stats(new Champion(looseAggressivePlayer, 250 - (i * 10)));
                         players.Add(new ConsoleUiDecorator(stats, (6 * i) + NumberOfCommonRows, GameWidth, 1));
                         break;
                     default:
@@ -76,7 +84,7 @@
             var players = CreatePlayers(numberOfPlayers - 1, opponentTypeId);
             var row = (6 * (numberOfPlayers - 1)) + NumberOfCommonRows;
             players.Add(new ConsoleUiDecorator(
-                new ConsolePlayer(row, "Human_1", 120),
+                new ConsolePlayer(row, "Human_1", 200),
                 row,
                 GameWidth,
                 1));

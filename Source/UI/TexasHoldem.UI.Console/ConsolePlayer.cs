@@ -75,6 +75,14 @@
             }
         }
 
+        public override void EndHand(IEndHandContext context)
+        {
+            base.EndHand(context);
+
+            // wait to see the outcome of the hand
+            Console.ReadKey();
+        }
+
         private int RaiseAmount(int moneyLeft, int minRaise, int moneyToCall)
         {
             var wholeMinRaise = minRaise + moneyToCall;
