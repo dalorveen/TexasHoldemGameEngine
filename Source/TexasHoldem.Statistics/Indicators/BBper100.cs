@@ -50,7 +50,7 @@
 
         public override string ToString()
         {
-            return $"BBper100:{this.Amount:0.00}";
+            return $"{this.Amount:0.00}";
         }
 
         public override BaseIndicator DeepClone()

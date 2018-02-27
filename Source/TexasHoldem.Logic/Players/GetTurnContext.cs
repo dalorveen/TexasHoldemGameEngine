@@ -15,9 +15,8 @@
             int myMoneyInTheRound,
             int currentMaxBet,
             int minRaise,
-            int mainPot,
-            IReadOnlyCollection<SidePot> sidePots,
-            int position,
+            Pot mainPot,
+            List<Pot> sidePots,
             ICollection<Opponent> opponents)
         {
             this.RoundType = roundType;
@@ -30,7 +29,6 @@
             this.MinRaise = minRaise;
             this.MainPot = mainPot;
             this.SidePots = sidePots;
-            this.Position = position;
             this.Opponents = opponents;
         }
 
@@ -91,11 +89,9 @@
             }
         }
 
-        public int MainPot { get; }
+        public Pot MainPot { get; }
 
-        public IReadOnlyCollection<SidePot> SidePots { get; }
-
-        public int Position { get; }
+        public IReadOnlyCollection<Pot> SidePots { get; }
 
         public ICollection<Opponent> Opponents { get; }
     }

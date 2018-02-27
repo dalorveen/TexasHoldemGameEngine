@@ -41,8 +41,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helpers\Distribution.cs" />
+    <Compile Include="PlayerStyles.cs" />
     <Compile Include="StatsCorrection\BaseStatsCorrection.cs" />
     <Compile Include="StatsCorrection\FourBetCorrection.cs" />
+    <Compile Include="StatsCorrection\RFICorrection.cs" />
     <Compile Include="StatsCorrection\ThreeBetCorrection.cs" />
     <Compile Include="StatsCorrection\VPIPCorrection.cs" />
     <Compile Include="StatsCorrection\PFRCorrection.cs" />

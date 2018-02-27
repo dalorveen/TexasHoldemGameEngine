@@ -1,8 +1,10 @@
 ﻿namespace TexasHoldem.Statistics
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
+    using TexasHoldem.Logic;
     using TexasHoldem.Logic.Players;
     using TexasHoldem.Statistics.Indicators;
 
@@ -18,14 +20,39 @@
 
             this.indicators = new List<BaseIndicator>
             {
-                new VPIP(player.Name),
-                new PFR(player.Name),
-                new ThreeBet(),
-                new FourBet(),
-                new CBet(player.Name),
-                new AFq(),
+                new VPIP(this.player.Name),
+                new PFR(this.player.Name),
+                new PositionStorage<RFI>(this.player.Name, this.CreateIndicatorByPositions<RFI>(new RFI())),
+                new StreetStorage<ThreeBet>(new Dictionary<GameRoundType, ThreeBet>
+                {
+                    { GameRoundType.PreFlop, new ThreeBet() },
+                    { GameRoundType.Flop, new ThreeBet() },
+                    { GameRoundType.Turn, new ThreeBet() },
+                    { GameRoundType.River, new ThreeBet() }
+                }),
+                new StreetStorage<FourBet>(new Dictionary<GameRoundType, FourBet>
+                {
+                    { GameRoundType.PreFlop, new FourBet() },
+                    { GameRoundType.Flop, new FourBet() },
+                    { GameRoundType.Turn, new FourBet() },
+                    { GameRoundType.River, new FourBet() }
+                }),
+                new StreetStorage<CBet>(new Dictionary<GameRoundType, CBet>
+                {
+                    { GameRoundType.Flop, new CBet(this.player.Name) },
+                    { GameRoundType.Turn, new CBet(this.player.Name) },
+                    { GameRoundType.River, new CBet(this.player.Name) }
+                }),
+                new StreetStorage<AFq>(new Dictionary<GameRoundType, AFq>
+                {
+                    { GameRoundType.PreFlop, new AFq() },
+                    { GameRoundType.Flop, new AFq() },
+                    { GameRoundType.Turn, new AFq() },
+                    { GameRoundType.River, new AFq() }
+                }),
                 new BBper100(),
-                new WTSD(player.Name)
+                new WTSD(player.Name),
+                new WMSD(player.Name)
             };
         }
 
@@ -61,35 +88,43 @@
             }
         }
 
-        public ThreeBet ThreeBet
+        public PositionStorage<RFI> RFI
         {
             get
             {
-                return (ThreeBet)this.indicators.First(p => p is ThreeBet).DeepClone();
+                return (PositionStorage<RFI>)this.indicators.First(p => p is PositionStorage<RFI>).DeepClone();
             }
         }
 
-        public FourBet FourBet
+        public StreetStorage<ThreeBet> ThreeBet
         {
             get
             {
-                return (FourBet)this.indicators.First(p => p is FourBet).DeepClone();
+                return (StreetStorage<ThreeBet>)this.indicators.First(p => p is StreetStorage<ThreeBet>).DeepClone();
             }
         }
 
-        public CBet CBet
+        public StreetStorage<FourBet> FourBet
         {
             get
             {
-                return (CBet)this.indicators.First(p => p is CBet).DeepClone();
+                return (StreetStorage<FourBet>)this.indicators.First(p => p is StreetStorage<FourBet>).DeepClone();
             }
         }
 
-        public AFq AFq
+        public StreetStorage<CBet> CBet
         {
             get
             {
-                return (AFq)this.indicators.First(p => p is AFq).DeepClone();
+                return (StreetStorage<CBet>)this.indicators.First(p => p is StreetStorage<CBet>).DeepClone();
+            }
+        }
+
+        public StreetStorage<AFq> AFq
+        {
+            get
+            {
+                return (StreetStorage<AFq>)this.indicators.First(p => p is StreetStorage<AFq>).DeepClone();
             }
         }
 
@@ -109,23 +144,12 @@
             }
         }
 
-        public PlayerAction GetTurn(IGetTurnContext context)
+        public WMSD WMSD
         {
-            foreach (var item in this.indicators)
+            get
             {
-                // statistics before the action
-                item.GetTurnExtract(context);
+                return (WMSD)this.indicators.First(p => p is WMSD).DeepClone();
             }
-
-            var madeAction = this.player.GetTurn(new GetTurnExtendedContext(context, this));
-
-            foreach (var item in this.indicators)
-            {
-                // statistics after the action
-                item.MadeActionExtract(context, madeAction);
-            }
-
-            return madeAction;
         }
 
         public PlayerAction PostingBlind(IPostingBlindContext context)
@@ -135,12 +159,6 @@
 
         public void StartGame(IStartGameContext context)
         {
-            this.player.StartGame(context);
-
-            foreach (var item in this.indicators)
-            {
-                item.StartGameExtract(context);
-            }
         }
 
         public void StartHand(IStartHandContext context)
@@ -161,6 +179,25 @@
             {
                 item.StartRoundExtract(context);
             }
+        }
+
+        public PlayerAction GetTurn(IGetTurnContext context)
+        {
+            foreach (var item in this.indicators)
+            {
+                // statistics before the action
+                item.GetTurnExtract(context);
+            }
+
+            var madeAction = this.player.GetTurn(new GetTurnExtendedContext(context, this));
+
+            foreach (var item in this.indicators)
+            {
+                // statistics after the action
+                item.MadeActionExtract(context, madeAction);
+            }
+
+            return madeAction;
         }
 
         public void EndRound(IEndRoundContext context)
@@ -185,25 +222,34 @@
 
         public void EndGame(IEndGameContext context)
         {
-            this.player.EndGame(context);
-
-            foreach (var item in this.indicators)
-            {
-                item.EndGameExtract(context);
-            }
         }
 
         public override string ToString()
         {
             return
-                $"{this.VPIP.ToString()}\n" +
-                $"{this.PFR.ToString()}\n" +
-                $"{this.ThreeBet.ToString()}\n" +
-                $"{this.FourBet.ToString()}\n" +
-                $"{this.CBet.ToString()}\n" +
-                $"{this.AFq.ToString()}\n" +
-                $"{this.BBper100.ToString()}\n" +
-                $"{this.WTSD.ToString()}";
+                $"VPIP:{this.VPIP.ToString()}\n" +
+                $"PFR:{this.PFR.ToString()}\n" +
+                $"RFI:{this.RFI.ToString()}\n" +
+                $"3Bet:{this.ThreeBet.ToString()}\n" +
+                $"4Bet:{this.FourBet.ToString()}\n" +
+                $"CBet:{this.CBet.ToString()}\n" +
+                $"AFq:{this.AFq.ToString()}\n" +
+                $"BB/100:{this.BBper100.ToString()}\n" +
+                $"WTSD:{this.WTSD.ToString()}\n" +
+                $"W$SD:{this.WMSD.ToString()}";
+        }
+
+        private Dictionary<SeatNames, T> CreateIndicatorByPositions<T>(T indicator)
+            where T : BaseIndicator
+        {
+            var indicatorByPositions = new Dictionary<SeatNames, T>();
+
+            for (int i = 0; i < Enum.GetNames(typeof(SeatNames)).Length; i++)
+            {
+                indicatorByPositions.Add((SeatNames)i, (T)indicator.DeepClone());
+            }
+
+            return indicatorByPositions;
         }
     }
 }

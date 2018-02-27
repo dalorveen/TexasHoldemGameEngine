@@ -18,7 +18,7 @@
         /// </value>
         public int Hands { get; private set; }
 
-        public virtual void StartGameExtract(IStartGameContext context)
+        public virtual void StartGameExtract(IStartHandContext context)
         {
         }
 
@@ -47,7 +47,7 @@
         {
         }
 
-        public virtual void EndGameExtract(IEndGameContext context)
+        public virtual void EndGameExtract(IStartHandContext context)
         {
         }
 

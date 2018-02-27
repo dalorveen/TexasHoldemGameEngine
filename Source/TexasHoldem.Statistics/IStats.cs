@@ -8,16 +8,20 @@
 
         PFR PFR { get; }
 
-        ThreeBet ThreeBet { get; }
+        PositionStorage<RFI> RFI { get; }
 
-        FourBet FourBet { get; }
+        StreetStorage<ThreeBet> ThreeBet { get; }
 
-        CBet CBet { get; }
+        StreetStorage<FourBet> FourBet { get; }
 
-        AFq AFq { get; }
+        StreetStorage<CBet> CBet { get; }
+
+        StreetStorage<AFq> AFq { get; }
 
         BBper100 BBper100 { get; }
 
         WTSD WTSD { get; }
+
+        WMSD WMSD { get; }
     }
 }

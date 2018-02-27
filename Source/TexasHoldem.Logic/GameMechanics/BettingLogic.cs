@@ -19,11 +19,7 @@
 
         private string aggressorName;
 
-        private List<SidePot> sidePots;
-
-        private SortedSet<int> boundsOfSidePots;
-
-        private int lowerBound;
+        private PotCreator potCreator;
 
         public BettingLogic(IList<InternalPlayer> players, int smallBlind)
         {
@@ -36,10 +32,7 @@
             this.lastStepBet = this.lastRoundBet;
             this.aggressorName = string.Empty;
 
-            this.sidePots = new List<SidePot>();
-
-            this.boundsOfSidePots = new SortedSet<int>();
-            this.lowerBound = 0;
+            this.potCreator = new PotCreator(this.allPlayers);
         }
 
         public int Pot
@@ -50,19 +43,19 @@
             }
         }
 
-        public int MainPot
+        public Pot MainPot
         {
             get
             {
-                return this.Pot - this.sidePots.Sum(x => x.Amount);
+                return this.potCreator.MainPot;
             }
         }
 
-        public IReadOnlyCollection<SidePot> SidePots
+        public List<Pot> SidePots
         {
             get
             {
-                return this.sidePots.AsReadOnly();
+                return this.potCreator.SidePots;
             }
         }
 
@@ -108,8 +101,6 @@
                 }
 
                 var maxMoneyPerPlayer = this.allPlayers.Max(x => x.PlayerMoney.CurrentRoundBet);
-                var position = this.allPlayers.TakeWhile(x => x.Name != player.Name).Count();
-                position = position == 0 ? this.allPlayers.Count - 1 : position - 1;
                 var action =
                     player.GetTurn(
                         new GetTurnContext(
@@ -123,8 +114,7 @@
                             this.MinRaise(maxMoneyPerPlayer, player.PlayerMoney.CurrentRoundBet, player.Name),
                             this.MainPot,
                             this.SidePots,
-                            position,
-                            this.InformationAboutOpponents(player.Name)));
+                            this.CreateOpponents(player)));
 
                 action = player.PlayerMoney.DoPlayerAction(action, maxMoneyPerPlayer);
                 this.HandBets.Add(new PlayerActionAndName(player.Name, action, gameRoundType));
@@ -138,30 +128,18 @@
                     }
                 }
 
-                if (player.PlayerMoney.Money <= 0)
-                {
-                    var maxPlayerStack = this.allPlayers.Where(x => x.PlayerMoney.InHand && x.Name != player.Name)
-                        .Max(x => x.PlayerMoney.CurrentlyInPot + x.PlayerMoney.Money);
-
-                    if (player.PlayerMoney.CurrentlyInPot <= maxPlayerStack)
-                    {
-                        this.boundsOfSidePots.Add(player.PlayerMoney.CurrentlyInPot);
-                    }
-                }
-
                 player.PlayerMoney.ShouldPlayInRound = false;
                 playerIndex++;
             }
 
             if (this.allPlayers.Count == 2)
             {
-                // works only for head-up
+                // works only for heads-up
                 this.ReturnMoneyInCaseOfAllIn();
             }
             else
             {
                 this.ReturnMoneyInCaseUncalledBet();
-                this.CreateSidePots();
             }
         }
 
@@ -257,71 +235,31 @@
             return this.lastStepBet;
         }
 
-        private void CreateSidePots()
+        private ICollection<Opponent> CreateOpponents(InternalPlayer hero)
         {
-            if (this.boundsOfSidePots.Count == 0)
-            {
-                return;
-            }
+            var shifted = this.allPlayers.ToList();
+            shifted.Add(shifted.First());
+            shifted.RemoveAt(0);
 
-            if (this.allPlayers.Count(x => x.PlayerMoney.Money <= 0) >= this.allPlayers.Count - 1
-                || !this.allPlayers.Any(x => x.PlayerMoney.CurrentRoundBet == this.boundsOfSidePots.Max))
-            {
-                this.boundsOfSidePots.Remove(this.boundsOfSidePots.Max);
-            }
-
-            foreach (var upperBound in this.boundsOfSidePots)
-            {
-                if (this.lowerBound >= upperBound)
-                {
-                    continue;
-                }
-
-                var namesOfParticipants = new List<string>();
-                var amount = 0;
-                foreach (var item in this.allPlayers)
-                {
-                    if (item.PlayerMoney.CurrentlyInPot > this.lowerBound)
-                    {
-                        // The player participates in the side pot
-                        namesOfParticipants.Add(item.Name);
-                        if (item.PlayerMoney.CurrentlyInPot >= upperBound)
-                        {
-                            amount += upperBound - this.lowerBound;
-                        }
-                        else
-                        {
-                            amount += item.PlayerMoney.CurrentlyInPot - this.lowerBound;
-                        }
-                    }
-                }
-
-                this.sidePots.Add(new SidePot(
-                    amount,
-                    namesOfParticipants));
-                this.lowerBound = upperBound;
-            }
-        }
-
-        private ICollection<Opponent> InformationAboutOpponents(string hero)
-        {
+            int heroActionPriority = shifted.TakeWhile(p => p.Name != hero.Name).Count();
+            var opponentActionPriority = -heroActionPriority;
             var opponents = new List<Opponent>();
-            var position = -2;
+
             foreach (var item in this.allPlayers)
             {
-                position++;
-
-                if (item.Name == hero)
+                if (item.Name == hero.Name)
                 {
+                    opponentActionPriority++;
                     continue;
                 }
 
                 opponents.Add(new Opponent(
                     item.Name,
-                    position < 0 ? this.allPlayers.Count - 1 : position,
                     item.Cards,
-                    item.PlayerMoney.InHand,
-                    item.PlayerMoney.Money));
+                    opponentActionPriority++,
+                    item.PlayerMoney.Money,
+                    item.PlayerMoney.CurrentRoundBet,
+                    item.PlayerMoney.InHand));
             }
 
             return opponents;

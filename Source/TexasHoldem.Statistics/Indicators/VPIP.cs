@@ -55,7 +55,7 @@
 
         public override string ToString()
         {
-            return $"VPIP:{this.Percentage:0.00}%";
+            return $"{this.Percentage:0.00}%";
         }
 
         public override BaseIndicator DeepClone()

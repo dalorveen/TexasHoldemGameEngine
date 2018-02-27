@@ -6,7 +6,7 @@
 
     public class FourBetCorrection : BaseStatsCorrection
     {
-        private readonly FourBet fourBet;
+        private readonly StreetStorage<FourBet> fourBet;
 
         public FourBetCorrection(IStats playingStyle, int numberOfHandsToStartCorrection)
             : base(numberOfHandsToStartCorrection)
@@ -18,8 +18,8 @@
         {
             if (currentPlayerStats.VPIP.Hands >= this.NumberOfHandsToStartCorrection)
             {
-                if (currentPlayerStats.FourBet.Percentage(Logic.GameRoundType.PreFlop)
-                    > this.fourBet.Percentage(GameRoundType.PreFlop))
+                if (currentPlayerStats.FourBet.IndicatorByStreets[GameRoundType.PreFlop].Percentage
+                    > this.fourBet.IndicatorByStreets[GameRoundType.PreFlop].Percentage)
                 {
                     return this.Decrease(street);
                 }

@@ -1,14 +1,17 @@
-﻿using TexasHoldem.Logic.Cards;
-
-namespace TexasHoldem.Logic.Players
+﻿namespace TexasHoldem.Logic.Players
 {
+    using System.Collections.Generic;
+
+    using TexasHoldem.Logic.Cards;
+
     public interface IStartHandContext
     {
         Card FirstCard { get; }
-        string FirstPlayerName { get; }
+        string DealerName { get; }
         int HandNumber { get; }
         int MoneyLeft { get; }
         Card SecondCard { get; }
         int SmallBlind { get; }
+        IReadOnlyList<string> ActionPriority { get; }
     }
 }

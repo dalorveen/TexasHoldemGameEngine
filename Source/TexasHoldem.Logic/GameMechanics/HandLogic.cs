@@ -1,5 +1,6 @@
 ﻿namespace TexasHoldem.Logic.GameMechanics
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -23,6 +24,8 @@
 
         private Dictionary<string, ICollection<Card>> showdownCards;
 
+        private List<string> playersWhoWonMoney;
+
         public HandLogic(IList<InternalPlayer> players, int handNumber, int smallBlind)
         {
             this.handNumber = handNumber;
@@ -32,10 +35,16 @@
             this.communityCards = new List<Card>(5);
             this.bettingLogic = new BettingLogic(this.players, smallBlind);
             this.showdownCards = new Dictionary<string, ICollection<Card>>();
+            this.playersWhoWonMoney = new List<string>();
         }
 
         public void Play()
         {
+            // Sorting players in the order of their turn for action (SB, BB, .. BTN)
+            var actionPriority = new List<string>(this.players.Select(s => s.Name));
+            actionPriority.Add(actionPriority.First());
+            actionPriority.RemoveAt(0);
+
             // Start the hand and deal cards to each player
             foreach (var player in this.players)
             {
@@ -45,45 +54,53 @@
                     this.handNumber,
                     player.PlayerMoney.Money,
                     this.smallBlind,
-                    this.players[0].Name);
+                    actionPriority);
                 player.StartHand(startHandContext);
             }
 
+            GameRoundType lastGameRoundType;
+
             // Pre-flop -> blinds -> betting
             this.PlayRound(GameRoundType.PreFlop, 0);
+            lastGameRoundType = GameRoundType.PreFlop;
 
             // Flop -> 3 cards -> betting
             if (this.players.Count(x => x.PlayerMoney.InHand) > 1)
             {
                 this.PlayRound(GameRoundType.Flop, 3);
+                lastGameRoundType = GameRoundType.Flop;
             }
 
             // Turn -> 1 card -> betting
             if (this.players.Count(x => x.PlayerMoney.InHand) > 1)
             {
                 this.PlayRound(GameRoundType.Turn, 1);
+                lastGameRoundType = GameRoundType.Turn;
             }
 
             // River -> 1 card -> betting
             if (this.players.Count(x => x.PlayerMoney.InHand) > 1)
             {
                 this.PlayRound(GameRoundType.River, 1);
+                lastGameRoundType = GameRoundType.River;
             }
 
             this.DetermineWinnerAndAddPot(this.bettingLogic.Pot, this.bettingLogic.MainPot, this.bettingLogic.SidePots);
 
             foreach (var player in this.players)
             {
-                player.EndHand(new EndHandContext(this.showdownCards, player.PlayerMoney.Money));
+                player.EndHand(new EndHandContext(
+                    this.showdownCards, player.PlayerMoney.Money, lastGameRoundType, this.playersWhoWonMoney));
             }
         }
 
-        private void DetermineWinnerAndAddPot(int pot, int mainPot, IReadOnlyCollection<SidePot> sidePot)
+        private void DetermineWinnerAndAddPot(int pot, Pot mainPot, List<Pot> sidePot)
         {
             if (this.players.Count(x => x.PlayerMoney.InHand) == 1)
             {
                 var winner = this.players.FirstOrDefault(x => x.PlayerMoney.InHand);
                 winner.PlayerMoney.Money += pot;
+                this.playersWhoWonMoney.Add(winner.Name);
             }
             else
             {
@@ -104,96 +121,96 @@
                     if (betterHand > 0)
                     {
                         this.players[0].PlayerMoney.Money += pot;
+                        this.playersWhoWonMoney.Add(this.players[0].Name);
                     }
                     else if (betterHand < 0)
                     {
                         this.players[1].PlayerMoney.Money += pot;
+                        this.playersWhoWonMoney.Add(this.players[1].Name);
                     }
                     else
                     {
                         this.players[0].PlayerMoney.Money += pot / 2;
                         this.players[1].PlayerMoney.Money += pot / 2;
+                        this.playersWhoWonMoney.Add(this.players[0].Name);
+                        this.playersWhoWonMoney.Add(this.players[1].Name);
                     }
                 }
                 else
                 {
-                    // Bubble sort
-                    var playersInHand = this.players.Where(p => p.PlayerMoney.InHand).ToArray();
-                    for (int element = 0; element < playersInHand.Length - 1; element++)
+                    var handRankValueOfPlayers = new SortedDictionary<int, ICollection<string>>();
+                    var playersInHand = this.players.Where(p => p.PlayerMoney.InHand);
+
+                    foreach (var player in playersInHand)
                     {
-                        for (int i = 0; i < playersInHand.Length - (element + 1); i++)
+                        var opponents = playersInHand.Where(p => p.Name != player.Name).Select(s => s.Cards);
+                        var handRankValue = Helpers.GetHandRankValue(player.Cards, opponents, this.communityCards);
+
+                        if (handRankValueOfPlayers.ContainsKey(handRankValue))
                         {
-                            if (Helpers.CompareCards(
-                                playersInHand[i].Cards.Concat(this.communityCards),
-                                playersInHand[i + 1].Cards.Concat(this.communityCards)) > 0)
+                            handRankValueOfPlayers[handRankValue].Add(player.Name);
+                        }
+                        else
+                        {
+                            handRankValueOfPlayers.Add(handRankValue, new List<string> { player.Name });
+                        }
+                    }
+
+                    var remainingPots = new Stack<Pot>();
+                    var pots = new Stack<Pot>(sidePot);
+                    pots.Push(mainPot);
+
+                    foreach (var playersWithTheBestHand in handRankValueOfPlayers.Reverse())
+                    {
+                        do
+                        {
+                            var oneOfThePots = pots.Pop();
+
+                            if (oneOfThePots.ActivePlayer.Count == 0)
                             {
-                                var temp = playersInHand[i + 1];
-                                playersInHand[i + 1] = playersInHand[i];
-                                playersInHand[i] = temp;
+                                throw new Exception("There are no players in the pot");
                             }
-                        }
-                    }
-
-                    Stack<List<InternalPlayer>> sortedByHandStrength = new Stack<List<InternalPlayer>>();
-                    sortedByHandStrength.Push(new List<InternalPlayer> { playersInHand[0] });
-                    for (int i = 0; i < playersInHand.Count() - 1; i++)
-                    {
-                        var betterHand = Helpers.CompareCards(
-                            playersInHand[i].Cards.Concat(this.communityCards),
-                            playersInHand[i + 1].Cards.Concat(this.communityCards));
-
-                        if (betterHand < 0)
-                        {
-                            sortedByHandStrength.Push(new List<InternalPlayer> { playersInHand[i + 1] });
-                        }
-                        else if (betterHand == 0)
-                        {
-                            sortedByHandStrength.Peek().Add(playersInHand[i + 1]);
-                        }
-                    }
-
-                    var remainingPots = sidePot.ToList();
-                    if (mainPot != 0)
-                    {
-                        // TODO: What if players left in the hand have zero money in their stacks?
-                        // How many participants then?
-                        // Is it possible that there are only one candidate for the main pot?
-                        remainingPots.Add(
-                            new SidePot(
-                                pot - remainingPots.Sum(x => x.Amount),
-                                playersInHand.Where(x => x.PlayerMoney.Money > 0)
-                                    .Select(x => x.Name)
-                                    .ToList()
-                                    .AsReadOnly()));
-                    }
-
-                    do
-                    {
-                        var winners = sortedByHandStrength.Pop();
-
-                        var unusedPots = new List<SidePot>();
-
-                        foreach (var oneOfThePots in remainingPots)
-                        {
-                            var applicantsForThePot = oneOfThePots.NamesOfParticipants.Intersect(winners.Select(s => s.Name));
-                            var count = applicantsForThePot.Count();
-                            if (count > 0)
+                            else if (oneOfThePots.ActivePlayer.Count == 1)
                             {
-                                var prize = oneOfThePots.Amount / count;
-                                foreach (var applicant in applicantsForThePot)
-                                {
-                                    winners.First(x => x.Name == applicant).PlayerMoney.Money += prize;
-                                }
+                                continue;
                             }
                             else
                             {
-                                unusedPots.Add(oneOfThePots);
+                                var nominees = oneOfThePots.ActivePlayer.Intersect(playersWithTheBestHand.Value);
+                                var count = nominees.Count();
+
+                                if (count > 0)
+                                {
+                                    var prize = oneOfThePots.AmountOfMoney / count; // TODO: If there are odd chips in a split pot.
+
+                                    foreach (var nominee in nominees)
+                                    {
+                                        var winner = this.players.FirstOrDefault(x => x.Name == nominee);
+                                        winner.PlayerMoney.Money += prize;
+                                        this.playersWhoWonMoney.Add(winner.Name);
+                                    }
+                                }
+                                else
+                                {
+                                    // There were no active players with the current strength of the hands taking this pot
+                                    remainingPots.Push(oneOfThePots);
+                                }
                             }
                         }
+                        while (pots.Count > 0);
 
-                        remainingPots = unusedPots;
+                        if (remainingPots.Count == 0)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            while (remainingPots.Count > 0)
+                            {
+                                pots.Push(remainingPots.Pop());
+                            }
+                        }
                     }
-                    while (remainingPots.Count > 0);
                 }
             }
         }
@@ -211,7 +228,9 @@
                     gameRoundType,
                     this.communityCards.AsReadOnly(),
                     player.PlayerMoney.Money,
-                    this.bettingLogic.Pot);
+                    this.bettingLogic.Pot,
+                    this.bettingLogic.MainPot,
+                    this.bettingLogic.SidePots);
                 player.StartRound(startRoundContext);
             }
 

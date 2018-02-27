@@ -53,13 +53,9 @@
             }
         }
 
-        public int RelativePosition(IGetTurnExtendedContext context)
+        public int HeroRelativePosition(IGetTurnExtendedContext context)
         {
-            var playersInHand = context.Opponents.Where(x => x.InHand)
-                .Select(x => x.Position)
-                .Union(new[] { context.Position })
-                .OrderBy(k => k);
-            return playersInHand.TakeWhile(x => x != context.Position).Count();
+            return context.Opponents.Where(x => x.InHand && x.ActionPriority < 0).Count();
         }
 
         public HoldemHand.PocketHands PlayablePocketsForTheCurrentPosition(
@@ -74,7 +70,7 @@
             var numberOfOpponentsInHand = context.Opponents.Where(x => x.InHand).Count();
 
             var frequency = Distribution.FrequencyOfActionFromASpecificPosition(
-                this.RelativePosition(context), numberOfOpponentsInHand, rangeInPercent / 100.0, slope);
+                this.HeroRelativePosition(context), numberOfOpponentsInHand, rangeInPercent / 100.0, slope);
 
             var numberOfplayablePockets = (int)(1326.0 * (numberOfOpponentsInHand + 1) * (frequency > 1.0 ? 1.0 : frequency));
             return new HoldemHand.PocketHands(

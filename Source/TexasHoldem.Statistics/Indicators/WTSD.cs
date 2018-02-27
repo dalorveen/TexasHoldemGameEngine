@@ -7,6 +7,8 @@
     {
         private readonly string playerName;
 
+        private bool didThePlayerSeeTheFlop;
+
         public WTSD(string playerName, int hands = 0)
             : base(hands)
         {
@@ -44,17 +46,23 @@
             if (context.RoundType == GameRoundType.Flop)
             {
                 this.TotalTimesSawTheFlop++;
+                this.didThePlayerSeeTheFlop = true;
             }
         }
 
         public override void EndHandExtract(IEndHandContext context)
         {
-            this.TotalTimesWentToShowdown += context.ShowdownCards.ContainsKey(this.playerName) ? 1 : 0;
+            if (this.didThePlayerSeeTheFlop && context.ShowdownCards.Count > 0)
+            {
+                this.TotalTimesWentToShowdown += context.ShowdownCards.ContainsKey(this.playerName) ? 1 : 0;
+            }
+
+            this.didThePlayerSeeTheFlop = false;
         }
 
         public override string ToString()
         {
-            return $"WTSD:{this.Percentage:0.00}%";
+            return $"{this.Percentage:0.00}%";
         }
 
         public override BaseIndicator DeepClone()

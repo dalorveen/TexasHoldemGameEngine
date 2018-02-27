@@ -1,58 +1,111 @@
 ﻿namespace TexasHoldem.Statistics
 {
-    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
 
     using TexasHoldem.Logic;
+    using TexasHoldem.Logic.Players;
+    using TexasHoldem.Statistics.Indicators;
 
-    public class StreetStorage : IDeepCloneable<StreetStorage>
+    public class StreetStorage<T> : BaseIndicator
+        where T : BaseIndicator
     {
-        public StreetStorage(int preflop, int flop, int turn, int river)
+        public StreetStorage(IDictionary<GameRoundType, T> indicatorByStreets, int hands = 0)
+            : base(hands)
         {
-            this.PF = preflop;
-            this.F = flop;
-            this.T = turn;
-            this.R = river;
+            this.IndicatorByStreets = new Dictionary<GameRoundType, T>(indicatorByStreets);
         }
 
-        public int PF { get; private set; }
+        public IReadOnlyDictionary<GameRoundType, T> IndicatorByStreets { get; }
 
-        public int F { get; private set; }
-
-        public int T { get; private set; }
-
-        public int R { get; private set; }
-
-        public int Total
+        public override void StartHandExtract(IStartHandContext context)
         {
-            get
+            base.StartHandExtract(context);
+
+            if (this.IndicatorByStreets.ContainsKey(GameRoundType.PreFlop))
             {
-                return this.PF + this.F + this.T + this.R;
+                this.IndicatorByStreets[GameRoundType.PreFlop].StartHandExtract(context);
             }
         }
 
-        public int this[GameRoundType street]
+        public override void StartRoundExtract(IStartRoundContext context)
         {
-            get
+            if (this.IndicatorByStreets.ContainsKey(context.RoundType))
             {
-                switch (street)
-                {
-                    case GameRoundType.PreFlop:
-                        return this.PF;
-                    case GameRoundType.Flop:
-                        return this.F;
-                    case GameRoundType.Turn:
-                        return this.T;
-                    case GameRoundType.River:
-                        return this.R;
-                    default:
-                        return -1;
-                }
+                this.IndicatorByStreets[context.RoundType].StartRoundExtract(context);
             }
         }
 
-        public StreetStorage DeepClone()
+        public override void GetTurnExtract(IGetTurnContext context)
         {
-            return new StreetStorage(this.PF, this.F, this.T, this.R);
+            if (this.IndicatorByStreets.ContainsKey(context.RoundType))
+            {
+                this.IndicatorByStreets[context.RoundType].GetTurnExtract(context);
+            }
+        }
+
+        public override void MadeActionExtract(IGetTurnContext context, PlayerAction madeAction)
+        {
+            if (this.IndicatorByStreets.ContainsKey(context.RoundType))
+            {
+                this.IndicatorByStreets[context.RoundType].MadeActionExtract(context, madeAction);
+            }
+        }
+
+        public override void EndRoundExtract(IEndRoundContext context)
+        {
+            if (this.IndicatorByStreets.ContainsKey(context.CompletedRoundType))
+            {
+                this.IndicatorByStreets[context.CompletedRoundType].EndRoundExtract(context);
+            }
+        }
+
+        public override void EndHandExtract(IEndHandContext context)
+        {
+            if (this.IndicatorByStreets.ContainsKey(context.LastGameRoundType))
+            {
+                this.IndicatorByStreets[context.LastGameRoundType].EndHandExtract(context);
+            }
+        }
+
+        public T AllStreets()
+        {
+            var statByRounds = this.IndicatorByStreets.Values.ToArray();
+            T sum = statByRounds[0];
+
+            for (int i = 1; i < statByRounds.Count(); i++)
+            {
+                sum = ((IAdd<T>)statByRounds[i]).Add(sum);
+            }
+
+            return sum;
+        }
+
+        public override BaseIndicator DeepClone()
+        {
+            var copy = new Dictionary<GameRoundType, T>();
+
+            foreach (var item in this.IndicatorByStreets)
+            {
+                copy.Add(item.Key, (T)item.Value.DeepClone());
+            }
+
+            return new StreetStorage<T>(copy, this.Hands);
+        }
+
+        public override string ToString()
+        {
+            var output = new StringBuilder();
+
+            output.AppendFormat("[ALL|{0}] ", this.AllStreets());
+
+            foreach (var item in this.IndicatorByStreets)
+            {
+                output.AppendFormat(" [{0}|{1}] ", item.Key, item.Value.ToString());
+            }
+
+            return output.ToString();
         }
     }
 }

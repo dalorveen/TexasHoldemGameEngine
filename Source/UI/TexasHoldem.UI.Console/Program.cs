@@ -3,11 +3,12 @@
     using System;
     using System.Collections.Generic;
 
-    using TexasHoldem.AI.DummyPlayer;
     using TexasHoldem.AI.Champion;
     using TexasHoldem.AI.Champion.Strategy;
+    using TexasHoldem.AI.DummyPlayer;
     using TexasHoldem.AI.SmartPlayer;
     using TexasHoldem.Logic.GameMechanics;
+    using TexasHoldem.Logic.Players;
     using TexasHoldem.Statistics;
     using TexasHoldem.Statistics.Indicators;
 
@@ -19,115 +20,66 @@
 
         private const int NumberOfCommonRows = 3; // place for community cards, pot, main pot, side pots
 
+        private static List<IPlayer> players = new List<IPlayer>();
+
         public static void Main()
         {
-            // var game = HeadsUp();
-            // var game = HumanVsDummy(4);
-            // var game = HumanVsHuman(6);
-            // var game = HumanVsSmart(6);
-            var game = HumanVsChampion(6);
-            // var game = ChampionVsChampion(6);
+            CreateAIPlayers<DummyPlayer>(2);
+            //CreateConsolePlayers(1);
+            players.Add(new Champion(PlayerStyles.LOOSE_AGGRESSIVE, 200));
+            CreateAIPlayers<DummyPlayer>(1);
+            CreateAIPlayers<SmartPlayer>(2);
 
+            StatsWrapsAllThePlayers();
+
+            int gameHeight = (6 * players.Count) + NumberOfCommonRows;
+            Table(gameHeight);
+
+            var game = new TexasHoldemGame(FillTheTableWithPlayers().ToArray());
             game.Start();
         }
 
-        private static List<ConsoleUiDecorator> CreatePlayers(int numberOfPlayers, int playerTypeId)
+        private static void CreateAIPlayers<T>(int numberOfPlayers)
+            where T : BasePlayer, new()
         {
-            var players = new List<ConsoleUiDecorator>(numberOfPlayers);
             for (int i = 0; i < numberOfPlayers; i++)
             {
-                switch (playerTypeId)
-                {
-                    case 1:
-                        players.Add(new ConsoleUiDecorator(new DummyPlayer(), (6 * i) + NumberOfCommonRows, GameWidth, 1));
-                        break;
-                    case 2:
-                        players.Add(new ConsoleUiDecorator(new SmartPlayer(), (6 * i) + NumberOfCommonRows, GameWidth, 1));
-                        break;
-                    case 3:
-                        var row = (6 * i) + NumberOfCommonRows;
-                        players.Add(new ConsoleUiDecorator(
-                            new ConsolePlayer(row, "Human_" + i + 1, 250 - (i * 20)), row, GameWidth, 1));
-                        break;
-                    case 4:
-                        var looseAggressivePlayer = new PlayingStyle();
-                        looseAggressivePlayer.VPIP = new VPIP($"champion#{i}", 100, 29);
-                        looseAggressivePlayer.PFR = new PFR($"champion#{i}", 100, 21);
-                        looseAggressivePlayer.ThreeBet = new ThreeBet(
-                            1000, new StreetStorage(87, 0, 0, 0), new StreetStorage(1000, 0, 0, 0));
-                        looseAggressivePlayer.FourBet = new FourBet(
-                            100, new StreetStorage(4, 0, 0, 0), new StreetStorage(100, 0, 0, 0));
-                        looseAggressivePlayer.CBet = new CBet(
-                            $"champion#{i}", 100, new StreetStorage(0, 58, 51, 50), new StreetStorage(0, 100, 100, 100));
-                        looseAggressivePlayer.AFq = new AFq(
-                            100,
-                            new StreetStorage(0, 100, 100, 100),
-                            new StreetStorage(0, 170, 212, 284),
-                            new StreetStorage(0, 0, 0, 0));
+                players.Add(new T());
+            }
+        }
 
-                        var stats = new Stats(new Champion(looseAggressivePlayer, 250 - (i * 10)));
-                        players.Add(new ConsoleUiDecorator(stats, (6 * i) + NumberOfCommonRows, GameWidth, 1));
-                        break;
-                    default:
-                        break;
-                }
+        private static void CreateConsolePlayers(int numberOfPlayers)
+        {
+            var count = players.Count;
+
+            for (int i = count; i < numberOfPlayers + count; i++)
+            {
+                var row = (6 * i) + NumberOfCommonRows;
+                players.Add(new ConsolePlayer(row));
+            }
+        }
+
+        private static List<ConsoleUiDecorator> FillTheTableWithPlayers()
+        {
+            var list = new List<ConsoleUiDecorator>();
+
+            for (int i = 0; i < players.Count; i++)
+            {
+                list.Add(new ConsoleUiDecorator(players[i], (6 * i) + NumberOfCommonRows, GameWidth, 1));
             }
 
-            return players;
+            return list;
         }
 
-        private static ITexasHoldemGame HumanVsComputer(int numberOfPlayers, int opponentTypeId)
+        private static void StatsWrapsAllThePlayers()
         {
-            int gameHeight = (6 * numberOfPlayers) + NumberOfCommonRows;
-            Stand(gameHeight);
-
-            var players = CreatePlayers(numberOfPlayers - 1, opponentTypeId);
-            var row = (6 * (numberOfPlayers - 1)) + NumberOfCommonRows;
-            players.Add(new ConsoleUiDecorator(
-                new ConsolePlayer(row, "Human_1", 200),
-                row,
-                GameWidth,
-                1));
-
-            return new TexasHoldemGame(players.ToArray());
+            for (int i = 0; i < players.Count; i++)
+            {
+                players[i] = new Stats(players[i]);
+            }
         }
 
-        private static ITexasHoldemGame ComputerVsComputer(int numberOfPlayers, int opponentTypeId)
-        {
-            int gameHeight = (6 * numberOfPlayers) + NumberOfCommonRows;
-            Stand(gameHeight);
-
-            var players = CreatePlayers(numberOfPlayers, opponentTypeId);
-
-            return new TexasHoldemGame(players.ToArray());
-        }
-
-        private static ITexasHoldemGame HumanVsDummy(int numberOfPlayers)
-        {
-            return HumanVsComputer(numberOfPlayers, 1);
-        }
-
-        private static ITexasHoldemGame HumanVsSmart(int numberOfPlayers)
-        {
-            return HumanVsComputer(numberOfPlayers, 2);
-        }
-
-        private static ITexasHoldemGame HumanVsHuman(int numberOfPlayers)
-        {
-            return HumanVsComputer(numberOfPlayers, 3);
-        }
-
-        private static ITexasHoldemGame HumanVsChampion(int numberOfPlayers)
-        {
-            return HumanVsComputer(numberOfPlayers, 4);
-        }
-
-        private static ITexasHoldemGame ChampionVsChampion(int numberOfPlayers)
-        {
-            return ComputerVsComputer(numberOfPlayers, 4);
-        }
-
-        private static void Stand(int gameHeight)
+        private static void Table(int gameHeight)
         {
             Console.BackgroundColor = ConsoleColor.Black;
             Console.ForegroundColor = ConsoleColor.Gray;

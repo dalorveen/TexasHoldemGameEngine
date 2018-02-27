@@ -56,7 +56,7 @@
             }
         }
 
-        public int MainPot
+        public Pot MainPot
         {
             get
             {
@@ -104,14 +104,6 @@
             }
         }
 
-        public int Position
-        {
-            get
-            {
-                return this.getTurnContext.Position;
-            }
-        }
-
         public IReadOnlyCollection<PlayerActionAndName> PreviousRoundActions
         {
             get
@@ -128,7 +120,7 @@
             }
         }
 
-        public IReadOnlyCollection<SidePot> SidePots
+        public IReadOnlyCollection<Pot> SidePots
         {
             get
             {

@@ -3,117 +3,75 @@
     using TexasHoldem.Logic;
     using TexasHoldem.Logic.Players;
 
-    public class AFq : BaseIndicator
+    public class AFq : BaseIndicator, IAdd<AFq>
     {
-        private readonly int[] totalTimesRaised;
-
-        private readonly int[] totalTimesCalled;
-
-        private readonly int[] totalTimesFolded;
-
         public AFq(int hands = 0)
             : base(hands)
         {
-            this.totalTimesRaised = new int[4];
-            this.totalTimesCalled = new int[4];
-            this.totalTimesFolded = new int[4];
         }
 
-        public AFq(int hands, StreetStorage totalTimesRaised, StreetStorage totalTimesCalled, StreetStorage totalTimesFolded)
+        public AFq(int hands, int totalTimesRaised, int totalTimesCalled, int totalTimesFolded)
             : this(hands)
         {
-            this.totalTimesRaised[0] = totalTimesRaised.PF;
-            this.totalTimesRaised[1] = totalTimesRaised.F;
-            this.totalTimesRaised[2] = totalTimesRaised.T;
-            this.totalTimesRaised[3] = totalTimesRaised.R;
-
-            this.totalTimesCalled[0] = totalTimesCalled.PF;
-            this.totalTimesCalled[1] = totalTimesCalled.F;
-            this.totalTimesCalled[2] = totalTimesCalled.T;
-            this.totalTimesCalled[3] = totalTimesCalled.R;
-
-            this.totalTimesFolded[0] = totalTimesFolded.PF;
-            this.totalTimesFolded[1] = totalTimesFolded.F;
-            this.totalTimesFolded[2] = totalTimesFolded.T;
-            this.totalTimesFolded[3] = totalTimesFolded.R;
+            this.TotalTimesRaised = totalTimesRaised;
+            this.TotalTimesCalled = totalTimesCalled;
+            this.TotalTimesFolded = totalTimesFolded;
         }
 
-        public StreetStorage TotalTimesRaised
-        {
-            get
-            {
-                return new StreetStorage(
-                    this.totalTimesRaised[0],
-                    this.totalTimesRaised[1],
-                    this.totalTimesRaised[2],
-                    this.totalTimesRaised[3]);
-            }
-        }
+        public int TotalTimesRaised { get; private set; }
 
-        public StreetStorage TotalTimesCalled
-        {
-            get
-            {
-                return new StreetStorage(
-                    this.totalTimesCalled[0],
-                    this.totalTimesCalled[1],
-                    this.totalTimesCalled[2],
-                    this.totalTimesCalled[3]);
-            }
-        }
+        public int TotalTimesCalled { get; private set; }
 
-        public StreetStorage TotalTimesFolded
-        {
-            get
-            {
-                return new StreetStorage(
-                    this.totalTimesFolded[0],
-                    this.totalTimesFolded[1],
-                    this.totalTimesFolded[2],
-                    this.totalTimesFolded[3]);
-            }
-        }
+        public int TotalTimesFolded { get; private set; }
 
         /// <summary>
-        /// The measure of how frequently a player is aggressive on the (pre-flop/flop/turn/river)
+        /// Gets the measure of how frequently a player is aggressive
         /// </summary>
-        /// <param name="street">Street</param>
-        /// <returns>Percentages of aggression frequency on the street</returns>
-        public double Percentage(GameRoundType street)
+        /// <value>Percentages of aggression frequency</value>
+        public double Percentage
         {
-            return this.totalTimesRaised[(int)street] == 0 ? 0 : ((double)this.totalTimesRaised[(int)street]
-                / (double)(this.totalTimesRaised[(int)street]
-                    + this.totalTimesCalled[(int)street]
-                    + this.totalTimesFolded[(int)street])) * 100.0;
+            get
+            {
+                return this.TotalTimesRaised == 0
+                    ? 0
+                    : ((double)this.TotalTimesRaised /
+                        (double)(this.TotalTimesRaised + this.TotalTimesCalled + this.TotalTimesFolded)) * 100.0;
+            }
         }
 
         public override void MadeActionExtract(IGetTurnContext context, PlayerAction madeAction)
         {
             if (madeAction.Type == PlayerActionType.Raise)
             {
-                this.totalTimesRaised[(int)context.RoundType]++;
+                this.TotalTimesRaised++;
             }
             else if (madeAction.Type == PlayerActionType.CheckCall)
             {
-                this.totalTimesCalled[(int)context.RoundType]++;
+                this.TotalTimesCalled++;
             }
             else if (madeAction.Type == PlayerActionType.Fold)
             {
-                this.totalTimesFolded[(int)context.RoundType]++;
+                this.TotalTimesFolded++;
             }
         }
 
         public override string ToString()
         {
-            return $"AFq:[PF|{this.Percentage(GameRoundType.PreFlop):0.00}%] " +
-                $"[F|{this.Percentage(GameRoundType.Flop):0.00}%] " +
-                $"[T|{this.Percentage(GameRoundType.Turn):0.00}%] " +
-                $"[R|{this.Percentage(GameRoundType.River):0.00}%]";
+            return $"{this.Percentage:0.00}%";
         }
 
         public override BaseIndicator DeepClone()
         {
             return new AFq(this.Hands, this.TotalTimesRaised, this.TotalTimesCalled, this.TotalTimesFolded);
+        }
+
+        public AFq Add(AFq otherIndicator)
+        {
+            return new AFq(
+                this.Hands + otherIndicator.Hands,
+                this.TotalTimesRaised + otherIndicator.TotalTimesRaised,
+                this.TotalTimesCalled + otherIndicator.TotalTimesCalled,
+                this.TotalTimesFolded + otherIndicator.TotalTimesFolded);
         }
     }
 }

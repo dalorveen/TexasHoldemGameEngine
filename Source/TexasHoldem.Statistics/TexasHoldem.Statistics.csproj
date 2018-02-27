@@ -47,12 +47,17 @@
     <Compile Include="Indicators\CBet.cs" />
     <Compile Include="Indicators\FourBet.cs" />
     <Compile Include="Indicators\BaseIndicator.cs" />
+    <Compile Include="Indicators\IAdd.cs" />
     <Compile Include="Indicators\PFR.cs" />
+    <Compile Include="Indicators\RFI.cs" />
     <Compile Include="Indicators\ThreeBet.cs" />
     <Compile Include="Indicators\VPIP.cs" />
+    <Compile Include="Indicators\WMSD.cs" />
     <Compile Include="Indicators\WTSD.cs" />
     <Compile Include="IStats.cs" />
+    <Compile Include="SeatNames.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PositionStorage.cs" />
     <Compile Include="StreetStorage.cs" />
     <Compile Include="Stats.cs" />
   </ItemGroup>

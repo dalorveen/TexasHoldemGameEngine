@@ -6,7 +6,7 @@
 
     public class ThreeBetCorrection : BaseStatsCorrection
     {
-        private readonly ThreeBet threeBet;
+        private readonly StreetStorage<ThreeBet> threeBet;
 
         public ThreeBetCorrection(IStats playingStyle, int numberOfHandsToStartCorrection)
             : base(numberOfHandsToStartCorrection)
@@ -18,8 +18,8 @@
         {
             if (currentPlayerStats.VPIP.Hands >= this.NumberOfHandsToStartCorrection)
             {
-                if (currentPlayerStats.ThreeBet.Percentage(Logic.GameRoundType.PreFlop)
-                    > this.threeBet.Percentage(GameRoundType.PreFlop))
+                if (currentPlayerStats.ThreeBet.IndicatorByStreets[GameRoundType.PreFlop].Percentage
+                    > this.threeBet.IndicatorByStreets[GameRoundType.PreFlop].Percentage)
                 {
                     return this.Decrease(street);
                 }

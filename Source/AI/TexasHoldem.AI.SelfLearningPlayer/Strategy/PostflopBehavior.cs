@@ -101,7 +101,7 @@
                         if (this.IsPush(investment - context.MoneyToCall, context))
                         {
                             // very losing action
-                            return this.RaiseOrAllIn(int.MaxValue, context);
+                            // return this.RaiseOrAllIn(int.MaxValue, context);
                         }
                         else
                         {
@@ -148,16 +148,17 @@
 
         private bool NeedAnRaiseToAdjustTheStats(IGetTurnExtendedContext context)
         {
-            if (context.CurrentStats.CBet.IsOpportunity)
+            if (context.CurrentStats.CBet.IndicatorByStreets[context.RoundType].IsOpportunity)
             {
-                if (context.CurrentStats.CBet.Percentage(context.RoundType)
-                    < this.PlayingStyle.CBet.Percentage(context.RoundType))
+                if (context.CurrentStats.CBet.IndicatorByStreets[context.RoundType].Percentage
+                    < this.PlayingStyle.CBet.IndicatorByStreets[context.RoundType].Percentage)
                 {
                     return true;
                 }
             }
 
-            if (context.CurrentStats.AFq.Percentage(context.RoundType) < this.PlayingStyle.AFq.Percentage(context.RoundType))
+            if (context.CurrentStats.AFq.IndicatorByStreets[context.RoundType].Percentage
+                < this.PlayingStyle.AFq.IndicatorByStreets[context.RoundType].Percentage)
             {
                 // adjust the current stats of AFq to match the style of the player's game
                 return true;

@@ -17,9 +17,8 @@
         int SmallBlind { get; }
         int MinRaise { get; }
         ICollection<PlayerActionType> AvailablePlayerOptions { get; }
-        int MainPot { get; }
-        IReadOnlyCollection<SidePot> SidePots { get; }
-        int Position { get; }
+        Pot MainPot { get; }
+        IReadOnlyCollection<Pot> SidePots { get; }
         ICollection<Opponent> Opponents { get; }
     }
 }
