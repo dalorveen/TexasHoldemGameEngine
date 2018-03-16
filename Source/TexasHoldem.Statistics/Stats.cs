@@ -52,7 +52,8 @@
                 }),
                 new BBper100(),
                 new WTSD(player.Name),
-                new WMSD(player.Name)
+                new WSD(player.Name),
+                new WWSF()
             };
         }
 
@@ -144,11 +145,19 @@
             }
         }
 
-        public WMSD WMSD
+        public WSD WSD
         {
             get
             {
-                return (WMSD)this.indicators.First(p => p is WMSD).DeepClone();
+                return (WSD)this.indicators.First(p => p is WSD).DeepClone();
+            }
+        }
+
+        public WWSF WWSF
+        {
+            get
+            {
+                return (WWSF)this.indicators.First(p => p is WWSF).DeepClone();
             }
         }
 
@@ -159,6 +168,7 @@
 
         public void StartGame(IStartGameContext context)
         {
+            this.player.StartGame(context);
         }
 
         public void StartHand(IStartHandContext context)
@@ -222,6 +232,7 @@
 
         public void EndGame(IEndGameContext context)
         {
+            this.player.EndGame(context);
         }
 
         public override string ToString()
@@ -236,7 +247,8 @@
                 $"AFq:{this.AFq.ToString()}\n" +
                 $"BB/100:{this.BBper100.ToString()}\n" +
                 $"WTSD:{this.WTSD.ToString()}\n" +
-                $"W$SD:{this.WMSD.ToString()}";
+                $"W$SD:{this.WSD.ToString()}\n" +
+                $"W$WSF:{this.WWSF.ToString()}";
         }
 
         private Dictionary<SeatNames, T> CreateIndicatorByPositions<T>(T indicator)

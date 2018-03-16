@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9E0598F9-5092-484E-A8E8-70AEEBB96DC5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>TexasHoldem.AI.Champion</RootNamespace>
+    <AssemblyName>TexasHoldem.AI.Champion</AssemblyName>
+    <DefaultLanguage>ru-RU</DefaultLanguage>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>..\..\Rules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- A reference to the entire .NET Framework is automatically included -->
+    <None Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="PlayerStyles.cs" />
+    <Compile Include="StatsCorrection\BaseStatsCorrection.cs" />
+    <Compile Include="StatsCorrection\FourBetCorrection.cs" />
+    <Compile Include="StatsCorrection\RFICorrection.cs" />
+    <Compile Include="StatsCorrection\ThreeBetCorrection.cs" />
+    <Compile Include="StatsCorrection\VPIPCorrection.cs" />
+    <Compile Include="StatsCorrection\PFRCorrection.cs" />
+    <Compile Include="Strategy\BaseBehavior.cs" />
+    <Compile Include="Strategy\HandEconomy.cs" />
+    <Compile Include="Strategy\IPlayerEconomy.cs" />
+    <Compile Include="Strategy\PlayerEconomy.cs" />
+    <Compile Include="Champion.cs" />
+    <Compile Include="Strategy\PlayingStyle.cs" />
+    <Compile Include="PokerMath\Calculator.cs" />
+    <Compile Include="PokerMath\ICalculator.cs" />
+    <Compile Include="PokerMath\HandStrength.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Strategy\PostflopBehavior.cs" />
+    <Compile Include="Strategy\PreflopBehavior.cs" />
+    <Compile Include="Strategy\StartingHand.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\HandEvaluatorExtension\HandEvaluatorExtension.csproj">
+      <Project>{de00bcc2-f818-461a-8b0e-0d97a068beb3}</Project>
+      <Name>HandEvaluatorExtension</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\TexasHoldem.Logic\TexasHoldem.Logic.csproj">
+      <Project>{bcf99e8b-2025-444f-83c7-24542fcf33df}</Project>
+      <Name>TexasHoldem.Logic</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\TexasHoldem.Statistics\TexasHoldem.Statistics.csproj">
+      <Project>{95b47ac4-01dd-48c3-b536-648ca22e3002}</Project>
+      <Name>TexasHoldem.Statistics</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="HandEvaluator">
+      <HintPath>..\..\..\ThirdPartyAssemblies\HandEvaluator_2.0\HandEvaluator.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

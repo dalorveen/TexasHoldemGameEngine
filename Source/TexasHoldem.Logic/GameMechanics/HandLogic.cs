@@ -24,8 +24,6 @@
 
         private Dictionary<string, ICollection<Card>> showdownCards;
 
-        private List<string> playersWhoWonMoney;
-
         public HandLogic(IList<InternalPlayer> players, int handNumber, int smallBlind)
         {
             this.handNumber = handNumber;
@@ -35,7 +33,6 @@
             this.communityCards = new List<Card>(5);
             this.bettingLogic = new BettingLogic(this.players, smallBlind);
             this.showdownCards = new Dictionary<string, ICollection<Card>>();
-            this.playersWhoWonMoney = new List<string>();
         }
 
         public void Play()
@@ -44,6 +41,8 @@
             var actionPriority = new List<string>(this.players.Select(s => s.Name));
             actionPriority.Add(actionPriority.First());
             actionPriority.RemoveAt(0);
+
+            this.Rebuy();
 
             // Start the hand and deal cards to each player
             foreach (var player in this.players)
@@ -90,7 +89,7 @@
             foreach (var player in this.players)
             {
                 player.EndHand(new EndHandContext(
-                    this.showdownCards, player.PlayerMoney.Money, lastGameRoundType, this.playersWhoWonMoney));
+                    this.showdownCards, player.PlayerMoney.Money, lastGameRoundType));
             }
         }
 
@@ -100,7 +99,6 @@
             {
                 var winner = this.players.FirstOrDefault(x => x.PlayerMoney.InHand);
                 winner.PlayerMoney.Money += pot;
-                this.playersWhoWonMoney.Add(winner.Name);
             }
             else
             {
@@ -121,19 +119,16 @@
                     if (betterHand > 0)
                     {
                         this.players[0].PlayerMoney.Money += pot;
-                        this.playersWhoWonMoney.Add(this.players[0].Name);
                     }
                     else if (betterHand < 0)
                     {
                         this.players[1].PlayerMoney.Money += pot;
-                        this.playersWhoWonMoney.Add(this.players[1].Name);
                     }
                     else
                     {
-                        this.players[0].PlayerMoney.Money += pot / 2;
-                        this.players[1].PlayerMoney.Money += pot / 2;
-                        this.playersWhoWonMoney.Add(this.players[0].Name);
-                        this.playersWhoWonMoney.Add(this.players[1].Name);
+                        var div = pot / 2;
+                        this.players[0].PlayerMoney.Money += div;
+                        this.players[1].PlayerMoney.Money += div;
                     }
                 }
                 else
@@ -187,7 +182,6 @@
                                     {
                                         var winner = this.players.FirstOrDefault(x => x.Name == nominee);
                                         winner.PlayerMoney.Money += prize;
-                                        this.playersWhoWonMoney.Add(winner.Name);
                                     }
                                 }
                                 else
@@ -240,6 +234,17 @@
             {
                 var endRoundContext = new EndRoundContext(this.bettingLogic.HandBets, gameRoundType);
                 player.EndRound(endRoundContext);
+            }
+        }
+
+        private void Rebuy()
+        {
+            foreach (var player in this.players)
+            {
+                if (player.PlayerMoney.Money <= 0)
+                {
+                    player.PlayerMoney.Money = player.BuyIn == -1 ? this.smallBlind * 200 : player.BuyIn;
+                }
             }
         }
     }

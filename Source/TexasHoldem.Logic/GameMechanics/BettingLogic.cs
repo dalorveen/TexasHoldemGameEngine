@@ -13,13 +13,9 @@
 
         private readonly int smallBlind;
 
-        private int lastRoundBet;
-
-        private int lastStepBet;
-
-        private string aggressorName;
-
         private PotCreator potCreator;
+
+        private MinRaise minRaise;
 
         public BettingLogic(IList<InternalPlayer> players, int smallBlind)
         {
@@ -27,12 +23,8 @@
             this.allPlayers = players;
             this.smallBlind = smallBlind;
             this.HandBets = new List<PlayerActionAndName>();
-
-            this.lastRoundBet = 2 * smallBlind; // Big blind
-            this.lastStepBet = this.lastRoundBet;
-            this.aggressorName = string.Empty;
-
             this.potCreator = new PotCreator(this.allPlayers);
+            this.minRaise = new MinRaise(this.smallBlind);
         }
 
         public int Pot
@@ -63,6 +55,7 @@
 
         public void Bet(GameRoundType gameRoundType)
         {
+            this.minRaise.Reset();
             var playerIndex = gameRoundType == GameRoundType.PreFlop
                 ? this.initialPlayerIndex
                 : 1;
@@ -101,6 +94,7 @@
                 }
 
                 var maxMoneyPerPlayer = this.allPlayers.Max(x => x.PlayerMoney.CurrentRoundBet);
+                var currentMinRaise = this.minRaise.Amount(player.Name);
                 var action =
                     player.GetTurn(
                         new GetTurnContext(
@@ -111,12 +105,18 @@
                             this.Pot,
                             player.PlayerMoney.CurrentRoundBet,
                             maxMoneyPerPlayer,
-                            this.MinRaise(maxMoneyPerPlayer, player.PlayerMoney.CurrentRoundBet, player.Name),
+                            currentMinRaise,
                             this.MainPot,
                             this.SidePots,
                             this.CreateOpponents(player)));
 
                 action = player.PlayerMoney.DoPlayerAction(action, maxMoneyPerPlayer);
+
+                if (action.Type == PlayerActionType.Raise && action.Money < currentMinRaise && player.PlayerMoney.Money > 0)
+                {
+                    throw new System.Exception("The player's bet/raise is less than the minimum raise");
+                }
+
                 this.HandBets.Add(new PlayerActionAndName(player.Name, action, gameRoundType));
 
                 if (action.Type == PlayerActionType.Raise)
@@ -128,6 +128,7 @@
                     }
                 }
 
+                this.minRaise.Update(player.Name, maxMoneyPerPlayer, player.PlayerMoney.CurrentRoundBet);
                 player.PlayerMoney.ShouldPlayInRound = false;
                 playerIndex++;
             }
@@ -186,55 +187,6 @@
             }
         }
 
-        private int MinRaise(int maxMoneyPerPlayer, int currentRoundBet, string currentPlayerName)
-        {
-            /*
-             * Examples:
-             * 1. SB->5$; BB->10$; UTG->raise 35$; MP->minimum raise=60$ (35$ + 25$)
-             * 2. SB->5$; BB->10$; UTG->raise 35$; MP->re-raise 150$; CO->call 150$; BTN->minimum raise=265$ (150$ + 115$)
-             * 3. SB->5$; BB->10$; UTG->raise 12$(ALL-IN); MP->minimum raise=22$ (12$ + 10$)
-            */
-
-            if (maxMoneyPerPlayer == 0)
-            {
-                // Start postflop. Players did not bet.
-                this.lastRoundBet = 0;
-                this.lastStepBet = 2 * this.smallBlind; // big blind
-                this.aggressorName = string.Empty;
-            }
-
-            if (maxMoneyPerPlayer > this.lastRoundBet)
-            {
-                if (this.lastRoundBet + this.lastStepBet <= maxMoneyPerPlayer)
-                {
-                    // full raise
-                    this.lastStepBet = maxMoneyPerPlayer - this.lastRoundBet;
-                    this.lastRoundBet = maxMoneyPerPlayer;
-                    this.aggressorName = this.HandBets.Last().PlayerName;
-                }
-                else
-                {
-                    /*
-                     * For example, we are sitting on CO
-                     * SB->5$; BB->10$; UTG->raise 35$; MP->re-raise 37$(ALL-IN); CO->minimum raise = 62$ (37$ + 25$)
-                    */
-                    this.lastRoundBet = maxMoneyPerPlayer;
-                }
-            }
-
-            if (this.aggressorName == currentPlayerName)
-            {
-                /*
-                 * SB->5$; BB->10$; BTN->raise 32$; SB->re-raise 34$(ALL-IN); BB->call 34$; BTN->minimum raise is not possible
-                 * Since no players completed a full raise over BTN's initial raise,
-                 * neither BTN nor BB are allowed to re-raise here. Their only options are to call the 34$, or fold.
-                */
-                return -1;
-            }
-
-            return this.lastStepBet;
-        }
-
         private ICollection<Opponent> CreateOpponents(InternalPlayer hero)
         {
             var shifted = this.allPlayers.ToList();
@@ -245,7 +197,7 @@
             var opponentActionPriority = -heroActionPriority;
             var opponents = new List<Opponent>();
 
-            foreach (var item in this.allPlayers)
+            foreach (var item in shifted)
             {
                 if (item.Name == hero.Name)
                 {

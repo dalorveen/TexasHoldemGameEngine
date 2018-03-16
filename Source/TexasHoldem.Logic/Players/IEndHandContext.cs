@@ -11,7 +11,5 @@
         int MoneyLeft { get; }
 
         GameRoundType LastGameRoundType { get; }
-
-        IReadOnlyList<string> PlayersWhoWonMoney { get; }
     }
 }

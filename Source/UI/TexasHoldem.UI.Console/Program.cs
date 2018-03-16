@@ -6,6 +6,7 @@
     using TexasHoldem.AI.Champion;
     using TexasHoldem.AI.Champion.Strategy;
     using TexasHoldem.AI.DummyPlayer;
+    using TexasHoldem.AI.NeuroPlayer;
     using TexasHoldem.AI.SmartPlayer;
     using TexasHoldem.Logic.GameMechanics;
     using TexasHoldem.Logic.Players;
@@ -24,59 +25,40 @@
 
         public static void Main()
         {
-            CreateAIPlayers<DummyPlayer>(2);
-            //CreateConsolePlayers(1);
-            players.Add(new Champion(PlayerStyles.LOOSE_AGGRESSIVE, 200));
-            CreateAIPlayers<DummyPlayer>(1);
-            CreateAIPlayers<SmartPlayer>(2);
+            //players.Add(new Stats(new DummyPlayer()));
+            //players.Add(new Stats(new SmartPlayer()));
+            ////players.Add(new ConsolePlayer((6 * players.Count) + NumberOfCommonRows));
+            //players.Add(new Stats(new Champion(PlayerStyles.LOOSE_AGGRESSIVE, 200)));
+            //players.Add(new Stats(new DummyPlayer()));
+            //players.Add(new Stats(new SmartPlayer()));
+            //players.Add(new Stats(new DummyPlayer()));
 
-            StatsWrapsAllThePlayers();
+            var trainedNeuralNetwork = @"..\..\..\..\AI\TexasHoldem.AI.NeuroTraining\PopulationFiles\bestAgent.xml";
 
-            int gameHeight = (6 * players.Count) + NumberOfCommonRows;
+            players.Add(new Stats(new ConsolePlayer((6 * players.Count) + NumberOfCommonRows)));
+            players.Add(new Stats(new NeuroPlayer(trainedNeuralNetwork)));
+            players.Add(new Stats(new NeuroPlayer(trainedNeuralNetwork)));
+            players.Add(new Stats(new NeuroPlayer(trainedNeuralNetwork)));
+            players.Add(new Stats(new NeuroPlayer(trainedNeuralNetwork)));
+            players.Add(new Stats(new NeuroPlayer(trainedNeuralNetwork)));
+
+            var gameHeight = (6 * players.Count) + NumberOfCommonRows;
             Table(gameHeight);
 
-            var game = new TexasHoldemGame(FillTheTableWithPlayers().ToArray());
+            var game = Game();
             game.Start();
         }
 
-        private static void CreateAIPlayers<T>(int numberOfPlayers)
-            where T : BasePlayer, new()
+        private static ITexasHoldemGame Game()
         {
-            for (int i = 0; i < numberOfPlayers; i++)
-            {
-                players.Add(new T());
-            }
-        }
-
-        private static void CreateConsolePlayers(int numberOfPlayers)
-        {
-            var count = players.Count;
-
-            for (int i = count; i < numberOfPlayers + count; i++)
-            {
-                var row = (6 * i) + NumberOfCommonRows;
-                players.Add(new ConsolePlayer(row));
-            }
-        }
-
-        private static List<ConsoleUiDecorator> FillTheTableWithPlayers()
-        {
-            var list = new List<ConsoleUiDecorator>();
+            var list = new List<IPlayer>();
 
             for (int i = 0; i < players.Count; i++)
             {
                 list.Add(new ConsoleUiDecorator(players[i], (6 * i) + NumberOfCommonRows, GameWidth, 1));
             }
 
-            return list;
-        }
-
-        private static void StatsWrapsAllThePlayers()
-        {
-            for (int i = 0; i < players.Count; i++)
-            {
-                players[i] = new Stats(players[i]);
-            }
+            return new TexasHoldemGame(list);
         }
 
         private static void Table(int gameHeight)

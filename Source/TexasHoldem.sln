@@ -21,13 +21,22 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.AI.SmartPlayer"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.Tests.GameSimulations", "Tests\TexasHoldem.Tests.GameSimulations\TexasHoldem.Tests.GameSimulations.csproj", "{E4A11A76-0F2F-4A0F-80E8-6B5026BFB78A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.AI.Champion", "AI\TexasHoldem.AI.SelfLearningPlayer\TexasHoldem.AI.Champion.csproj", "{9E0598F9-5092-484E-A8E8-70AEEBB96DC5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.AI.Champion", "AI\TexasHoldem.AI.Champion\TexasHoldem.AI.Champion.csproj", "{9E0598F9-5092-484E-A8E8-70AEEBB96DC5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{95B47AC4-01DD-48C3-B536-648CA22E3002} = {95B47AC4-01DD-48C3-B536-648CA22E3002}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.AI.SelfLearningPlayer.Tests", "Tests\TexasHoldem.AI.SelfLearningPlayer.Tests\TexasHoldem.AI.SelfLearningPlayer.Tests.csproj", "{F047F180-00E9-4A84-8276-E079D783F33E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.AI.Champion.Tests", "Tests\TexasHoldem.AI.Champion.Tests\TexasHoldem.AI.Champion.Tests.csproj", "{F047F180-00E9-4A84-8276-E079D783F33E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.Statistics", "TexasHoldem.Statistics\TexasHoldem.Statistics.csproj", "{95B47AC4-01DD-48C3-B536-648CA22E3002}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.Statistics.Tests", "Tests\TexasHoldem.Statistics.Tests\TexasHoldem.Statistics.Tests.csproj", "{0EE86BA0-FBAB-4463-8514-F0AEA9FD62CA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HandEvaluatorExtension", "HandEvaluatorExtension\HandEvaluatorExtension.csproj", "{DE00BCC2-F818-461A-8B0E-0D97A068BEB3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.AI.NeuroPlayer", "AI\TexasHoldem.AI.NeuroPlayer\TexasHoldem.AI.NeuroPlayer.csproj", "{B08725CB-95B9-44CB-8C7D-6460D9BDFA7B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexasHoldem.AI.NeuroTraining", "AI\TexasHoldem.AI.NeuroTraining\TexasHoldem.AI.NeuroTraining.csproj", "{037867B7-9F3B-41C2-A24E-857DF14EA165}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,6 +84,18 @@ Global
 		{0EE86BA0-FBAB-4463-8514-F0AEA9FD62CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0EE86BA0-FBAB-4463-8514-F0AEA9FD62CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0EE86BA0-FBAB-4463-8514-F0AEA9FD62CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE00BCC2-F818-461A-8B0E-0D97A068BEB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE00BCC2-F818-461A-8B0E-0D97A068BEB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE00BCC2-F818-461A-8B0E-0D97A068BEB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE00BCC2-F818-461A-8B0E-0D97A068BEB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B08725CB-95B9-44CB-8C7D-6460D9BDFA7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B08725CB-95B9-44CB-8C7D-6460D9BDFA7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B08725CB-95B9-44CB-8C7D-6460D9BDFA7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B08725CB-95B9-44CB-8C7D-6460D9BDFA7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{037867B7-9F3B-41C2-A24E-857DF14EA165}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{037867B7-9F3B-41C2-A24E-857DF14EA165}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{037867B7-9F3B-41C2-A24E-857DF14EA165}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{037867B7-9F3B-41C2-A24E-857DF14EA165}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -88,5 +109,7 @@ Global
 		{9E0598F9-5092-484E-A8E8-70AEEBB96DC5} = {213AAF11-5E1C-4C23-ABAE-3324EBA1C3A6}
 		{F047F180-00E9-4A84-8276-E079D783F33E} = {42762B9F-D044-43B8-B834-79C455907AD2}
 		{0EE86BA0-FBAB-4463-8514-F0AEA9FD62CA} = {42762B9F-D044-43B8-B834-79C455907AD2}
+		{B08725CB-95B9-44CB-8C7D-6460D9BDFA7B} = {213AAF11-5E1C-4C23-ABAE-3324EBA1C3A6}
+		{037867B7-9F3B-41C2-A24E-857DF14EA165} = {213AAF11-5E1C-4C23-ABAE-3324EBA1C3A6}
 	EndGlobalSection
 EndGlobal

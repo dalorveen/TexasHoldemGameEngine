@@ -16,19 +16,19 @@
             this.CurrentStats = stats;
         }
 
-        public ICollection<PlayerActionType> AvailablePlayerOptions
-        {
-            get
-            {
-                return this.getTurnContext.AvailablePlayerOptions;
-            }
-        }
-
         public bool CanCheck
         {
             get
             {
                 return this.getTurnContext.CanCheck;
+            }
+        }
+
+        public bool CanRaise
+        {
+            get
+            {
+                return this.getTurnContext.CanRaise;
             }
         }
 

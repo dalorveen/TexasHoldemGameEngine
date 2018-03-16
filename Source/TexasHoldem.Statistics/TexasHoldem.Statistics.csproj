@@ -52,8 +52,9 @@
     <Compile Include="Indicators\RFI.cs" />
     <Compile Include="Indicators\ThreeBet.cs" />
     <Compile Include="Indicators\VPIP.cs" />
-    <Compile Include="Indicators\WMSD.cs" />
+    <Compile Include="Indicators\WSD.cs" />
     <Compile Include="Indicators\WTSD.cs" />
+    <Compile Include="Indicators\WWSF.cs" />
     <Compile Include="IStats.cs" />
     <Compile Include="SeatNames.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

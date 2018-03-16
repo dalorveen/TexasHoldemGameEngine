@@ -22,6 +22,8 @@
 
         WTSD WTSD { get; }
 
-        WMSD WMSD { get; }
+        WSD WSD { get; }
+
+        WWSF WWSF { get; }
     }
 }

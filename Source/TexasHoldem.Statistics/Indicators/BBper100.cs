@@ -4,7 +4,7 @@
 
     public class BBper100 : BaseIndicator
     {
-        private int moneyLeftAtTheBeginningOfTheHand;
+        private int moneyInTheBeginningOfTheHand;
 
         private int smallBlind;
 
@@ -38,13 +38,15 @@
         public override void StartHandExtract(IStartHandContext context)
         {
             base.StartHandExtract(context);
-            this.moneyLeftAtTheBeginningOfTheHand = context.MoneyLeft;
+
+            this.moneyInTheBeginningOfTheHand = context.MoneyLeft;
             this.smallBlind = context.SmallBlind;
         }
 
         public override void EndHandExtract(IEndHandContext context)
         {
-            var balance = context.MoneyLeft - this.moneyLeftAtTheBeginningOfTheHand;
+            var balance = context.MoneyLeft - this.moneyInTheBeginningOfTheHand;
+
             this.TotalBigBlindWon += (double)balance / (double)(this.smallBlind * 2);
         }
 
@@ -56,7 +58,7 @@
         public override BaseIndicator DeepClone()
         {
             var copy = new BBper100(this.Hands, this.TotalBigBlindWon);
-            copy.moneyLeftAtTheBeginningOfTheHand = this.moneyLeftAtTheBeginningOfTheHand;
+            copy.moneyInTheBeginningOfTheHand = this.moneyInTheBeginningOfTheHand;
             copy.smallBlind = this.smallBlind;
             return copy;
         }

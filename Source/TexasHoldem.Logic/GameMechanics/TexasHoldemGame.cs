@@ -101,18 +101,6 @@
             return winner;
         }
 
-        private void Rebuy()
-        {
-            var playerNames = this.allPlayers.Select(x => x.Name).ToList().AsReadOnly();
-            foreach (var player in this.allPlayers)
-            {
-                if (player.PlayerMoney.Money <= 0)
-                {
-                    player.StartGame(new StartGameContext(playerNames, player.BuyIn == -1 ? this.initialMoney : player.BuyIn));
-                }
-            }
-        }
-
         private void PlayGame()
         {
             var shifted = this.allPlayers.ToList();
@@ -134,8 +122,6 @@
                 IHandLogic hand = new HandLogic(shifted, this.HandsPlayed, smallBlind);
 
                 hand.Play();
-
-                this.Rebuy();
             }
         }
     }
