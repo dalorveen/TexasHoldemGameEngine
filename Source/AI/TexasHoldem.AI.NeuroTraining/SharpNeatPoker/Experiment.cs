@@ -24,7 +24,7 @@
 
         private NeatGenomeParameters neatGenomeParams;
 
-        public Experiment(int inputCount, int outputCount, int populationSize)
+        public Experiment(int inputCount, int outputCount, ulong populationSize)
         {
             this.InputCount = inputCount;
             this.OutputCount = outputCount;
@@ -36,34 +36,17 @@
             this.GenomeFactory = this.CreateGenomeFactory();
 
             // Create an initial population of randomly generated genomes.
-            this.GenomeList = this.GenomeFactory.CreateGenomeList(populationSize, 0);
+            this.GenomeList = this.GenomeFactory.CreateGenomeList((int)populationSize, 0);
         }
 
         public Experiment(string populationFile)
         {
             this.Initialize();
 
-            using (XmlReader xr = XmlReader.Create(populationFile))
-            {
-                while (xr.Read())
-                {
-                    if (xr.NodeType == XmlNodeType.Element && xr.Name == "Node")
-                    {
-                        if (xr.GetAttribute("type") == "in")
-                        {
-                            this.InputCount++;
-                        }
-                        else if (xr.GetAttribute("type") == "out")
-                        {
-                            this.OutputCount++;
-                        }
-                    }
-                    else if (xr.NodeType == XmlNodeType.EndElement && xr.Name == "Nodes")
-                    {
-                        break;
-                    }
-                }
-            }
+            var populationFileParser = new NeuroPlayer.Helpers.PopulationFileParser(populationFile);
+
+            this.InputCount = populationFileParser.InputCount;
+            this.OutputCount = populationFileParser.OutputCount;
 
             using (XmlReader xr = XmlReader.Create(populationFile))
             {
@@ -97,6 +80,12 @@
         public IGenomeFactory<NeatGenome> CreateGenomeFactory()
         {
             return new NeatGenomeFactory(this.InputCount, this.OutputCount, this.neatGenomeParams);
+
+            //return new SharpNeat.Genomes.HyperNeat.CppnGenomeFactory(
+            //    this.InputCount,
+            //    this.OutputCount,
+            //    SharpNeat.Network.DefaultActivationFunctionLibrary.CreateLibraryCppn(),
+            //    this.neatGenomeParams);
         }
 
         public NeatEvolutionAlgorithm<NeatGenome> CreateEvolutionAlgorithm(
@@ -105,7 +94,8 @@
             // Create distance metric. Mismatched genes have a fixed distance of 10;
             // for matched genes the distance is their weight difference.
             IDistanceMetric distanceMetric = new ManhattanDistanceMetric(1.0, 0.0, 10.0);
-            ISpeciationStrategy<NeatGenome> speciationStrategy = new KMeansClusteringStrategy<NeatGenome>(distanceMetric);
+            ISpeciationStrategy<NeatGenome> speciationStrategy = new ParallelKMeansClusteringStrategy<NeatGenome>(distanceMetric);
+            //ISpeciationStrategy<NeatGenome> speciationStrategy = new KMeansClusteringStrategy<NeatGenome>(distanceMetric);
 
             // Create complexity regulation strategy.
             IComplexityRegulationStrategy complexityRegulationStrategy = new NullComplexityRegulationStrategy();
@@ -132,7 +122,6 @@
             // Initialize the evolution algorithm.
             ea.Initialize(selectiveEvaluator, genomeFactory, genomeList);
             ea.UpdateScheme = new UpdateScheme(1);
-            var ttt = ea.CurrentChampGenome;
 
             // Finished. Return the evolution algorithm
             return ea;
@@ -140,23 +129,23 @@
 
         private void Initialize()
         {
-            this.activationScheme = NetworkActivationScheme.CreateCyclicFixedTimestepsScheme(1);
+            this.activationScheme = NetworkActivationScheme.CreateAcyclicScheme(); //NetworkActivationScheme.CreateCyclicFixedTimestepsScheme(1);
             this.parallelOptions = new ParallelOptions();
 
             this.eaParams = new NeatEvolutionAlgorithmParameters();
             this.eaParams.SpecieCount = 10;                     // default: 10
-            this.eaParams.ElitismProportion = 0.1;              // default: 0.2
-            this.eaParams.SelectionProportion = 0.3;            // default: 0.2
-            this.eaParams.OffspringAsexualProportion = 0.40;    // default:0.5
-            this.eaParams.OffspringSexualProportion = 0.60;     // default:0.5
+            this.eaParams.ElitismProportion = 0.05;             // default: 0.2
+            this.eaParams.SelectionProportion = 0.15;           // default: 0.2
+            this.eaParams.OffspringAsexualProportion = 0.2;     // default: 0.5
+            this.eaParams.OffspringSexualProportion = 0.8;      // default: 0.5
             this.eaParams.InterspeciesMatingProportion = 0.01;  // default: 0.01
 
             this.neatGenomeParams = new NeatGenomeParameters();
-            this.neatGenomeParams.ConnectionWeightRange = 7.0;                 // default: 5
-            this.neatGenomeParams.ConnectionWeightMutationProbability = 0.90;   // default: 0.94;
-            this.neatGenomeParams.AddNodeMutationProbability = 0.01;           // default: 0.01;
-            this.neatGenomeParams.AddConnectionMutationProbability = 0.050;    // default: 0.025;
-            this.neatGenomeParams.DeleteConnectionMutationProbability = 0.025;  // default: 0.025;
+            this.neatGenomeParams.ConnectionWeightRange = 4.0;                  // default: 5
+            this.neatGenomeParams.ConnectionWeightMutationProbability = 0.95;   // default: 0.94;
+            this.neatGenomeParams.AddNodeMutationProbability = 0.015;           // default: 0.01;
+            this.neatGenomeParams.AddConnectionMutationProbability = 0.0375;     // default: 0.025;
+            this.neatGenomeParams.DeleteConnectionMutationProbability = 0.0375;  // default: 0.025;
 
             this.neatGenomeParams.FeedforwardOnly = this.activationScheme.AcyclicNetwork;
 

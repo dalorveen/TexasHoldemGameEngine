@@ -106,7 +106,7 @@
             var shifted = this.allPlayers.ToList();
 
             // While at least two players have money
-            while (this.allPlayers.Count(x => x.PlayerMoney.Money > 0) > 1)
+            while (true /*this.allPlayers.Count(x => x.PlayerMoney.Money > 0) > 1*/)
             {
                 this.HandsPlayed++;
 

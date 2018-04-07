@@ -1,12 +1,10 @@
 ﻿namespace TexasHoldem.AI.NeuroTraining
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using System.Xml;
 
-    using HandEvaluatorExtension;
     using SharpNeat.Core;
     using SharpNeat.EvolutionAlgorithms;
     using SharpNeat.Genomes.Neat;
@@ -23,6 +21,18 @@
 
         private SharpNeatPoker.Evaluator evaluator;
 
+        private int startMoney;
+
+        private int handsPlayed;
+
+        private int profit;
+
+        private bool isTrainingPause;
+
+        private bool isTrainingContinuing;
+
+        private uint bestAgentId;
+
         public override string Name { get; } = "Learner_" + Guid.NewGuid();
 
         public override int BuyIn { get; } = -1;
@@ -32,12 +42,21 @@
             base.StartGame(context);
 
             var signal = new Signal(context);
-            var populationSize = 1000;
+            var populationSize = 2000UL;
 
-            //var experiment = new SharpNeatPoker.Experiment(@"..\..\PopulationFiles\allAgents.xml");
+            this.isTrainingContinuing = true;
 
-            var experiment = new SharpNeatPoker.Experiment(
-                signal.InputSignals().Count, signal.OutputSignals().Count, populationSize);
+            SharpNeatPoker.Experiment experiment;
+
+            if (true)
+            {
+                experiment = new SharpNeatPoker.Experiment(@"..\..\PopulationFiles\allAgents.xml");
+            }
+            else
+            {
+                experiment = new SharpNeatPoker.Experiment(
+                    signal.InputSignals().Count, signal.OutputSignals().Count, populationSize);
+            }
 
             this.evaluator = experiment.Evaluator;
             this.evaluator.StartGame(populationSize);
@@ -49,20 +68,62 @@
         public override void StartHand(IStartHandContext context)
         {
             base.StartHand(context);
-            this.evaluator.StartHand(context, this.StrengthIndex);
+
+            if (this.isTrainingContinuing)
+            {
+                this.evaluator.StartHand(context);
+            }
+            else
+            {
+                this.startMoney = context.MoneyLeft;
+            }
+        }
+
+        public override void StartRound(IStartRoundContext context)
+        {
+            base.StartRound(context);
+
+            if (this.isTrainingContinuing)
+            {
+            }
         }
 
         public override PlayerAction GetTurn(IGetTurnContext context)
         {
-            var reaction = base.GetTurn(context);
-            this.evaluator.Turn(context, reaction, this.PocketMask, this.CommunityCardsMask);
-            return reaction;
+            var currentAction = base.GetTurn(context);
+
+            if (this.isTrainingContinuing)
+            {
+                this.evaluator.Turn();
+            }
+
+            return currentAction;
         }
 
         public override void EndHand(IEndHandContext context)
         {
             base.EndHand(context);
-            this.evaluator.EndHand(context);
+
+            if (this.isTrainingContinuing)
+            {
+                this.evaluator.EndHand(context);
+
+                if (this.isTrainingPause)
+                {
+                    this.isTrainingContinuing = false;
+                }
+            }
+            else
+            {
+                this.handsPlayed++;
+                this.profit += context.MoneyLeft - this.startMoney;
+
+                if (this.handsPlayed % 10000 == 0)
+                {
+                    this.isTrainingPause = false;
+                    this.isTrainingContinuing = true;
+                }
+            }
 
             if (this.ea != null && this.ea.RunState == RunState.Paused)
             {
@@ -93,7 +154,21 @@
 
         public override IBlackBox Phenome()
         {
-            return this.evaluator.GetCurrentPhenome();
+            if (this.isTrainingContinuing)
+            {
+                return this.evaluator.GetCurrentPhenome();
+            }
+            else
+            {
+                if (this.ea != null)
+                {
+                    return (IBlackBox)this.ea.CurrentChampGenome.CachedPhenome;
+                }
+                else
+                {
+                    return this.evaluator.GetCurrentPhenome();
+                }
+            }
         }
 
         private void SharpNeatThreadStart(SharpNeatPoker.Experiment experiment)
@@ -110,18 +185,40 @@
         {
             var temp = sender as NeatEvolutionAlgorithm<NeatGenome>;
 
-            if (temp.RunState == RunState.Paused)
+            if (temp.CurrentChampGenome.Id != this.bestAgentId)
             {
-                Console.WriteLine("Please wait...");
+                this.bestAgentId = temp.CurrentChampGenome.Id;
+                this.handsPlayed = 0;
+                this.profit = 0;
             }
-            else
-            {
-                var str = $"{temp.RunState} [generation {temp.Statistics._generation}]\n" +
-                        $"\t[bestFitness {temp.Statistics._maxFitness:N6}] [meanFitness {temp.Statistics._meanFitness:N6}]\n" +
-                        $"\t[maxComplexity {temp.Statistics._maxComplexity:N6}] [meanComplexity {temp.Statistics._meanComplexity:N6}]\n";
 
-                Console.Write(str);
+            var str = $"{DateTime.Now.ToLongTimeString()} ...\n" +
+                $"\t[generation: {temp.Statistics._generation}] [runState: {temp.RunState}]\n";
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write(str);
+
+            str = $"\t[best agent fitness: {temp.Statistics._maxFitness}]\n" +
+                $"\t[best agent complexity: {temp.CurrentChampGenome.Complexity:N1}]\n" +
+                $"\t[best agent money won per hand: {(this.handsPlayed == 0 ? 0 : (double)this.profit / (double)this.handsPlayed):N3} ({this.handsPlayed} hands played)]\n";
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write(str);
+
+            str = $"\t[meanFitness: {temp.Statistics._meanFitness:N6}]\n" +
+                $"\t[meanComplexity: {temp.Statistics._meanComplexity:N3}]\n" +
+                $"\t[meanSpecieChampFitness: {temp.Statistics._meanSpecieChampFitness:N6}]\n";
+
+            foreach (var item in temp.SpecieList.OrderBy(k => k.Idx))
+            {
+                var bestFitness = item.GenomeList.Max(s => s.EvaluationInfo.Fitness);
+                str += $"\t[specie #{item.Id}: {item.GenomeList.Count} agents] [bestFitness: {bestFitness:N6}]\n";
             }
+
+            Console.ResetColor();
+            Console.Write(str);
+
+            this.isTrainingPause = true;
         }
     }
 }

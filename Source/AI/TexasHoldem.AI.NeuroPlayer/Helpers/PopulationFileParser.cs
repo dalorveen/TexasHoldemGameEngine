@@ -12,10 +12,6 @@
     {
         private readonly string xmlPopulationFile;
 
-        private readonly int inputCount;
-
-        private readonly int outputCount;
-
         public PopulationFileParser(string xmlPopulationFile)
         {
             this.xmlPopulationFile = xmlPopulationFile;
@@ -28,11 +24,11 @@
                     {
                         if (xr.GetAttribute("type") == "in")
                         {
-                            this.inputCount++;
+                            this.InputCount++;
                         }
                         else if (xr.GetAttribute("type") == "out")
                         {
-                            this.outputCount++;
+                            this.OutputCount++;
                         }
                     }
                     else if (xr.NodeType == XmlNodeType.EndElement && xr.Name == "Nodes")
@@ -43,9 +39,20 @@
             }
         }
 
+        public int InputCount { get; }
+
+        public int OutputCount { get; }
+
         public IBlackBox BestPhenome()
         {
-            var genomeFactory = new NeatGenomeFactory(this.inputCount, this.outputCount);
+            var genomeFactory = new NeatGenomeFactory(this.InputCount, this.OutputCount, new NeatGenomeParameters());
+
+            //var genomeFactory = new SharpNeat.Genomes.HyperNeat.CppnGenomeFactory(
+            //    this.InputCount,
+            //    this.OutputCount,
+            //    SharpNeat.Network.DefaultActivationFunctionLibrary.CreateLibraryCppn(),
+            //    new NeatGenomeParameters());
+
             List<NeatGenome> genomeList;
 
             using (XmlReader xr = XmlReader.Create(this.xmlPopulationFile))
@@ -53,7 +60,8 @@
                 genomeList = NeatGenomeXmlIO.ReadCompleteGenomeList(xr, false, genomeFactory);
             }
 
-            var decoder = new NeatGenomeDecoder(NetworkActivationScheme.CreateCyclicFixedTimestepsScheme(1));
+            //var decoder = new NeatGenomeDecoder(NetworkActivationScheme.CreateCyclicFixedTimestepsScheme(1));
+            var decoder = new NeatGenomeDecoder(NetworkActivationScheme.CreateAcyclicScheme());
 
             return decoder.Decode(genomeList[0]);
         }

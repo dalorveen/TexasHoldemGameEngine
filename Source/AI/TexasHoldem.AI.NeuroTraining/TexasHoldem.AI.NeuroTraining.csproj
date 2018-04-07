@@ -87,9 +87,17 @@
       <Project>{9e0598f9-5092-484e-a8e8-70aeebb96dc5}</Project>
       <Name>TexasHoldem.AI.Champion</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TexasHoldem.AI.DummyPlayer\TexasHoldem.AI.DummyPlayer.csproj">
+      <Project>{8f8a872b-a022-4085-aabc-d3bc12b7c1d8}</Project>
+      <Name>TexasHoldem.AI.DummyPlayer</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TexasHoldem.AI.NeuroPlayer\TexasHoldem.AI.NeuroPlayer.csproj">
       <Project>{b08725cb-95b9-44cb-8c7d-6460d9bdfa7b}</Project>
       <Name>TexasHoldem.AI.NeuroPlayer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TexasHoldem.AI.SmartPlayer\TexasHoldem.AI.SmartPlayer.csproj">
+      <Project>{e7ba8017-d56e-485c-81d1-a1ccdaae624f}</Project>
+      <Name>TexasHoldem.AI.SmartPlayer</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

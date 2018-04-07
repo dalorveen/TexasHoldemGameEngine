@@ -241,7 +241,7 @@
         {
             foreach (var player in this.players)
             {
-                if (player.PlayerMoney.Money <= 0)
+                if (player.PlayerMoney.Money <= 0 || player.PlayerMoney.Money > this.smallBlind * 200 * 6)
                 {
                     player.PlayerMoney.Money = player.BuyIn == -1 ? this.smallBlind * 200 : player.BuyIn;
                 }

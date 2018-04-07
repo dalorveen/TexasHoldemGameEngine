@@ -1,10 +1,8 @@
 ﻿namespace TexasHoldem.AI.NeuroTraining.SharpNeatPoker
 {
     using System;
-    using System.Collections.Generic;
     using System.Threading;
 
-    using HandEvaluatorExtension;
     using SharpNeat.Core;
     using SharpNeat.Phenomes;
     using TexasHoldem.Logic.Players;
@@ -19,7 +17,7 @@
 
         private ManualResetEvent syncSignal;
 
-        private int populationSize;
+        private ulong populationSize;
 
         private IStartHandContext startHandContext;
 
@@ -29,17 +27,7 @@
 
         private int millisecondsTimeout;
 
-        private double preflopScore;
-
-        private double postflopScore;
-
-        private int postflopActionsCounter;
-
-        private double maxFitness;
-
-        private int maxFitnessDuration;
-
-        private bool isStopping;
+        private ulong numberOfVerificationHands;
 
         public Evaluator()
         {
@@ -48,25 +36,23 @@
             this.resumeHandSignal = new ManualResetEvent(false);
             this.syncSignal = new ManualResetEvent(false);
             this.millisecondsTimeout = -1;
+            this.numberOfVerificationHands = 300UL;
         }
 
         public ulong EvaluationCount { get; private set; }
 
         public bool StopConditionSatisfied { get; private set; }
 
-        public void StartGame(int populationSize)
+        public void StartGame(ulong populationSize)
         {
             this.populationSize = populationSize;
         }
 
-        public void StartHand(IStartHandContext context, int strengthIndex)
+        public void StartHand(IStartHandContext context)
         {
             lock (this.sync)
             {
                 this.startHandContext = context;
-                this.preflopScore = (169 - strengthIndex) / 169.0;
-                this.postflopScore = 0;
-                this.postflopActionsCounter = 0;
 
                 this.startHandSignal.Set();
 
@@ -75,17 +61,10 @@
             }
         }
 
-        public void Turn(IGetTurnContext context, PlayerAction reaction, ulong pocket, ulong board)
+        public void Turn()
         {
             lock (this.sync)
             {
-                if (context.RoundType != Logic.GameRoundType.PreFlop)
-                {
-                    // Range of EVRatio [-1..1]. If less than zero, then an unprofitable action
-                    this.postflopScore += 1.0 + this.EVRatio(context, reaction, pocket, board);
-                    this.postflopActionsCounter += 2;
-                }
-
                 this.resumeHandSignal.Set();
 
                 this.syncSignal.WaitOne(this.millisecondsTimeout);
@@ -116,24 +95,29 @@
 
         public FitnessInfo Evaluate(IBlackBox phenome)
         {
-            var fitness = 0.0;
-            var numberOfHandsPlayedByTheOneGenome = 0;
+            var numberOfHandsPlayedByTheOnePhenome = 0UL;
+            var profit = 0;
+            var wonMoney = 0;
+            var lostMoney = 0;
+            var neutralAction = 0UL;
 
             do
             {
+                // New hand
                 this.startHandSignal.WaitOne();
                 this.startHandSignal.Reset();
 
-                var actionsCounter = 0.0;
+                var actionsCounter = 0;
 
-                numberOfHandsPlayedByTheOneGenome++;
+                numberOfHandsPlayedByTheOnePhenome++;
                 this.phenome = phenome;
 
                 this.syncSignal.Set();
 
                 do
                 {
-                    this.resumeHandSignal.WaitOne(); // get turn or end hand
+                    // Actions inside the hand
+                    this.resumeHandSignal.WaitOne();
                     this.resumeHandSignal.Reset();
 
                     if (this.endHandContext != null)
@@ -143,35 +127,32 @@
                             // 1. This is the beginning of the hand. All but this player folded their cards.
                             // 2. It's a showdown. This player was preflop in the auto-all-in.
                             // Skip this hand.
-                            numberOfHandsPlayedByTheOneGenome--;
+                            numberOfHandsPlayedByTheOnePhenome--;
                             break;
                         }
 
-                        var postflopScoreRatio = this.postflopActionsCounter == 0
-                            ? 1 : this.postflopScore / this.postflopActionsCounter;
+                        profit += this.endHandContext.MoneyLeft - this.startHandContext.MoneyLeft;
 
-                        if (this.endHandContext.MoneyLeft < this.startHandContext.MoneyLeft)
+                        if (this.endHandContext.MoneyLeft > this.startHandContext.MoneyLeft)
                         {
-                            // lost
-                            var wonMoneyRatio = 2.0 - ((this.startHandContext.MoneyLeft - this.endHandContext.MoneyLeft)
-                                / (double)this.startHandContext.MoneyLeft); // [1..2)
-
-                            fitness += wonMoneyRatio * (this.preflopScore + (2.0 * postflopScoreRatio)); // [0..6)
+                            // won hand
+                            wonMoney += this.endHandContext.MoneyLeft - this.startHandContext.MoneyLeft;
                         }
-                        else if (this.endHandContext.MoneyLeft >= this.startHandContext.MoneyLeft)
+                        else if (this.endHandContext.MoneyLeft == this.startHandContext.MoneyLeft)
                         {
-                            // won
-                            var wonMoneyRatio = 1.0 + ((this.endHandContext.MoneyLeft - this.startHandContext.MoneyLeft)
-                                / (double)this.endHandContext.MoneyLeft); // [1..2)
-
-                            fitness += (2.0 * wonMoneyRatio) * (this.preflopScore + (2.0 * postflopScoreRatio));
+                            neutralAction++;
+                        }
+                        else
+                        {
+                            // lost hand
+                            lostMoney += this.startHandContext.MoneyLeft - this.endHandContext.MoneyLeft;
                         }
 
                         break;
                     }
                     else
                     {
-                        actionsCounter += 1.0;
+                        actionsCounter += 1;
                         this.syncSignal.Set();
                     }
                 }
@@ -181,30 +162,36 @@
                 this.endHandContext = null;
                 this.syncSignal.Set();
             }
-            while (numberOfHandsPlayedByTheOneGenome < 6);
+            while (numberOfHandsPlayedByTheOnePhenome < this.numberOfVerificationHands);
 
             this.EvaluationCount++;
 
-            if (fitness > this.maxFitness)
-            {
-                if (this.maxFitnessDuration > this.populationSize * 20)
-                {
-                    this.isStopping = true;
-                }
-
-                this.maxFitness = fitness;
-                this.maxFitnessDuration = 0;
-            }
-            else
-            {
-                this.maxFitnessDuration++;
-            }
-
-            if (this.isStopping)
+            // TODO: a correct condition for stopping the training is necessary
+            if (this.EvaluationCount >= (uint)this.populationSize * 1000)
             {
                 this.StopConditionSatisfied = true;
                 this.millisecondsTimeout = 2500;
             }
+
+            var fitnessRatio = 1.0;
+            var sum = wonMoney + lostMoney;
+
+            if (sum > 0)
+            {
+                var profitRatio = (double)profit / (double)sum;
+                profitRatio *= (double)(this.numberOfVerificationHands - neutralAction) / (double)this.numberOfVerificationHands;
+
+                if (profitRatio >= 0)
+                {
+                    fitnessRatio += profitRatio;
+                }
+                else
+                {
+                    fitnessRatio += profitRatio;
+                }
+            }
+
+            var fitness = Math.Pow(fitnessRatio, 2);
 
             return new FitnessInfo(fitness, fitness);
         }
@@ -212,56 +199,6 @@
         public void Reset()
         {
             throw new NotImplementedException();
-        }
-
-        private double WinOdds(IGetTurnContext context, ulong pocket, ulong board)
-        {
-            var opponentsCards = new List<ulong>();
-            var dead = 0UL;
-
-            foreach (var item in context.Opponents)
-            {
-                if (item.InHand)
-                {
-                    opponentsCards.Add(new CardAdapter(item.HoleCards).Mask);
-                }
-                else
-                {
-                    dead |= new CardAdapter(item.HoleCards).Mask;
-                }
-            }
-
-            return HandEx.HandWinOdds(pocket, opponentsCards.ToArray(), dead, board);
-        }
-
-        private double EVRatio(IGetTurnContext context, PlayerAction reaction, ulong pocket, ulong board)
-        {
-            var winOdds = this.WinOdds(context, pocket, board);
-            var wager = 0;
-
-            if (reaction.Type == PlayerActionType.Fold)
-            {
-                return 0;
-            }
-            else if (reaction.Type == PlayerActionType.Raise)
-            {
-                wager = reaction.Money;
-            }
-            else
-            {
-                wager = context.MoneyToCall;
-            }
-
-            var ev = (context.CurrentPot * winOdds) - (wager * (1.0 - winOdds));
-
-            if (ev >= 0)
-            {
-                return ev / context.CurrentPot;
-            }
-            else
-            {
-                return ev / wager;
-            }
         }
     }
 }

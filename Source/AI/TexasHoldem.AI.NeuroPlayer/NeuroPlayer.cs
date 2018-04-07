@@ -48,8 +48,6 @@
             }
         }
 
-        public int StrengthIndex { get; private set; }
-
         public override void StartGame(IStartGameContext context)
         {
             base.StartGame(context);
@@ -60,7 +58,6 @@
         {
             base.StartHand(context);
             this.pocket = new CardAdapter(new[] { context.FirstCard, context.SecondCard });
-            this.StrengthIndex = HandEvaluatorExtension.StartingHandStrength.StrengthIndex(this.pocket.Mask);
         }
 
         public override void StartRound(IStartRoundContext context)

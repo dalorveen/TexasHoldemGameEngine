@@ -25,22 +25,12 @@
 
         public static void Main()
         {
-            //players.Add(new Stats(new DummyPlayer()));
-            //players.Add(new Stats(new SmartPlayer()));
-            ////players.Add(new ConsolePlayer((6 * players.Count) + NumberOfCommonRows));
-            //players.Add(new Stats(new Champion(PlayerStyles.LOOSE_AGGRESSIVE, 200)));
-            //players.Add(new Stats(new DummyPlayer()));
-            //players.Add(new Stats(new SmartPlayer()));
-            //players.Add(new Stats(new DummyPlayer()));
-
             var trainedNeuralNetwork = @"..\..\..\..\AI\TexasHoldem.AI.NeuroTraining\PopulationFiles\bestAgent.xml";
 
-            players.Add(new Stats(new ConsolePlayer((6 * players.Count) + NumberOfCommonRows)));
             players.Add(new Stats(new NeuroPlayer(trainedNeuralNetwork)));
-            players.Add(new Stats(new NeuroPlayer(trainedNeuralNetwork)));
-            players.Add(new Stats(new NeuroPlayer(trainedNeuralNetwork)));
-            players.Add(new Stats(new NeuroPlayer(trainedNeuralNetwork)));
-            players.Add(new Stats(new NeuroPlayer(trainedNeuralNetwork)));
+            players.Add(new Stats(new DummyPlayer()));
+            players.Add(new Stats(new SmartPlayer()));
+            players.Add(new Stats(new DummyPlayer()));
 
             var gameHeight = (6 * players.Count) + NumberOfCommonRows;
             Table(gameHeight);
