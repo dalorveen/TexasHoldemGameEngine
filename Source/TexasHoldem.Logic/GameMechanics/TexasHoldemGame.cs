@@ -19,7 +19,7 @@
 
         private int initialMoney;
 
-        public TexasHoldemGame(IPlayer firstPlayer, IPlayer secondPlayer, int initialMoney = 1000)
+        public TexasHoldemGame(IPlayer firstPlayer, IPlayer secondPlayer, int handsPlayedLimit = -1, int initialMoney = 1000)
             : this(new[] { firstPlayer, secondPlayer }, initialMoney)
         {
             if (firstPlayer == null)
@@ -37,9 +37,11 @@
             {
                 throw new ArgumentException($"Both players have the same name: \"{firstPlayer.Name}\"");
             }
+
+            this.HandsPlayedLimit = handsPlayedLimit;
         }
 
-        public TexasHoldemGame(IList<IPlayer> players, int initialMoney = 200)
+        public TexasHoldemGame(IList<IPlayer> players, int handsPlayedLimit = -1, int initialMoney = 200)
             : this((ICollection<IPlayer>)players, initialMoney)
         {
             // Ensure the players have unique names
@@ -51,9 +53,11 @@
             {
                 throw new ArgumentException($"Players have the same name: \"{string.Join(" ", duplicateNames.ToArray())}\"");
             }
+
+            this.HandsPlayedLimit = handsPlayedLimit;
         }
 
-        private TexasHoldemGame(ICollection<IPlayer> players, int initialMoney = 1000)
+        private TexasHoldemGame(ICollection<IPlayer> players, int handsPlayedLimit = -1, int initialMoney = 1000)
         {
             if (players == null)
             {
@@ -77,8 +81,11 @@
             }
 
             this.initialMoney = initialMoney;
+            this.HandsPlayedLimit = handsPlayedLimit;
             this.HandsPlayed = 0;
         }
+
+        public int HandsPlayedLimit { get; }
 
         public int HandsPlayed { get; private set; }
 
@@ -106,7 +113,7 @@
             var shifted = this.allPlayers.ToList();
 
             // While at least two players have money
-            while (true /*this.allPlayers.Count(x => x.PlayerMoney.Money > 0) > 1*/)
+            while ((this.HandsPlayedLimit != -1 && this.HandsPlayed < this.HandsPlayedLimit) || false /*this.allPlayers.Count(x => x.PlayerMoney.Money > 0) > 1*/)
             {
                 this.HandsPlayed++;
 

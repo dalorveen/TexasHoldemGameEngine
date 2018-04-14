@@ -25,7 +25,7 @@
 
         public static void Main()
         {
-            var trainedNeuralNetwork = @"..\..\..\..\AI\TexasHoldem.AI.NeuroTraining\PopulationFiles\bestAgent.xml";
+            var trainedNeuralNetwork = @"..\..\..\..\AI\TexasHoldem.AI.NeuroPlayer\PopulationFiles\bestAgent.xml";
 
             players.Add(new Stats(new NeuroPlayer(trainedNeuralNetwork)));
             players.Add(new Stats(new DummyPlayer()));
@@ -48,7 +48,7 @@
                 list.Add(new ConsoleUiDecorator(players[i], (6 * i) + NumberOfCommonRows, GameWidth, 1));
             }
 
-            return new TexasHoldemGame(list);
+            return new TexasHoldemGame(list, 1000000);
         }
 
         private static void Table(int gameHeight)

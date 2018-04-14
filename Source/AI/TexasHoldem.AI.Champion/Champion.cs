@@ -80,7 +80,7 @@
 
         public override string Name { get; } = "Champion_" + Guid.NewGuid();
 
-        public override int BuyIn { get; } = -1;
+        public override int BuyIn { get; }
 
         public override PlayerAction PostingBlind(IPostingBlindContext context)
         {

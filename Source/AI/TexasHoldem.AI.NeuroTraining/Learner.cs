@@ -1,224 +1,136 @@
 ﻿namespace TexasHoldem.AI.NeuroTraining
 {
     using System;
-    using System.Linq;
-    using System.Threading;
-    using System.Xml;
 
-    using SharpNeat.Core;
-    using SharpNeat.EvolutionAlgorithms;
-    using SharpNeat.Genomes.Neat;
+    using HandEvaluatorExtension;
+    using HoldemHand;
     using SharpNeat.Phenomes;
     using TexasHoldem.AI.NeuroPlayer;
-    using TexasHoldem.AI.NeuroPlayer.NeuralNetwork;
     using TexasHoldem.Logic.Players;
 
     public class Learner : NeuroPlayer
     {
-        private Thread sharpNeatThread;
+        private int startHandMoney;
 
-        private NeatEvolutionAlgorithm<NeatGenome> ea;
+        private int wonMoney;
 
-        private SharpNeatPoker.Evaluator evaluator;
+        private int lostMoney;
 
-        private int startMoney;
+        private int preflopFoldScore;
 
-        private int handsPlayed;
+        private int preflopFoldOpportunity;
 
-        private int profit;
+        private int postflopFoldScore;
 
-        private bool isTrainingPause;
+        private int postflopFoldOpportunity;
 
-        private bool isTrainingContinuing;
+        private bool takesPartInTheCurrentHand;
 
-        private uint bestAgentId;
+        public Learner(IBlackBox phenome)
+            : base(phenome)
+        {
+            this.BuyIn = -1;
+        }
+
+        public Learner(int buyIn, IBlackBox phenome)
+            : base(phenome)
+        {
+            this.BuyIn = buyIn;
+        }
 
         public override string Name { get; } = "Learner_" + Guid.NewGuid();
 
-        public override int BuyIn { get; } = -1;
+        public override int BuyIn { get; }
 
-        public override void StartGame(IStartGameContext context)
-        {
-            base.StartGame(context);
+        public int HandsPlayed { get; private set; }
 
-            var signal = new Signal(context);
-            var populationSize = 2000UL;
-
-            this.isTrainingContinuing = true;
-
-            SharpNeatPoker.Experiment experiment;
-
-            if (true)
-            {
-                experiment = new SharpNeatPoker.Experiment(@"..\..\PopulationFiles\allAgents.xml");
-            }
-            else
-            {
-                experiment = new SharpNeatPoker.Experiment(
-                    signal.InputSignals().Count, signal.OutputSignals().Count, populationSize);
-            }
-
-            this.evaluator = experiment.Evaluator;
-            this.evaluator.StartGame(populationSize);
-
-            this.sharpNeatThread = new Thread(() => this.SharpNeatThreadStart(experiment));
-            this.sharpNeatThread.Start();
-        }
+        public int Profit { get; private set; }
 
         public override void StartHand(IStartHandContext context)
         {
             base.StartHand(context);
 
-            if (this.isTrainingContinuing)
-            {
-                this.evaluator.StartHand(context);
-            }
-            else
-            {
-                this.startMoney = context.MoneyLeft;
-            }
-        }
-
-        public override void StartRound(IStartRoundContext context)
-        {
-            base.StartRound(context);
-
-            if (this.isTrainingContinuing)
-            {
-            }
+            this.startHandMoney = context.MoneyLeft;
         }
 
         public override PlayerAction GetTurn(IGetTurnContext context)
         {
-            var currentAction = base.GetTurn(context);
+            this.takesPartInTheCurrentHand = true;
 
-            if (this.isTrainingContinuing)
+            var playerAction = base.GetTurn(context);
+
+            if (playerAction.Type == PlayerActionType.Fold)
             {
-                this.evaluator.Turn();
+                if (context.RoundType == Logic.GameRoundType.PreFlop)
+                {
+                    this.preflopFoldScore += 169 - StartingHandStrength.ForceIndexOfStartingHand[this.PocketMask];
+                    this.preflopFoldOpportunity += 168;
+                }
+                else
+                {
+                    this.postflopFoldScore += 8 - (int)Hand.EvaluateType(this.PocketMask | this.CommunityCardsMask);
+                    this.postflopFoldOpportunity += 8;
+                }
             }
 
-            return currentAction;
+            return playerAction;
         }
 
         public override void EndHand(IEndHandContext context)
         {
             base.EndHand(context);
 
-            if (this.isTrainingContinuing)
+            if (this.takesPartInTheCurrentHand)
             {
-                this.evaluator.EndHand(context);
+                this.HandsPlayed++;
+                this.Profit += context.MoneyLeft - this.startHandMoney;
 
-                if (this.isTrainingPause)
+                if (context.MoneyLeft > this.startHandMoney)
                 {
-                    this.isTrainingContinuing = false;
+                    // won hand
+                    this.wonMoney += context.MoneyLeft - this.startHandMoney;
                 }
-            }
-            else
-            {
-                this.handsPlayed++;
-                this.profit += context.MoneyLeft - this.startMoney;
-
-                if (this.handsPlayed % 10000 == 0)
+                else if (context.MoneyLeft == this.startHandMoney)
                 {
-                    this.isTrainingPause = false;
-                    this.isTrainingContinuing = true;
-                }
-            }
-
-            if (this.ea != null && this.ea.RunState == RunState.Paused)
-            {
-                var xwSettings = new XmlWriterSettings();
-
-                xwSettings.Indent = true;
-
-                var pathToBestAgent = @"..\..\PopulationFiles\bestAgent.xml";
-                var pathToAllAgents = @"..\..\PopulationFiles\allAgents.xml";
-
-                using (XmlWriter xw = XmlWriter.Create(@"..\..\PopulationFiles\bestAgent.xml", xwSettings))
-                {
-                    NeatGenomeXmlIO.WriteComplete(xw, this.ea.CurrentChampGenome, false);
-                    Console.Write($"Player's training is interrupted.\nThe best agent is saved in {pathToBestAgent}\n");
-                }
-
-                using (XmlWriter xw = XmlWriter.Create(@"..\..\PopulationFiles\allAgents.xml", xwSettings))
-                {
-                    NeatGenomeXmlIO.WriteComplete(xw, this.ea.GenomeList, false);
-                    Console.Write($"The list of all agents is saved to {pathToAllAgents}\n");
-                }
-
-                this.ea.Dispose();
-                this.sharpNeatThread.Abort();
-                this.ea = null;
-            }
-        }
-
-        public override IBlackBox Phenome()
-        {
-            if (this.isTrainingContinuing)
-            {
-                return this.evaluator.GetCurrentPhenome();
-            }
-            else
-            {
-                if (this.ea != null)
-                {
-                    return (IBlackBox)this.ea.CurrentChampGenome.CachedPhenome;
+                    // 1. The player does not sit in the blinds and folds his cards pre-flop
+                    // 2. The player shared the pot at the showdown and he wins exactly as much as he invested
                 }
                 else
                 {
-                    return this.evaluator.GetCurrentPhenome();
+                    // lost hand
+                    this.lostMoney += this.startHandMoney - context.MoneyLeft;
                 }
             }
+
+            this.takesPartInTheCurrentHand = false;
         }
 
-        private void SharpNeatThreadStart(SharpNeatPoker.Experiment experiment)
+        public double Fitness()
         {
-            // Create evolution algorithm and attach update event.
-            this.ea = experiment.CreateEvolutionAlgorithm(experiment.GenomeFactory, experiment.GenomeList);
-            this.ea.UpdateEvent += new EventHandler(this.EvolutionAlgorithmUpdateEvent);
+            var sum = this.wonMoney + this.lostMoney;
 
-            // Start algorithm (it will run on a background thread).
-            this.ea.StartContinue();
-        }
-
-        private void EvolutionAlgorithmUpdateEvent(object sender, EventArgs e)
-        {
-            var temp = sender as NeatEvolutionAlgorithm<NeatGenome>;
-
-            if (temp.CurrentChampGenome.Id != this.bestAgentId)
+            if (sum > 0)
             {
-                this.bestAgentId = temp.CurrentChampGenome.Id;
-                this.handsPlayed = 0;
-                this.profit = 0;
+                var score = 0.0;
+                var profitRatio = (double)this.Profit / (double)sum;
+                var preflopFoldRatio = this.preflopFoldOpportunity == 0
+                    ? 0.0 : (double)this.preflopFoldScore / (double)this.preflopFoldOpportunity;
+                var postflopFoldRatio = this.postflopFoldOpportunity == 0
+                    ? 0.0 : (double)this.postflopFoldScore / (double)this.postflopFoldOpportunity;
+
+                if (profitRatio >= 0)
+                {
+                    score = 3.0 + profitRatio + preflopFoldRatio + postflopFoldRatio;
+                }
+                else
+                {
+                    score = (1.0 + profitRatio) + preflopFoldRatio + postflopFoldRatio;
+                }
+
+                return Math.Pow(score, 2);
             }
 
-            var str = $"{DateTime.Now.ToLongTimeString()} ...\n" +
-                $"\t[generation: {temp.Statistics._generation}] [runState: {temp.RunState}]\n";
-
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write(str);
-
-            str = $"\t[best agent fitness: {temp.Statistics._maxFitness}]\n" +
-                $"\t[best agent complexity: {temp.CurrentChampGenome.Complexity:N1}]\n" +
-                $"\t[best agent money won per hand: {(this.handsPlayed == 0 ? 0 : (double)this.profit / (double)this.handsPlayed):N3} ({this.handsPlayed} hands played)]\n";
-
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write(str);
-
-            str = $"\t[meanFitness: {temp.Statistics._meanFitness:N6}]\n" +
-                $"\t[meanComplexity: {temp.Statistics._meanComplexity:N3}]\n" +
-                $"\t[meanSpecieChampFitness: {temp.Statistics._meanSpecieChampFitness:N6}]\n";
-
-            foreach (var item in temp.SpecieList.OrderBy(k => k.Idx))
-            {
-                var bestFitness = item.GenomeList.Max(s => s.EvaluationInfo.Fitness);
-                str += $"\t[specie #{item.Id}: {item.GenomeList.Count} agents] [bestFitness: {bestFitness:N6}]\n";
-            }
-
-            Console.ResetColor();
-            Console.Write(str);
-
-            this.isTrainingPause = true;
+            return 0;
         }
     }
 }

@@ -10,9 +10,19 @@
     // TODO: This player is far far away from being smart!
     public class SmartPlayer : BasePlayer
     {
+        public SmartPlayer()
+        {
+            this.BuyIn = -1;
+        }
+
+        public SmartPlayer(int buyIn)
+        {
+            this.BuyIn = buyIn;
+        }
+
         public override string Name { get; } = "SmartPlayer_" + Guid.NewGuid();
 
-        public override int BuyIn { get; } = -1;
+        public override int BuyIn { get; }
 
         public override PlayerAction PostingBlind(IPostingBlindContext context)
         {

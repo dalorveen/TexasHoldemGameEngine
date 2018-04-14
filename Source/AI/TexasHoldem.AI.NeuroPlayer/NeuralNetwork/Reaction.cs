@@ -5,7 +5,7 @@
     public class Reaction : Signal
     {
         public Reaction(IStartGameContext context)
-            : base(context)
+            : base(context.PlayerNames.Count)
         {
         }
 
@@ -42,7 +42,14 @@
             }
             else
             {
-                return PlayerAction.Fold();
+                if (this.GetTurnContext.CanCheck)
+                {
+                    return PlayerAction.CheckOrCall();
+                }
+                else
+                {
+                    return PlayerAction.Fold();
+                }
             }
         }
     }

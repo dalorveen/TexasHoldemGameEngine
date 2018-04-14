@@ -9,8 +9,6 @@
 
     public class NeuroPlayer : BasePlayer
     {
-        private readonly IBlackBox bestPhenome;
-
         private ICardAdapter pocket;
 
         private ICardAdapter communityCards;
@@ -21,11 +19,12 @@
         {
             var parser = new Helpers.PopulationFileParser(xmlPopulationFile);
 
-            this.bestPhenome = parser.BestPhenome();
+            this.Phenome = parser.BestPhenome();
         }
 
-        protected NeuroPlayer()
+        protected NeuroPlayer(IBlackBox phenome)
         {
+            this.Phenome = phenome;
         }
 
         public override string Name { get; } = "NeuroPlayer_" + Guid.NewGuid();
@@ -48,21 +47,26 @@
             }
         }
 
+        public IBlackBox Phenome { get; }
+
         public override void StartGame(IStartGameContext context)
         {
             base.StartGame(context);
+
             this.reaction = new NeuralNetwork.Reaction(context);
         }
 
         public override void StartHand(IStartHandContext context)
         {
             base.StartHand(context);
+
             this.pocket = new CardAdapter(new[] { context.FirstCard, context.SecondCard });
         }
 
         public override void StartRound(IStartRoundContext context)
         {
             base.StartRound(context);
+
             this.communityCards = new CardAdapter(context.CommunityCards.ToList());
         }
 
@@ -73,13 +77,9 @@
 
         public override PlayerAction GetTurn(IGetTurnContext context)
         {
-            this.reaction.Update(this.pocket, this.communityCards, context, this.Phenome());
-            return this.reaction.React();
-        }
+            this.reaction.Update(this.pocket, this.communityCards, context, this.Phenome);
 
-        public virtual IBlackBox Phenome()
-        {
-            return this.bestPhenome;
+            return this.reaction.React();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿namespace TexasHoldem.AI.NeuroPlayer.Normalization
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -9,7 +10,9 @@
 
     public class Normalization
     {
-        private readonly IStartGameContext startGameContext;
+        private static object locker;
+
+        private readonly int numberOfPlayers;
 
         private ICardAdapter pocket;
 
@@ -25,10 +28,11 @@
 
         private bool isUpdated;
 
-        public Normalization(IStartGameContext context)
+        public Normalization(int numberOfPlayers)
         {
-            this.startGameContext = context;
+            this.numberOfPlayers = numberOfPlayers;
             this.isUpdated = false;
+            locker = new object();
         }
 
         public void Update(ICardAdapter pocket, ICardAdapter communityCards, IGetTurnContext context)
@@ -94,7 +98,7 @@
 
             if (!this.isUpdated)
             {
-                for (int i = 1; i < this.startGameContext.PlayerNames.Count; i++)
+                for (int i = 1; i < this.numberOfPlayers; i++)
                 {
                     normalizedOpponents.Add(new NormalizedOpponent(0, 0, 0));
                 }
@@ -200,7 +204,12 @@
 
                 if (this.getTurnContext != null && this.getTurnContext.RoundType == Logic.GameRoundType.PreFlop)
                 {
-                    Hand.HandWinOdds(this.pocket.Mask, 0UL, out wins, out losses);
+                    lock (locker)
+                    {
+                        // We use the lock since in the third-party library "HandEvaluator"
+                        // the method to which this method refers uses the common field
+                        Hand.HandWinOdds(this.pocket.Mask, 0UL, out wins, out losses);
+                    }
                 }
                 else
                 {

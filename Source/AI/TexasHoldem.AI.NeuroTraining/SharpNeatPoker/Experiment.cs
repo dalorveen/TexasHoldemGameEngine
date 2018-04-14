@@ -24,52 +24,48 @@
 
         private NeatGenomeParameters neatGenomeParams;
 
-        public Experiment(int inputCount, int outputCount, ulong populationSize)
+        public Experiment()
         {
-            this.InputCount = inputCount;
-            this.OutputCount = outputCount;
+            this.InputCount = 36;
+            this.OutputCount = 3;
 
-            this.Initialize();
+            this.eaParams = new NeatEvolutionAlgorithmParameters();
+            this.eaParams.SpecieCount = 200;                     // default: 10
+            this.eaParams.ElitismProportion = 0.05;             // default: 0.2
+            this.eaParams.SelectionProportion = 0.15;           // default: 0.2
+            this.eaParams.OffspringAsexualProportion = 0.7;     // default: 0.5
+            this.eaParams.OffspringSexualProportion = 0.3;      // default: 0.5
+            this.eaParams.InterspeciesMatingProportion = 0.01;  // default: 0.01
 
-            // Create a genome factory with our neat genome parameters object and
-            // the appropriate number of input and output neuron genes.
-            this.GenomeFactory = this.CreateGenomeFactory();
+            this.neatGenomeParams = new NeatGenomeParameters();
+            this.neatGenomeParams.ConnectionWeightRange = 3.0;                  // default: 5
+            this.neatGenomeParams.ConnectionWeightMutationProbability = 0.95;   // default: 0.94;
+            this.neatGenomeParams.AddNodeMutationProbability = 0.01;            // default: 0.01;
+            this.neatGenomeParams.AddConnectionMutationProbability = 0.075;     // default: 0.025;
+            this.neatGenomeParams.DeleteConnectionMutationProbability = 0.075;  // default: 0.025;
 
-            // Create an initial population of randomly generated genomes.
-            this.GenomeList = this.GenomeFactory.CreateGenomeList((int)populationSize, 0);
-        }
+            this.parallelOptions = new ParallelOptions();
+            //this.parallelOptions.MaxDegreeOfParallelism = 8;
 
-        public Experiment(string populationFile)
-        {
-            this.Initialize();
-
-            var populationFileParser = new NeuroPlayer.Helpers.PopulationFileParser(populationFile);
-
-            this.InputCount = populationFileParser.InputCount;
-            this.OutputCount = populationFileParser.OutputCount;
-
-            using (XmlReader xr = XmlReader.Create(populationFile))
-            {
-                this.GenomeList = this.LoadPopulation(xr);
-            }
-
-            this.GenomeFactory = this.GenomeList[0].GenomeFactory;
+            this.activationScheme = NetworkActivationScheme.CreateAcyclicScheme(); //NetworkActivationScheme.CreateCyclicFixedTimestepsScheme(1);
+            this.neatGenomeParams.FeedforwardOnly = this.activationScheme.AcyclicNetwork;
         }
 
         public int InputCount { get; private set; }
 
         public int OutputCount { get; private set; }
 
-        public Evaluator Evaluator { get; private set; }
-
-        public IGenomeFactory<NeatGenome> GenomeFactory { get; private set; }
-
-        public List<NeatGenome> GenomeList { get; private set; }
-
         public List<NeatGenome> LoadPopulation(XmlReader xr)
         {
-            NeatGenomeFactory genomeFactory = (NeatGenomeFactory)this.CreateGenomeFactory();
+            var genomeFactory = (NeatGenomeFactory)this.CreateGenomeFactory();
+
             return NeatGenomeXmlIO.ReadCompleteGenomeList(xr, false, genomeFactory);
+        }
+
+        public void SavePopulation(XmlWriter xw, IList<NeatGenome> genomeList)
+        {
+            // Writing node IDs is not necessary for NEAT.
+            NeatGenomeXmlIO.WriteComplete(xw, genomeList, false);
         }
 
         public IGenomeDecoder<NeatGenome, IBlackBox> CreateGenomeDecoder()
@@ -94,8 +90,8 @@
             // Create distance metric. Mismatched genes have a fixed distance of 10;
             // for matched genes the distance is their weight difference.
             IDistanceMetric distanceMetric = new ManhattanDistanceMetric(1.0, 0.0, 10.0);
-            ISpeciationStrategy<NeatGenome> speciationStrategy = new ParallelKMeansClusteringStrategy<NeatGenome>(distanceMetric);
-            //ISpeciationStrategy<NeatGenome> speciationStrategy = new KMeansClusteringStrategy<NeatGenome>(distanceMetric);
+            ISpeciationStrategy<NeatGenome> speciationStrategy =
+                new ParallelKMeansClusteringStrategy<NeatGenome>(distanceMetric);
 
             // Create complexity regulation strategy.
             IComplexityRegulationStrategy complexityRegulationStrategy = new NullComplexityRegulationStrategy();
@@ -107,9 +103,13 @@
             // Create genome decoder.
             IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = this.CreateGenomeDecoder();
 
+            var evaluator = new Evaluator();
+
             // Create a genome list evaluator. This packages up the genome decoder with the genome evaluator.
+            //IGenomeListEvaluator<NeatGenome> innerEvaluator =
+            //    new SerialGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, evaluator);
             IGenomeListEvaluator<NeatGenome> innerEvaluator =
-                new SerialGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, this.Evaluator);
+                new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, evaluator);
 
             // Wrap the list evaluator in a 'selective' evaluator that will only evaluate new genomes.
             // That is, we skip re-evaluating any genomes that were in the population in previous
@@ -125,31 +125,6 @@
 
             // Finished. Return the evolution algorithm
             return ea;
-        }
-
-        private void Initialize()
-        {
-            this.activationScheme = NetworkActivationScheme.CreateAcyclicScheme(); //NetworkActivationScheme.CreateCyclicFixedTimestepsScheme(1);
-            this.parallelOptions = new ParallelOptions();
-
-            this.eaParams = new NeatEvolutionAlgorithmParameters();
-            this.eaParams.SpecieCount = 10;                     // default: 10
-            this.eaParams.ElitismProportion = 0.05;             // default: 0.2
-            this.eaParams.SelectionProportion = 0.15;           // default: 0.2
-            this.eaParams.OffspringAsexualProportion = 0.2;     // default: 0.5
-            this.eaParams.OffspringSexualProportion = 0.8;      // default: 0.5
-            this.eaParams.InterspeciesMatingProportion = 0.01;  // default: 0.01
-
-            this.neatGenomeParams = new NeatGenomeParameters();
-            this.neatGenomeParams.ConnectionWeightRange = 4.0;                  // default: 5
-            this.neatGenomeParams.ConnectionWeightMutationProbability = 0.95;   // default: 0.94;
-            this.neatGenomeParams.AddNodeMutationProbability = 0.015;           // default: 0.01;
-            this.neatGenomeParams.AddConnectionMutationProbability = 0.0375;     // default: 0.025;
-            this.neatGenomeParams.DeleteConnectionMutationProbability = 0.0375;  // default: 0.025;
-
-            this.neatGenomeParams.FeedforwardOnly = this.activationScheme.AcyclicNetwork;
-
-            this.Evaluator = new Evaluator();
         }
     }
 }

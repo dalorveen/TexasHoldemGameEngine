@@ -5,6 +5,7 @@
     using System.Linq;
 
     using TexasHoldem.Logic.Cards;
+    using TexasHoldem.Logic.Extensions;
     using TexasHoldem.Logic.Helpers;
     using TexasHoldem.Logic.Players;
 
@@ -241,9 +242,14 @@
         {
             foreach (var player in this.players)
             {
-                if (player.PlayerMoney.Money <= 0 || player.PlayerMoney.Money > this.smallBlind * 200 * 6)
+                if (player.PlayerMoney.Money <= 0)
                 {
-                    player.PlayerMoney.Money = player.BuyIn == -1 ? this.smallBlind * 200 : player.BuyIn;
+                    player.PlayerMoney.Money = RandomProvider.Next(this.smallBlind * 80, (this.smallBlind * 200) + 1);
+                }
+                else if (player.PlayerMoney.Money > this.smallBlind * 200 * 6)
+                {
+                    // We will assume that the player has won enough to get out of the table and sit down again
+                    player.PlayerMoney.Money = this.smallBlind * 200;
                 }
             }
         }

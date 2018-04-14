@@ -17,9 +17,9 @@
 
         private bool isUpdated;
 
-        public Signal(IStartGameContext context)
+        public Signal(int numberOfPlayers)
         {
-            this.normalization = new Normalization.Normalization(context);
+            this.normalization = new Normalization.Normalization(numberOfPlayers);
         }
 
         protected IGetTurnContext GetTurnContext { get; private set; }
