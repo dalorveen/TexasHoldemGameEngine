@@ -96,8 +96,8 @@
         {
             base.StartHandExtract(context);
 
-            this.numberOfPlayers = context.ActionPriority.Count;
-            var actionPriority = context.ActionPriority.TakeWhile(p => p != this.playerName).Count();
+            this.numberOfPlayers = 4; // TODO: fix!
+            var actionPriority = context.ActionPriority == 10 ? (this.numberOfPlayers - 1) : context.ActionPriority;
             this.CurrentPosition = availableSeatNames[this.numberOfPlayers - 2][actionPriority];
 
             this.IndicatorByPositions[this.CurrentPosition.Value].StartHandExtract(context);

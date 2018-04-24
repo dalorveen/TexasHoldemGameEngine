@@ -12,6 +12,6 @@
         int MoneyLeft { get; }
         Card SecondCard { get; }
         int SmallBlind { get; }
-        IReadOnlyList<string> ActionPriority { get; }
+        int ActionPriority { get; }
     }
 }

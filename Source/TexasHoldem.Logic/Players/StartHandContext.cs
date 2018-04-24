@@ -13,7 +13,8 @@
             int handNumber,
             int moneyLeft,
             int smallBlind,
-            List<string> actionPriority)
+            int actionPriority,
+            string dealerName)
         {
             this.FirstCard = firstCard;
             this.SecondCard = secondCard;
@@ -21,6 +22,7 @@
             this.MoneyLeft = moneyLeft;
             this.SmallBlind = smallBlind;
             this.ActionPriority = actionPriority;
+            this.DealerName = dealerName;
         }
 
         public Card FirstCard { get; }
@@ -33,14 +35,15 @@
 
         public int SmallBlind { get; }
 
-        public IReadOnlyList<string> ActionPriority { get; }
+        /// <summary>
+        /// Gets the sequence number of the player in the turn queue.
+        /// Small blind = 0, big blind = 1, ..., dealer 10.
+        /// </summary>
+        /// <value>
+        /// The value is from zero to 10.
+        /// </value>
+        public int ActionPriority { get; }
 
-        public string DealerName
-        {
-            get
-            {
-                return this.ActionPriority[this.ActionPriority.Count - 1];
-            }
-        }
+        public string DealerName { get; }
     }
 }

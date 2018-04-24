@@ -38,12 +38,9 @@
 
         public void Play()
         {
-            // Sorting players in the order of their turn for action (SB, BB, .. BTN)
-            var actionPriority = new List<string>(this.players.Select(s => s.Name));
-            actionPriority.Add(actionPriority.First());
-            actionPriority.RemoveAt(0);
-
             this.Rebuy();
+
+            var actionPriority = 10;
 
             // Start the hand and deal cards to each player
             foreach (var player in this.players)
@@ -54,7 +51,8 @@
                     this.handNumber,
                     player.PlayerMoney.Money,
                     this.smallBlind,
-                    actionPriority);
+                    actionPriority++ % 11,
+                    this.players.First().Name);
                 player.StartHand(startHandContext);
             }
 
