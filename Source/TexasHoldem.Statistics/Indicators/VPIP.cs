@@ -4,18 +4,15 @@
 
     using TexasHoldem.Logic.Players;
 
-    public class VPIP : BaseIndicator
+    public class VPIP : BaseIndicator<VPIP>
     {
-        private readonly string playerName;
-
-        public VPIP(string playerName, int hands = 0)
-            : base(hands)
+        public VPIP()
+            : base(0)
         {
-            this.playerName = playerName;
         }
 
-        public VPIP(string playerName, int hands, int totalTimesVoluntarilyPutMoneyInThePot)
-            : this(playerName, hands)
+        public VPIP(int hands, int totalTimesVoluntarilyPutMoneyInThePot)
+            : base(hands)
         {
             this.TotalTimesVoluntarilyPutMoneyInThePot = totalTimesVoluntarilyPutMoneyInThePot;
         }
@@ -32,15 +29,16 @@
         {
             get
             {
-                return this.Hands == 0 ? 0 : ((double)this.TotalTimesVoluntarilyPutMoneyInThePot / (double)this.Hands) * 100.0;
+                return this.Hands == 0
+                    ? 0 : ((double)this.TotalTimesVoluntarilyPutMoneyInThePot / (double)this.Hands) * 100.0;
             }
         }
 
-        public override void MadeActionExtract(IGetTurnContext context, PlayerAction madeAction)
+        public override void Update(IGetTurnContext context, PlayerAction madeAction, string playerName)
         {
             if (context.RoundType == Logic.GameRoundType.PreFlop
                 && !context.PreviousRoundActions.Any(
-                    p => p.PlayerName == this.playerName && p.Action.Type != PlayerActionType.Post))
+                    p => p.PlayerName == playerName && p.Action.Type != PlayerActionType.Post))
             {
                 if (madeAction.Type == PlayerActionType.Raise)
                 {
@@ -58,9 +56,16 @@
             return $"{this.Percentage:0.00}%";
         }
 
-        public override BaseIndicator DeepClone()
+        public override VPIP DeepClone()
         {
-            return new VPIP(this.playerName, this.Hands, this.TotalTimesVoluntarilyPutMoneyInThePot);
+            return new VPIP(this.Hands, this.TotalTimesVoluntarilyPutMoneyInThePot);
+        }
+
+        public override VPIP Sum(VPIP other)
+        {
+            return new VPIP(
+                this.Hands + other.Hands,
+                this.TotalTimesVoluntarilyPutMoneyInThePot + other.TotalTimesVoluntarilyPutMoneyInThePot);
         }
     }
 }

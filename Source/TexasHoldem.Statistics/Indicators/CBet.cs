@@ -5,18 +5,15 @@
     using TexasHoldem.Logic;
     using TexasHoldem.Logic.Players;
 
-    public class CBet : BaseIndicator, IAdd<CBet>
+    public class CBet : BaseIndicator<CBet>
     {
-        private readonly string playerName;
-
-        public CBet(string playerName, int hands = 0)
-            : base(hands)
+        public CBet()
+            : base(0)
         {
-            this.playerName = playerName;
         }
 
-        public CBet(string playerName, int hands, int totalTimesContinuationBet, int totalContinuationBetOpportunities)
-            : this(playerName, hands)
+        public CBet(int hands, int totalTimesContinuationBet, int totalContinuationBetOpportunities)
+            : base(hands)
         {
             this.TotalTimesContinuationBet = totalTimesContinuationBet;
             this.TotalContinuationBetOpportunities = totalContinuationBetOpportunities;
@@ -38,11 +35,12 @@
             get
             {
                 return this.TotalContinuationBetOpportunities == 0
-                    ? 0 : ((double)this.TotalTimesContinuationBet / (double)this.TotalContinuationBetOpportunities) * 100.0;
+                    ? 0
+                    : ((double)this.TotalTimesContinuationBet / (double)this.TotalContinuationBetOpportunities) * 100.0;
             }
         }
 
-        public override void GetTurnExtract(IGetTurnContext context)
+        public override void Update(IGetTurnContext context, string playerName)
         {
             if (context.RoundType != GameRoundType.PreFlop && context.MoneyToCall == 0)
             {
@@ -51,7 +49,7 @@
                     .Cast<PlayerActionAndName?>()
                     .LastOrDefault(p => p.Value.Action.Type == PlayerActionType.Raise);
 
-                if (preflopRaiser.HasValue && preflopRaiser.Value.PlayerName == this.playerName)
+                if (preflopRaiser.HasValue && preflopRaiser.Value.PlayerName == playerName)
                 {
                     for (int i = 1; i < (int)context.RoundType; i++)
                     {
@@ -64,7 +62,7 @@
                         {
                             return;
                         }
-                        else if (previousRoundFirstRaiser.Value.PlayerName != this.playerName)
+                        else if (previousRoundFirstRaiser.Value.PlayerName != playerName)
                         {
                             return;
                         }
@@ -76,7 +74,7 @@
             }
         }
 
-        public override void MadeActionExtract(IGetTurnContext context, PlayerAction madeAction)
+        public override void Update(IGetTurnContext context, PlayerAction madeAction, string playerName)
         {
             if (this.IsOpportunity && madeAction.Type == PlayerActionType.Raise)
             {
@@ -91,21 +89,19 @@
             return $"{this.Percentage:0.00}%";
         }
 
-        public override BaseIndicator DeepClone()
+        public override CBet DeepClone()
         {
-            var copy = new CBet(
-                this.playerName, this.Hands, this.TotalTimesContinuationBet, this.TotalContinuationBetOpportunities);
+            var copy = new CBet(this.Hands, this.TotalTimesContinuationBet, this.TotalContinuationBetOpportunities);
             copy.IsOpportunity = this.IsOpportunity;
             return copy;
         }
 
-        public CBet Add(CBet otherIndicator)
+        public override CBet Sum(CBet other)
         {
             return new CBet(
-                this.playerName,
-                this.Hands + otherIndicator.Hands,
-                this.TotalTimesContinuationBet + otherIndicator.TotalTimesContinuationBet,
-                this.TotalContinuationBetOpportunities + otherIndicator.TotalContinuationBetOpportunities);
+                this.Hands + other.Hands,
+                this.TotalTimesContinuationBet + other.TotalTimesContinuationBet,
+                this.TotalContinuationBetOpportunities + other.TotalContinuationBetOpportunities);
         }
     }
 }

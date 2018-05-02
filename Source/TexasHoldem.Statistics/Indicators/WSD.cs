@@ -1,24 +1,18 @@
 ﻿namespace TexasHoldem.Statistics.Indicators
 {
-    using System.Linq;
-
-    using TexasHoldem.Logic;
     using TexasHoldem.Logic.Players;
 
-    public class WSD : BaseIndicator
+    public class WSD : BaseIndicator<WSD>
     {
-        private readonly string playerName;
-
         private int moneyInTheBeginningOfTheHand;
 
-        public WSD(string playerName, int hands = 0)
-            : base(hands)
+        public WSD()
+            : base(0)
         {
-            this.playerName = playerName;
         }
 
-        public WSD(string playerName, int hands, int totalTimesWonMoneyAtShowdown, int totalTimesWentToShowdown)
-            : this(playerName, hands)
+        public WSD(int hands, int totalTimesWonMoneyAtShowdown, int totalTimesWentToShowdown)
+            : base(hands)
         {
             this.TotalTimesWonMoneyAtShowdown = totalTimesWonMoneyAtShowdown;
             this.TotalTimesWentToShowdown = totalTimesWentToShowdown;
@@ -44,20 +38,18 @@
             }
         }
 
-        public override void StartHandExtract(IStartHandContext context)
+        public override void Update(IStartHandContext context)
         {
-            base.StartHandExtract(context);
-
             this.moneyInTheBeginningOfTheHand = context.MoneyLeft;
         }
 
-        public override void EndHandExtract(IEndHandContext context)
+        public override void Update(IEndHandContext context, string playerName)
         {
             if (context.ShowdownCards.Count > 0)
             {
                 var balance = context.MoneyLeft - this.moneyInTheBeginningOfTheHand;
 
-                this.TotalTimesWentToShowdown += context.ShowdownCards.ContainsKey(this.playerName) ? 1 : 0;
+                this.TotalTimesWentToShowdown += context.ShowdownCards.ContainsKey(playerName) ? 1 : 0;
                 this.TotalTimesWonMoneyAtShowdown += balance > 0 ? 1 : 0;
             }
         }
@@ -67,9 +59,17 @@
             return $"{this.Percentage:0.00}%";
         }
 
-        public override BaseIndicator DeepClone()
+        public override WSD DeepClone()
         {
-            return new WSD(this.playerName, this.Hands, this.TotalTimesWonMoneyAtShowdown, this.TotalTimesWentToShowdown);
+            return new WSD(this.Hands, this.TotalTimesWonMoneyAtShowdown, this.TotalTimesWentToShowdown);
+        }
+
+        public override WSD Sum(WSD other)
+        {
+            return new WSD(
+                this.Hands + other.Hands,
+                this.TotalTimesWonMoneyAtShowdown + other.TotalTimesWonMoneyAtShowdown,
+                this.TotalTimesWentToShowdown + other.TotalTimesWentToShowdown);
         }
     }
 }

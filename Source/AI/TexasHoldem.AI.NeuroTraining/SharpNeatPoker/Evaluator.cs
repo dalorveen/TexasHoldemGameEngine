@@ -10,6 +10,7 @@
     using TexasHoldem.Logic.Extensions;
     using TexasHoldem.Logic.GameMechanics;
     using TexasHoldem.Logic.Players;
+    using TexasHoldem.Statistics;
 
     public class Evaluator : IPhenomeEvaluator<IBlackBox>
     {
@@ -20,7 +21,7 @@
         public FitnessInfo Evaluate(IBlackBox phenome)
         {
             var players = new List<IPlayer>();
-            var learner = new Learner(RandomProvider.Next(80, 201), phenome);
+            var learner = new Learner(RandomProvider.Next(80, 201), phenome, new Stats());
 
             players.Add(learner);
             players.Add(new DummyPlayer(RandomProvider.Next(80, 201)));

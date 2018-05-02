@@ -1,7 +1,7 @@
 ﻿namespace TexasHoldem.Statistics.Indicators
 {
-    public interface IAdd<T>
+    public interface ISum<T>
     {
-        T Add(T otherIndicator);
+        T Sum(T otherIndicator);
     }
 }

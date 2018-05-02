@@ -7,6 +7,7 @@
     using SharpNeat.Phenomes;
     using TexasHoldem.AI.NeuroPlayer;
     using TexasHoldem.Logic.Players;
+    using TexasHoldem.Statistics;
 
     public class Learner : NeuroPlayer
     {
@@ -26,14 +27,14 @@
 
         private bool takesPartInTheCurrentHand;
 
-        public Learner(IBlackBox phenome)
-            : base(phenome)
+        public Learner(IBlackBox phenome, Stats stats)
+            : base(phenome, stats)
         {
             this.BuyIn = -1;
         }
 
-        public Learner(int buyIn, IBlackBox phenome)
-            : base(phenome)
+        public Learner(int buyIn, IBlackBox phenome, Stats stats)
+            : base(phenome, stats)
         {
             this.BuyIn = buyIn;
         }

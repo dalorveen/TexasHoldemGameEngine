@@ -27,9 +27,9 @@
         }
 
         public abstract PlayerAction OptimalAction(
-            ICardAdapter pocket, IGetTurnExtendedContext context, IReadOnlyCollection<Card> communityCards);
+            ICardAdapter pocket, IGetTurnContext context, IStats stats, IReadOnlyCollection<Card> communityCards);
 
-        public PlayerAction RaiseOrAllIn(int moneyToRaise, IGetTurnExtendedContext context)
+        public PlayerAction RaiseOrAllIn(int moneyToRaise, IGetTurnContext context)
         {
             if (moneyToRaise >= context.MoneyLeft - context.MoneyToCall)
             {
@@ -43,25 +43,25 @@
         }
 
         public PlayerEconomy PlayerEconomy(
-            ICardAdapter pocket, IGetTurnExtendedContext context, IReadOnlyCollection<Card> communityCards)
+            ICardAdapter pocket, IGetTurnContext context, IReadOnlyCollection<Card> communityCards)
         {
             var calculator = this.Calculator(pocket, context, communityCards);
             var handEconomy = new HandEconomy(calculator);
             return handEconomy.First(p => p.Hero.Pocket.Mask == pocket.Mask);
         }
 
-        public bool IsPush(int moneyToRaise, IGetTurnExtendedContext context)
+        public bool IsPush(int moneyToRaise, IGetTurnContext context)
         {
             return (double)(context.MoneyLeft - moneyToRaise) / (double)(moneyToRaise + context.CurrentPot) <= 0.5;
         }
 
-        public bool IsInPosition(IGetTurnExtendedContext context)
+        public bool IsInPosition(IGetTurnContext context)
         {
             return !context.Opponents.Any(x => x.InHand && x.ActionPriority > 0);
         }
 
         private ICalculator Calculator(
-            ICardAdapter pocket, IGetTurnExtendedContext context, IReadOnlyCollection<Card> communityCards)
+            ICardAdapter pocket, IGetTurnContext context, IReadOnlyCollection<Card> communityCards)
         {
             var holeCardsOfOpponentsWhoAreInHand = new List<ICardAdapter>();
             holeCardsOfOpponentsWhoAreInHand.Add(pocket);

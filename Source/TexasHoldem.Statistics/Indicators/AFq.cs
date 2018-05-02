@@ -1,17 +1,16 @@
 ﻿namespace TexasHoldem.Statistics.Indicators
 {
-    using TexasHoldem.Logic;
     using TexasHoldem.Logic.Players;
 
-    public class AFq : BaseIndicator, IAdd<AFq>
+    public class AFq : BaseIndicator<AFq>
     {
-        public AFq(int hands = 0)
-            : base(hands)
+        public AFq()
+            : base(0)
         {
         }
 
         public AFq(int hands, int totalTimesRaised, int totalTimesCalled, int totalTimesFolded)
-            : this(hands)
+            : base(hands)
         {
             this.TotalTimesRaised = totalTimesRaised;
             this.TotalTimesCalled = totalTimesCalled;
@@ -39,7 +38,7 @@
             }
         }
 
-        public override void MadeActionExtract(IGetTurnContext context, PlayerAction madeAction)
+        public override void Update(IGetTurnContext context, PlayerAction madeAction, string playerName)
         {
             if (madeAction.Type == PlayerActionType.Raise)
             {
@@ -60,18 +59,18 @@
             return $"{this.Percentage:0.00}%";
         }
 
-        public override BaseIndicator DeepClone()
+        public override AFq DeepClone()
         {
             return new AFq(this.Hands, this.TotalTimesRaised, this.TotalTimesCalled, this.TotalTimesFolded);
         }
 
-        public AFq Add(AFq otherIndicator)
+        public override AFq Sum(AFq other)
         {
             return new AFq(
-                this.Hands + otherIndicator.Hands,
-                this.TotalTimesRaised + otherIndicator.TotalTimesRaised,
-                this.TotalTimesCalled + otherIndicator.TotalTimesCalled,
-                this.TotalTimesFolded + otherIndicator.TotalTimesFolded);
+                this.Hands + other.Hands,
+                this.TotalTimesRaised + other.TotalTimesRaised,
+                this.TotalTimesCalled + other.TotalTimesCalled,
+                this.TotalTimesFolded + other.TotalTimesFolded);
         }
     }
 }

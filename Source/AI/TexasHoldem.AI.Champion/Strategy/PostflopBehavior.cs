@@ -18,7 +18,7 @@
         }
 
         public override PlayerAction OptimalAction(
-            ICardAdapter pocket, IGetTurnExtendedContext context, IReadOnlyCollection<Card> communityCards)
+            ICardAdapter pocket, IGetTurnContext context, IStats stats, IReadOnlyCollection<Card> communityCards)
         {
             var playerEconomy = this.PlayerEconomy(pocket, context, communityCards);
 
@@ -36,77 +36,77 @@
             }
         }
 
-        private PlayerAction ReactionCausedByNutHand(IGetTurnExtendedContext context, PlayerEconomy playerEconomy)
+        private PlayerAction ReactionCausedByNutHand(IGetTurnContext context, PlayerEconomy playerEconomy)
         {
-            if (context.CanRaise)
-            {
-                if (this.NeedAnRaiseToAdjustTheStats(context))
-                {
-                    return this.ToValueBet(context, playerEconomy);
-                }
-            }
+            //if (context.CanRaise)
+            //{
+            //    if (this.NeedAnRaiseToAdjustTheStats(context))
+            //    {
+            //        return this.ToValueBet(context, playerEconomy);
+            //    }
+            //}
 
             return PlayerAction.CheckOrCall();
         }
 
-        private PlayerAction ReactionCausedByBestHand(IGetTurnExtendedContext context, PlayerEconomy playerEconomy)
+        private PlayerAction ReactionCausedByBestHand(IGetTurnContext context, PlayerEconomy playerEconomy)
         {
-            if (playerEconomy.TiedHandsWithHero > 0)
-            {
-                if (context.CanRaise && playerEconomy.HandsThatLoseToTheHero.Count > 0)
-                {
-                    if (this.NeedAnRaiseToAdjustTheStats(context))
-                    {
-                        return this.ToValueBet(context, playerEconomy);
-                    }
-                }
-            }
-            else
-            {
-                if (context.CanRaise)
-                {
-                    if (this.NeedAnRaiseToAdjustTheStats(context))
-                    {
-                        return this.ToValueBet(context, playerEconomy);
-                    }
-                }
-            }
+            //if (playerEconomy.TiedHandsWithHero > 0)
+            //{
+            //    if (context.CanRaise && playerEconomy.HandsThatLoseToTheHero.Count > 0)
+            //    {
+            //        if (this.NeedAnRaiseToAdjustTheStats(context))
+            //        {
+            //            return this.ToValueBet(context, playerEconomy);
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    if (context.CanRaise)
+            //    {
+            //        if (this.NeedAnRaiseToAdjustTheStats(context))
+            //        {
+            //            return this.ToValueBet(context, playerEconomy);
+            //        }
+            //    }
+            //}
 
             return PlayerAction.CheckOrCall();
         }
 
-        private PlayerAction ReactionCausedByWeakHand(IGetTurnExtendedContext context, PlayerEconomy playerEconomy)
+        private PlayerAction ReactionCausedByWeakHand(IGetTurnContext context, PlayerEconomy playerEconomy)
         {
-            var investment = (int)playerEconomy.OptimalInvestment(context.CurrentPot);
-
-            if (investment < context.MoneyToCall)
-            {
-                return PlayerAction.Fold();
-            }
-
-            if (context.CanRaise)
-            {
-                if (investment >= context.MoneyToCall + context.MinRaise)
-                {
-                    if (context.CurrentPot * LowerWagerLimit <= investment && this.NeedAnRaiseToAdjustTheStats(context))
-                    {
-                        if (this.IsPush(investment - context.MoneyToCall, context))
-                        {
-                            // it's a very losing action
-                            // return this.RaiseOrAllIn(int.MaxValue, context);
-                        }
-                        else
-                        {
-                            return this.RaiseOrAllIn(investment - context.MoneyToCall, context);
-                        }
-                    }
-                }
-            }
+            //var investment = (int)playerEconomy.OptimalInvestment(context.CurrentPot);
+            //
+            //if (investment < context.MoneyToCall)
+            //{
+            //    return PlayerAction.Fold();
+            //}
+            //
+            //if (context.CanRaise)
+            //{
+            //    if (investment >= context.MoneyToCall + context.MinRaise)
+            //    {
+            //        if (context.CurrentPot * LowerWagerLimit <= investment && this.NeedAnRaiseToAdjustTheStats(context))
+            //        {
+            //            if (this.IsPush(investment - context.MoneyToCall, context))
+            //            {
+            //                // it's a very losing action
+            //                // return this.RaiseOrAllIn(int.MaxValue, context);
+            //            }
+            //            else
+            //            {
+            //                return this.RaiseOrAllIn(investment - context.MoneyToCall, context);
+            //            }
+            //        }
+            //    }
+            //}
 
             return PlayerAction.CheckOrCall();
         }
 
-        private PlayerAction ToValueBet(IGetTurnExtendedContext context, PlayerEconomy playerEconomy)
+        private PlayerAction ToValueBet(IGetTurnContext context, PlayerEconomy playerEconomy)
         {
             double lowerLimit, upperLimit;
 
@@ -145,23 +145,23 @@
             }
         }
 
-        private bool NeedAnRaiseToAdjustTheStats(IGetTurnExtendedContext context)
+        private bool NeedAnRaiseToAdjustTheStats(IGetTurnContext context)
         {
-            if (context.CurrentStats.CBet.IndicatorByStreets[context.RoundType].IsOpportunity)
-            {
-                if (context.CurrentStats.CBet.IndicatorByStreets[context.RoundType].Percentage
-                    < this.PlayingStyle.CBet.IndicatorByStreets[context.RoundType].Percentage)
-                {
-                    return true;
-                }
-            }
-
-            if (context.CurrentStats.AFq.IndicatorByStreets[context.RoundType].Percentage
-                < this.PlayingStyle.AFq.IndicatorByStreets[context.RoundType].Percentage)
-            {
-                // adjust the current stats of AFq to match the style of the player's game
-                return true;
-            }
+            //if (context.CurrentStats.CBet.IndicatorByStreets[context.RoundType].IsOpportunity)
+            //{
+            //    if (context.CurrentStats.CBet.IndicatorByStreets[context.RoundType].Percentage
+            //        < this.PlayingStyle.CBet.IndicatorByStreets[context.RoundType].Percentage)
+            //    {
+            //        return true;
+            //    }
+            //}
+            //
+            //if (context.CurrentStats.AFq.IndicatorByStreets[context.RoundType].Percentage
+            //    < this.PlayingStyle.AFq.IndicatorByStreets[context.RoundType].Percentage)
+            //{
+            //    // adjust the current stats of AFq to match the style of the player's game
+            //    return true;
+            //}
 
             return false;
         }

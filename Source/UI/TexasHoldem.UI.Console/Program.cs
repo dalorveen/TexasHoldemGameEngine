@@ -27,10 +27,10 @@
         {
             var trainedNeuralNetwork = @"..\..\..\..\AI\TexasHoldem.AI.NeuroPlayer\PopulationFiles\bestAgent.xml";
 
-            players.Add(new Stats(new NeuroPlayer(trainedNeuralNetwork)));
-            players.Add(new Stats(new DummyPlayer()));
-            players.Add(new Stats(new SmartPlayer()));
-            players.Add(new Stats(new DummyPlayer()));
+            players.Add(new NeuroPlayer(trainedNeuralNetwork));
+            players.Add(new DummyPlayer());
+            players.Add(new SmartPlayer());
+            players.Add(new DummyPlayer());
 
             var gameHeight = (6 * players.Count) + NumberOfCommonRows;
             Table(gameHeight);

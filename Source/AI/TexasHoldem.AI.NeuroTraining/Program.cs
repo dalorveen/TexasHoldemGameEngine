@@ -320,39 +320,40 @@
                 $"generation: [{temp.Statistics._generation}]\n" +
                 $"state: [{temp.RunState}]\n" +
                 $"bestFitness: [{temp.Statistics._maxFitness:N6}]; meanFitness: [{temp.Statistics._meanFitness:N6}]\n" +
-                $"bestComplexity: [{temp.Statistics._maxComplexity:N0}]; meanComplexity: [{temp.Statistics._meanComplexity:N3}]\n" +
+                $"bestComplexity: [{temp.CurrentChampGenome.Complexity:N0}]; meanComplexity: [{temp.Statistics._meanComplexity:N3}]\n" +
                 $"meanSpecieChampFitness: [{temp.Statistics._meanSpecieChampFitness:N6}]\n" +
                 $"--------------------------------------------------------------------------------\n" +
                 $"STATISTICS OF THE BEST AGENT:\n" +
                 $"\tmoney won per hand: [{agent.MoneyWonPerHand():N3}] ([{agent.HandsPlayed}] hands played)\n" +
                 $"PREFLOP:\n" +
-                $"\tVPIP: [{agent.Stats.VPIP.Percentage:N1}%]; PFR: [{agent.Stats.PFR.Percentage:N1}%]\n" +
-                $"\t3BET: [{agent.Stats.ThreeBet.IndicatorByStreets[Logic.GameRoundType.PreFlop].Percentage:N1}%]; " +
-                $"4BET: [{agent.Stats.FourBet.IndicatorByStreets[Logic.GameRoundType.PreFlop].Percentage:N1}%]\n" +
-                $"\tRFI: [{agent.Stats.RFI.AllPositions().Percentage:N1}%]\n" +
+                $"\tVPIP: [{agent.Stats.VPIP().Total().Percentage:N1}%]; PFR: [{agent.Stats.PFR().Total().Percentage:N1}%]\n" +
+                $"\t3BET: [{agent.Stats.ThreeBet().TotalBy(Logic.GameRoundType.PreFlop).Percentage:N1}%]; " +
+                $"4BET: [{agent.Stats.FourBet().TotalBy(Logic.GameRoundType.PreFlop).Percentage:N1}%]\n" +
+                $"\tRFI: [{agent.Stats.RFI().Total().Percentage:N1}%]\n" +
                 $"FLOP:\n" +
-                $"\t3BET: [{agent.Stats.ThreeBet.IndicatorByStreets[Logic.GameRoundType.Flop].Percentage:N1}%]; " +
-                $"4BET: [{agent.Stats.FourBet.IndicatorByStreets[Logic.GameRoundType.Flop].Percentage:N1}%]\n" +
-                $"\tCBET: [{agent.Stats.CBet.IndicatorByStreets[Logic.GameRoundType.Flop].Percentage:N1}%];\n" +
-                $"\tAFq: [{agent.Stats.AFq.IndicatorByStreets[Logic.GameRoundType.Flop].Percentage:N1}%];\n" +
+                $"\t3BET: [{agent.Stats.ThreeBet().TotalBy(Logic.GameRoundType.Flop).Percentage:N1}%]; " +
+                $"4BET: [{agent.Stats.FourBet().TotalBy(Logic.GameRoundType.Flop).Percentage:N1}%]\n" +
+                $"\tCBET: [{agent.Stats.CBet().TotalBy(Logic.GameRoundType.Flop).Percentage:N1}%];\n" +
+                $"\tAFq: [{agent.Stats.AFq().TotalBy(Logic.GameRoundType.Flop).Percentage:N1}%];\n" +
                 $"TURN:\n" +
-                $"\t3BET: [{agent.Stats.ThreeBet.IndicatorByStreets[Logic.GameRoundType.Turn].Percentage:N1}%]; " +
-                $"4BET: [{agent.Stats.FourBet.IndicatorByStreets[Logic.GameRoundType.Turn].Percentage:N1}%]\n" +
-                $"\tCBET: [{agent.Stats.CBet.IndicatorByStreets[Logic.GameRoundType.Turn].Percentage:N1}%];\n" +
-                $"\tAFq: [{agent.Stats.AFq.IndicatorByStreets[Logic.GameRoundType.Turn].Percentage:N1}%];\n" +
+                $"\t3BET: [{agent.Stats.ThreeBet().TotalBy(Logic.GameRoundType.Turn).Percentage:N1}%]; " +
+                $"4BET: [{agent.Stats.FourBet().TotalBy(Logic.GameRoundType.Turn).Percentage:N1}%]\n" +
+                $"\tCBET: [{agent.Stats.CBet().TotalBy(Logic.GameRoundType.Turn).Percentage:N1}%];\n" +
+                $"\tAFq: [{agent.Stats.AFq().TotalBy(Logic.GameRoundType.Turn).Percentage:N1}%];\n" +
                 $"RIVER:\n" +
-                $"\t3BET: [{agent.Stats.ThreeBet.IndicatorByStreets[Logic.GameRoundType.River].Percentage:N1}%]; " +
-                $"4BET: [{agent.Stats.FourBet.IndicatorByStreets[Logic.GameRoundType.River].Percentage:N1}%]\n" +
-                $"\tCBET: [{agent.Stats.CBet.IndicatorByStreets[Logic.GameRoundType.River].Percentage:N1}%];\n" +
-                $"\tAFq: [{agent.Stats.AFq.IndicatorByStreets[Logic.GameRoundType.River].Percentage:N1}%];\n" +
+                $"\t3BET: [{agent.Stats.ThreeBet().TotalBy(Logic.GameRoundType.River).Percentage:N1}%]; " +
+                $"4BET: [{agent.Stats.FourBet().TotalBy(Logic.GameRoundType.River).Percentage:N1}%]\n" +
+                $"\tCBET: [{agent.Stats.CBet().TotalBy(Logic.GameRoundType.River).Percentage:N1}%];\n" +
+                $"\tAFq: [{agent.Stats.AFq().TotalBy(Logic.GameRoundType.River).Percentage:N1}%];\n" +
                 $"TOTAL:\n" +
-                $"\t3BET: [{agent.Stats.ThreeBet.AllStreets().Percentage:N1}%]; " +
-                $"4BET: [{agent.Stats.FourBet.AllStreets().Percentage:N1}%]\n" +
-                $"\tCBET: [{agent.Stats.CBet.AllStreets().Percentage:N1}%];\n" +
-                $"\tAFq: [{agent.Stats.AFq.AllStreets().Percentage:N1}%];\n" +
-                $"\tW$SD: [{agent.Stats.WSD.Percentage:N1}%]; WTSD: [{agent.Stats.WTSD.Percentage:N1}%]; " +
-                $"W$WSF: [{agent.Stats.WWSF.Percentage:N1}%]\n" +
-                $"\tBB/100: [{agent.Stats.BBper100.Amount:N2}]\n";
+                $"\t3BET: [{agent.Stats.ThreeBet().Total().Percentage:N1}%]; " +
+                $"4BET: [{agent.Stats.FourBet().Total().Percentage:N1}%]\n" +
+                $"\tCBET: [{agent.Stats.CBet().Total().Percentage:N1}%];\n" +
+                $"\tAFq: [{agent.Stats.AFq().Total().Percentage:N1}%];\n" +
+                $"\tW$SD: [{agent.Stats.WSD().Total().Percentage:N1}%]; " +
+                $"WTSD: [{agent.Stats.WTSD().Total().Percentage:N1}%]; " +
+                $"W$WSF: [{agent.Stats.WWSF().Total().Percentage:N1}%]\n" +
+                $"\tBB/100: [{agent.Stats.BBper100().Total().Amount:N2}]\n";
             Console.Write(str);
         }
 

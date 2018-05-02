@@ -5,15 +5,15 @@
     using TexasHoldem.Logic;
     using TexasHoldem.Logic.Players;
 
-    public class FourBet : BaseIndicator, IAdd<FourBet>
+    public class FourBet : BaseIndicator<FourBet>
     {
-        public FourBet(int hands = 0)
-            : base(hands)
+        public FourBet()
+            : base(0)
         {
         }
 
         public FourBet(int hands, int totalTimes4Bet, int total4BetOpportunities)
-            : this(hands)
+            : base(hands)
         {
             this.TotalTimes4Bet = totalTimes4Bet;
             this.Total4BetOpportunities = total4BetOpportunities;
@@ -38,7 +38,7 @@
             }
         }
 
-        public override void GetTurnExtract(IGetTurnContext context)
+        public override void Update(IGetTurnContext context, string playerName)
         {
             var raises = context.PreviousRoundActions.Count(x => x.Action.Type == PlayerActionType.Raise);
 
@@ -49,7 +49,7 @@
             }
         }
 
-        public override void MadeActionExtract(IGetTurnContext context, PlayerAction madeAction)
+        public override void Update(IGetTurnContext context, PlayerAction madeAction, string playerName)
         {
             if (this.IsOpportunity && madeAction.Type == PlayerActionType.Raise)
             {
@@ -64,14 +64,14 @@
             return $"{this.Percentage:0.00}%";
         }
 
-        public override BaseIndicator DeepClone()
+        public override FourBet DeepClone()
         {
             var copy = new FourBet(this.Hands, this.TotalTimes4Bet, this.Total4BetOpportunities);
             copy.IsOpportunity = this.IsOpportunity;
             return copy;
         }
 
-        public FourBet Add(FourBet otherIndicator)
+        public override FourBet Sum(FourBet otherIndicator)
         {
             return new FourBet(
                 this.Hands + otherIndicator.Hands,

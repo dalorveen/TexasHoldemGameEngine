@@ -3,7 +3,7 @@
     using TexasHoldem.Logic;
     using TexasHoldem.Logic.Players;
 
-    public abstract class BaseIndicator : IDeepCloneable<BaseIndicator>
+    public abstract class BaseIndicator<T> : IDeepCloneable<T>, ISum<T>, IUpdate
     {
         public BaseIndicator(int hands = 0)
         {
@@ -18,39 +18,41 @@
         /// </value>
         public int Hands { get; private set; }
 
-        public virtual void StartGameExtract(IStartHandContext context)
+        public virtual void Update(IStartGameContext context)
         {
         }
 
-        public virtual void StartHandExtract(IStartHandContext context)
+        public virtual void Update(IStartHandContext context)
         {
             this.Hands++;
         }
 
-        public virtual void StartRoundExtract(IStartRoundContext context)
+        public virtual void Update(IStartRoundContext context)
         {
         }
 
-        public virtual void GetTurnExtract(IGetTurnContext context)
+        public virtual void Update(IGetTurnContext context, string playerName)
         {
         }
 
-        public virtual void MadeActionExtract(IGetTurnContext context, PlayerAction madeAction)
+        public virtual void Update(IGetTurnContext context, PlayerAction playerAction, string playerName)
         {
         }
 
-        public virtual void EndRoundExtract(IEndRoundContext context)
+        public virtual void Update(IEndRoundContext context)
         {
         }
 
-        public virtual void EndHandExtract(IEndHandContext context)
+        public virtual void Update(IEndHandContext context, string playerName)
         {
         }
 
-        public virtual void EndGameExtract(IStartHandContext context)
+        public virtual void Update(IEndGameContext context)
         {
         }
 
-        public abstract BaseIndicator DeepClone();
+        public abstract T DeepClone();
+
+        public abstract T Sum(T other);
     }
 }

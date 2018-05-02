@@ -1,15 +1,11 @@
 ﻿namespace TexasHoldem.Statistics
 {
-    public enum SeatNames
+    public enum Positions
     {
         SB,
         BB,
-        UTG,
-        UTG1,
-        UTG2,
+        EP,
         MP,
-        MP1,
-        MP2,
         CO,
         BTN
     }

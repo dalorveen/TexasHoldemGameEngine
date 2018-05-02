@@ -4,26 +4,16 @@
 
     public interface IStats
     {
-        VPIP VPIP { get; }
-
-        PFR PFR { get; }
-
-        PositionStorage<RFI> RFI { get; }
-
-        StreetStorage<ThreeBet> ThreeBet { get; }
-
-        StreetStorage<FourBet> FourBet { get; }
-
-        StreetStorage<CBet> CBet { get; }
-
-        StreetStorage<AFq> AFq { get; }
-
-        BBper100 BBper100 { get; }
-
-        WTSD WTSD { get; }
-
-        WSD WSD { get; }
-
-        WWSF WWSF { get; }
+        SingleStreet<VPIP> VPIP();
+        SingleStreet<PFR> PFR();
+        SingleStreet<RFI> RFI();
+        SingleStreet<BBper100> BBper100();
+        SingleStreet<WTSD> WTSD();
+        SingleStreet<WSD> WSD();
+        SingleStreet<WWSF> WWSF();
+        SeveralStreets<ThreeBet> ThreeBet();
+        SeveralStreets<FourBet> FourBet();
+        SeveralStreets<CBet> CBet();
+        SeveralStreets<AFq> AFq();
     }
 }

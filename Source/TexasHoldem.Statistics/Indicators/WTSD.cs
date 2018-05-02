@@ -3,20 +3,17 @@
     using TexasHoldem.Logic;
     using TexasHoldem.Logic.Players;
 
-    public class WTSD : BaseIndicator
+    public class WTSD : BaseIndicator<WTSD>
     {
-        private readonly string playerName;
-
         private bool didThePlayerSeeTheFlop;
 
-        public WTSD(string playerName, int hands = 0)
-            : base(hands)
+        public WTSD()
+            : base(0)
         {
-            this.playerName = playerName;
         }
 
-        public WTSD(string playerName, int hands, int totalTimesSawTheFlop, int totalTimesWentToShowdown)
-            : this(playerName, hands)
+        public WTSD(int hands, int totalTimesSawTheFlop, int totalTimesWentToShowdown)
+            : base(hands)
         {
             this.TotalTimesSawTheFlop = totalTimesSawTheFlop;
             this.TotalTimesWentToShowdown = totalTimesWentToShowdown;
@@ -41,7 +38,7 @@
             }
         }
 
-        public override void GetTurnExtract(IGetTurnContext context)
+        public override void Update(IGetTurnContext context, string playerName)
         {
             if (context.RoundType == GameRoundType.Flop)
             {
@@ -50,11 +47,11 @@
             }
         }
 
-        public override void EndHandExtract(IEndHandContext context)
+        public override void Update(IEndHandContext context, string playerName)
         {
             if (this.didThePlayerSeeTheFlop && context.ShowdownCards.Count > 0)
             {
-                this.TotalTimesWentToShowdown += context.ShowdownCards.ContainsKey(this.playerName) ? 1 : 0;
+                this.TotalTimesWentToShowdown += context.ShowdownCards.ContainsKey(playerName) ? 1 : 0;
             }
 
             this.didThePlayerSeeTheFlop = false;
@@ -65,9 +62,17 @@
             return $"{this.Percentage:0.00}%";
         }
 
-        public override BaseIndicator DeepClone()
+        public override WTSD DeepClone()
         {
-            return new WTSD(this.playerName, this.Hands, this.TotalTimesSawTheFlop, this.TotalTimesWentToShowdown);
+            return new WTSD(this.Hands, this.TotalTimesSawTheFlop, this.TotalTimesWentToShowdown);
+        }
+
+        public override WTSD Sum(WTSD other)
+        {
+            return new WTSD(
+                this.Hands + other.Hands,
+                this.TotalTimesSawTheFlop + other.TotalTimesSawTheFlop,
+                this.TotalTimesWentToShowdown + other.TotalTimesWentToShowdown);
         }
     }
 }

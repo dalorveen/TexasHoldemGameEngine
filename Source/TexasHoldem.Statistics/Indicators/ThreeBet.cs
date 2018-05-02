@@ -1,20 +1,19 @@
 ﻿namespace TexasHoldem.Statistics.Indicators
 {
-    using System;
     using System.Linq;
 
     using TexasHoldem.Logic;
     using TexasHoldem.Logic.Players;
 
-    public class ThreeBet : BaseIndicator, IAdd<ThreeBet>
+    public class ThreeBet : BaseIndicator<ThreeBet>
     {
-        public ThreeBet(int hands = 0)
-            : base(hands)
+        public ThreeBet()
+            : base(0)
         {
         }
 
         public ThreeBet(int hands, int totalTimes3Bet, int total3BetOpportunities)
-            : this(hands)
+            : base(hands)
         {
             this.TotalTimes3Bet = totalTimes3Bet;
             this.Total3BetOpportunities = total3BetOpportunities;
@@ -39,7 +38,7 @@
             }
         }
 
-        public override void GetTurnExtract(IGetTurnContext context)
+        public override void Update(IGetTurnContext context, string playerName)
         {
             var raises = context.PreviousRoundActions.Count(x => x.Action.Type == PlayerActionType.Raise);
 
@@ -50,7 +49,7 @@
             }
         }
 
-        public override void MadeActionExtract(IGetTurnContext context, PlayerAction madeAction)
+        public override void Update(IGetTurnContext context, PlayerAction madeAction, string playerName)
         {
             if (this.IsOpportunity && madeAction.Type == PlayerActionType.Raise)
             {
@@ -65,20 +64,19 @@
             return $"{this.Percentage:0.00}%";
         }
 
-        public override BaseIndicator DeepClone()
+        public override ThreeBet DeepClone()
         {
             var copy = new ThreeBet(this.Hands, this.TotalTimes3Bet, this.Total3BetOpportunities);
             copy.IsOpportunity = this.IsOpportunity;
-
             return copy;
         }
 
-        public ThreeBet Add(ThreeBet otherIndicator)
+        public override ThreeBet Sum(ThreeBet other)
         {
             return new ThreeBet(
-                this.Hands + otherIndicator.Hands,
-                this.TotalTimes3Bet + otherIndicator.TotalTimes3Bet,
-                this.Total3BetOpportunities + otherIndicator.Total3BetOpportunities);
+                this.Hands + other.Hands,
+                this.TotalTimes3Bet + other.TotalTimes3Bet,
+                this.Total3BetOpportunities + other.Total3BetOpportunities);
         }
     }
 }

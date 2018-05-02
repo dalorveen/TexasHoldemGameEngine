@@ -4,18 +4,15 @@
 
     using TexasHoldem.Logic.Players;
 
-    public class PFR : BaseIndicator
+    public class PFR : BaseIndicator<PFR>
     {
-        private readonly string playerName;
-
-        public PFR(string playerName, int hands = 0)
-            : base(hands)
+        public PFR()
+            : base(0)
         {
-            this.playerName = playerName;
         }
 
-        public PFR(string playerName, int hands, int totalHandsRaisedPreflop)
-            : this(playerName, hands)
+        public PFR(int hands, int totalHandsRaisedPreflop)
+            : base(hands)
         {
             this.TotalHandsRaisedPreflop = totalHandsRaisedPreflop;
         }
@@ -36,11 +33,11 @@
             }
         }
 
-        public override void MadeActionExtract(IGetTurnContext context, PlayerAction madeAction)
+        public override void Update(IGetTurnContext context, PlayerAction madeAction, string playerName)
         {
             if (context.RoundType == Logic.GameRoundType.PreFlop
                 && !context.PreviousRoundActions.Any(
-                    p => p.PlayerName == this.playerName && p.Action.Type != PlayerActionType.Post))
+                    p => p.PlayerName == playerName && p.Action.Type != PlayerActionType.Post))
             {
                 if (madeAction.Type == PlayerActionType.Raise)
                 {
@@ -54,9 +51,16 @@
             return $"{this.Percentage:0.00}%";
         }
 
-        public override BaseIndicator DeepClone()
+        public override PFR DeepClone()
         {
-            return new PFR(this.playerName, this.Hands, this.TotalHandsRaisedPreflop);
+            return new PFR(this.Hands, this.TotalHandsRaisedPreflop);
+        }
+
+        public override PFR Sum(PFR other)
+        {
+            return new PFR(
+                this.Hands + other.Hands,
+                this.TotalHandsRaisedPreflop + other.TotalHandsRaisedPreflop);
         }
     }
 }

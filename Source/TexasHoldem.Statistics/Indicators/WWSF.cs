@@ -1,23 +1,21 @@
 ﻿namespace TexasHoldem.Statistics.Indicators
 {
-    using System.Linq;
-
     using TexasHoldem.Logic;
     using TexasHoldem.Logic.Players;
 
-    public class WWSF : BaseIndicator
+    public class WWSF : BaseIndicator<WWSF>
     {
         private bool didThePlayerSeeTheFlop;
 
         private int moneyInTheBeginningOfTheHand;
 
-        public WWSF(int hands = 0)
-            : base(hands)
+        public WWSF()
+            : base(0)
         {
         }
 
         public WWSF(int hands, int totalTimesWonMoneyAfterSeeingTheFlop, int totalTimesSawTheFlop)
-            : this(hands)
+            : base(hands)
         {
             this.TotalTimesWonMoneyAfterSeeingTheFlop = totalTimesWonMoneyAfterSeeingTheFlop;
             this.TotalTimesSawTheFlop = totalTimesSawTheFlop;
@@ -38,18 +36,17 @@
             get
             {
                 return this.TotalTimesSawTheFlop == 0
-                    ? 0 : ((double)this.TotalTimesWonMoneyAfterSeeingTheFlop / (double)this.TotalTimesSawTheFlop) * 100.0;
+                    ? 0
+                    : ((double)this.TotalTimesWonMoneyAfterSeeingTheFlop / (double)this.TotalTimesSawTheFlop) * 100.0;
             }
         }
 
-        public override void StartHandExtract(IStartHandContext context)
+        public override void Update(IStartHandContext context)
         {
-            base.StartHandExtract(context);
-
             this.moneyInTheBeginningOfTheHand = context.MoneyLeft;
         }
 
-        public override void GetTurnExtract(IGetTurnContext context)
+        public override void Update(IGetTurnContext context, string playerName)
         {
             if (context.RoundType == GameRoundType.Flop)
             {
@@ -58,7 +55,7 @@
             }
         }
 
-        public override void EndHandExtract(IEndHandContext context)
+        public override void Update(IEndHandContext context, string playerName)
         {
             if (this.didThePlayerSeeTheFlop)
             {
@@ -75,9 +72,17 @@
             return $"{this.Percentage:0.00}%";
         }
 
-        public override BaseIndicator DeepClone()
+        public override WWSF DeepClone()
         {
             return new WWSF(this.Hands, this.TotalTimesWonMoneyAfterSeeingTheFlop, this.TotalTimesSawTheFlop);
+        }
+
+        public override WWSF Sum(WWSF other)
+        {
+            return new WWSF(
+                this.Hands + other.Hands,
+                this.TotalTimesWonMoneyAfterSeeingTheFlop + other.TotalTimesWonMoneyAfterSeeingTheFlop,
+                this.TotalTimesSawTheFlop + other.TotalTimesSawTheFlop);
         }
     }
 }

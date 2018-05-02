@@ -6,6 +6,7 @@
     using HandEvaluatorExtension;
     using SharpNeat.Phenomes;
     using TexasHoldem.Logic.Players;
+    using TexasHoldem.Statistics;
 
     public class NeuroPlayer : BasePlayer
     {
@@ -22,7 +23,7 @@
             this.Phenome = parser.BestPhenome();
         }
 
-        protected NeuroPlayer(IBlackBox phenome)
+        protected NeuroPlayer(IBlackBox phenome, Stats stats)
         {
             this.Phenome = phenome;
         }

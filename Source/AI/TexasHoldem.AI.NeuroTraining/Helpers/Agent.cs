@@ -20,11 +20,9 @@
             this.genome = genome;
 
             var players = new List<IPlayer>();
-            var learner = new Learner((IBlackBox)genome.CachedPhenome);
+            var learner = new Learner((IBlackBox)genome.CachedPhenome, new Stats());
 
-            this.Stats = new Stats(learner);
-
-            players.Add(this.Stats);
+            players.Add(learner);
             players.Add(new DummyPlayer());
             players.Add(new SmartPlayer());
             players.Add(new DummyPlayer());

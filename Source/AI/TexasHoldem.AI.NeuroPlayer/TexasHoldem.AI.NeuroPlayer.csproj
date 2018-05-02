@@ -75,6 +75,10 @@
       <Project>{bcf99e8b-2025-444f-83c7-24542fcf33df}</Project>
       <Name>TexasHoldem.Logic</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\TexasHoldem.Statistics\TexasHoldem.Statistics.csproj">
+      <Project>{95b47ac4-01dd-48c3-b536-648ca22e3002}</Project>
+      <Name>TexasHoldem.Statistics</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

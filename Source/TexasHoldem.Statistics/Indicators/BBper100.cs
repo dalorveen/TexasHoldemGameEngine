@@ -2,19 +2,19 @@
 {
     using TexasHoldem.Logic.Players;
 
-    public class BBper100 : BaseIndicator
+    public class BBper100 : BaseIndicator<BBper100>
     {
         private int moneyInTheBeginningOfTheHand;
 
         private int smallBlind;
 
-        public BBper100(int hands = 0)
-            : base(hands)
+        public BBper100()
+            : base(0)
         {
         }
 
         public BBper100(int hands, double totalBigBlindWon)
-            : this(hands)
+            : base(hands)
         {
             this.TotalBigBlindWon = totalBigBlindWon;
         }
@@ -35,18 +35,15 @@
             }
         }
 
-        public override void StartHandExtract(IStartHandContext context)
+        public override void Update(IStartHandContext context)
         {
-            base.StartHandExtract(context);
-
             this.moneyInTheBeginningOfTheHand = context.MoneyLeft;
             this.smallBlind = context.SmallBlind;
         }
 
-        public override void EndHandExtract(IEndHandContext context)
+        public override void Update(IEndHandContext context, string playerName)
         {
             var balance = context.MoneyLeft - this.moneyInTheBeginningOfTheHand;
-
             this.TotalBigBlindWon += (double)balance / (double)(this.smallBlind * 2);
         }
 
@@ -55,12 +52,19 @@
             return $"{this.Amount:0.00}";
         }
 
-        public override BaseIndicator DeepClone()
+        public override BBper100 DeepClone()
         {
             var copy = new BBper100(this.Hands, this.TotalBigBlindWon);
             copy.moneyInTheBeginningOfTheHand = this.moneyInTheBeginningOfTheHand;
             copy.smallBlind = this.smallBlind;
             return copy;
+        }
+
+        public override BBper100 Sum(BBper100 other)
+        {
+            return new BBper100(
+                this.Hands + other.Hands,
+                this.TotalBigBlindWon + other.TotalBigBlindWon);
         }
     }
 }

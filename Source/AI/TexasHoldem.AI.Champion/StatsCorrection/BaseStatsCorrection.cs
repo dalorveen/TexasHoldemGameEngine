@@ -10,7 +10,7 @@
     {
         private readonly int numberOfHandsToStartCorrection;
 
-        private readonly Dictionary<SeatNames, double> coefficientByPositions;
+        private readonly Dictionary<Positions, double> coefficientByPositions;
 
         private readonly Dictionary<GameRoundType, double> coefficientByStreets;
 
@@ -19,12 +19,12 @@
         public BaseStatsCorrection(int numberOfHandsToStartCorrection)
         {
             this.numberOfHandsToStartCorrection = numberOfHandsToStartCorrection;
-            this.coefficientByPositions = new Dictionary<SeatNames, double>();
+            this.coefficientByPositions = new Dictionary<Positions, double>();
             this.coefficientByStreets = new Dictionary<GameRoundType, double>();
 
-            for (int i = 0; i < Enum.GetNames(typeof(SeatNames)).Length; i++)
+            for (int i = 0; i < Enum.GetNames(typeof(Positions)).Length; i++)
             {
-                this.coefficientByPositions.Add((SeatNames)i, 1.0);
+                this.coefficientByPositions.Add((Positions)i, 1.0);
             }
 
             for (int i = 0; i < 4; i++)
@@ -79,7 +79,7 @@
             return this.coefficientByStreets[street];
         }
 
-        protected double Decrease(SeatNames seatName, double step)
+        protected double Decrease(Positions seatName, double step)
         {
             if (this.coefficientByPositions[seatName] > 1.0)
             {
@@ -123,7 +123,7 @@
             return this.coefficientByStreets[street];
         }
 
-        protected double Increase(SeatNames seatName, double step)
+        protected double Increase(Positions seatName, double step)
         {
             if (this.coefficientByPositions[seatName] < 1.0)
             {

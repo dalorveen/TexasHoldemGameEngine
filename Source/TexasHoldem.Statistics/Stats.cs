@@ -2,266 +2,220 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 
     using TexasHoldem.Logic;
     using TexasHoldem.Logic.Players;
     using TexasHoldem.Statistics.Indicators;
 
-    public class Stats : IPlayer, IStats
+    public class Stats : /*IStats,*/ IUpdate
     {
-        private readonly IPlayer player;
+        private readonly IDictionary<Type, IUpdate> indicatorsWithSingleStreet;
 
-        private readonly IReadOnlyList<BaseIndicator> indicators;
+        private readonly IDictionary<Type, IUpdate> indicatorsWithSeveralStreets;
 
-        public Stats(IPlayer player)
+        public Stats()
         {
-            this.player = player;
-
-            this.indicators = new List<BaseIndicator>
+            this.indicatorsWithSingleStreet = new Dictionary<Type, IUpdate>
             {
-                new VPIP(this.player.Name),
-                new PFR(this.player.Name),
-                new PositionStorage<RFI>(this.player.Name, this.CreateIndicatorByPositions<RFI>(new RFI())),
-                new StreetStorage<ThreeBet>(new Dictionary<GameRoundType, ThreeBet>
+                { typeof(VPIP), new SingleStreet<VPIP>(new Positions[0]) },
+                { typeof(PFR), new SingleStreet<PFR>(new Positions[0]) },
+                { typeof(RFI), new SingleStreet<RFI>(new Positions[] { Positions.BB }) },
+                { typeof(BBper100), new SingleStreet<BBper100>(new Positions[0]) },
+                { typeof(WTSD), new SingleStreet<WTSD>(new Positions[0]) },
+                { typeof(WSD), new SingleStreet<WSD>(new Positions[0]) },
+                { typeof(WWSF), new SingleStreet<WWSF>(new Positions[0]) }
+            };
+
+            this.indicatorsWithSeveralStreets = new Dictionary<Type, IUpdate>
+            {
+                { typeof(ThreeBet), new SeveralStreets<ThreeBet>(new GameRoundType[0], new Positions[0]) },
+                { typeof(FourBet), new SeveralStreets<FourBet>(new GameRoundType[0], new Positions[0]) },
                 {
-                    { GameRoundType.PreFlop, new ThreeBet() },
-                    { GameRoundType.Flop, new ThreeBet() },
-                    { GameRoundType.Turn, new ThreeBet() },
-                    { GameRoundType.River, new ThreeBet() }
-                }),
-                new StreetStorage<FourBet>(new Dictionary<GameRoundType, FourBet>
-                {
-                    { GameRoundType.PreFlop, new FourBet() },
-                    { GameRoundType.Flop, new FourBet() },
-                    { GameRoundType.Turn, new FourBet() },
-                    { GameRoundType.River, new FourBet() }
-                }),
-                new StreetStorage<CBet>(new Dictionary<GameRoundType, CBet>
-                {
-                    { GameRoundType.Flop, new CBet(this.player.Name) },
-                    { GameRoundType.Turn, new CBet(this.player.Name) },
-                    { GameRoundType.River, new CBet(this.player.Name) }
-                }),
-                new StreetStorage<AFq>(new Dictionary<GameRoundType, AFq>
-                {
-                    { GameRoundType.PreFlop, new AFq() },
-                    { GameRoundType.Flop, new AFq() },
-                    { GameRoundType.Turn, new AFq() },
-                    { GameRoundType.River, new AFq() }
-                }),
-                new BBper100(),
-                new WTSD(player.Name),
-                new WSD(player.Name),
-                new WWSF()
+                    typeof(CBet),
+                    new SeveralStreets<CBet>(new GameRoundType[] { GameRoundType.PreFlop }, new Positions[0])
+                },
+                { typeof(AFq), new SeveralStreets<AFq>(new GameRoundType[0], new Positions[0]) },
             };
         }
 
-        public string Name
+        public SingleStreet<VPIP> VPIP()
         {
-            get
+            return (SingleStreet<VPIP>)this.indicatorsWithSingleStreet[typeof(VPIP)];
+        }
+
+        public SingleStreet<PFR> PFR()
+        {
+            return (SingleStreet<PFR>)this.indicatorsWithSingleStreet[typeof(PFR)];
+        }
+
+        public SingleStreet<RFI> RFI()
+        {
+            return (SingleStreet<RFI>)this.indicatorsWithSingleStreet[typeof(RFI)];
+        }
+
+        public SingleStreet<BBper100> BBper100()
+        {
+            return (SingleStreet<BBper100>)this.indicatorsWithSingleStreet[typeof(BBper100)];
+        }
+
+        public SingleStreet<WTSD> WTSD()
+        {
+            return (SingleStreet<WTSD>)this.indicatorsWithSingleStreet[typeof(WTSD)];
+        }
+
+        public SingleStreet<WSD> WSD()
+        {
+            return (SingleStreet<WSD>)this.indicatorsWithSingleStreet[typeof(WSD)];
+        }
+
+        public SingleStreet<WWSF> WWSF()
+        {
+            return (SingleStreet<WWSF>)this.indicatorsWithSingleStreet[typeof(WWSF)];
+        }
+
+        public SeveralStreets<ThreeBet> ThreeBet()
+        {
+            return (SeveralStreets<ThreeBet>)this.indicatorsWithSeveralStreets[typeof(ThreeBet)];
+        }
+
+        public SeveralStreets<FourBet> FourBet()
+        {
+            return (SeveralStreets<FourBet>)this.indicatorsWithSeveralStreets[typeof(FourBet)];
+        }
+
+        public SeveralStreets<CBet> CBet()
+        {
+            return (SeveralStreets<CBet>)this.indicatorsWithSeveralStreets[typeof(CBet)];
+        }
+
+        public SeveralStreets<AFq> AFq()
+        {
+            return (SeveralStreets<AFq>)this.indicatorsWithSeveralStreets[typeof(AFq)];
+        }
+
+        public void Update(IStartGameContext context)
+        {
+            // TODO: remove duplicate code!
+            foreach (var item in this.indicatorsWithSingleStreet)
             {
-                return this.player.Name;
+                item.Value.Update(context);
+            }
+
+            foreach (var item in this.indicatorsWithSeveralStreets)
+            {
+                item.Value.Update(context);
             }
         }
 
-        public int BuyIn
+        public void Update(IStartHandContext context)
         {
-            get
+            // TODO: remove duplicate code!
+            foreach (var item in this.indicatorsWithSingleStreet)
             {
-                return this.player.BuyIn;
+                item.Value.Update(context);
+            }
+
+            foreach (var item in this.indicatorsWithSeveralStreets)
+            {
+                item.Value.Update(context);
             }
         }
 
-        public VPIP VPIP
+        public void Update(IStartRoundContext context)
         {
-            get
+            // TODO: remove duplicate code!
+            foreach (var item in this.indicatorsWithSingleStreet)
             {
-                return (VPIP)this.indicators.First(p => p is VPIP).DeepClone();
+                item.Value.Update(context);
+            }
+
+            foreach (var item in this.indicatorsWithSeveralStreets)
+            {
+                item.Value.Update(context);
             }
         }
 
-        public PFR PFR
+        public void Update(IGetTurnContext context, string playerName)
         {
-            get
+            foreach (var item in this.indicatorsWithSingleStreet)
             {
-                return (PFR)this.indicators.First(p => p is PFR).DeepClone();
+                item.Value.Update(context, playerName);
+            }
+
+            foreach (var item in this.indicatorsWithSeveralStreets)
+            {
+                item.Value.Update(context, playerName);
             }
         }
 
-        public PositionStorage<RFI> RFI
+        public void Update(IGetTurnContext context, PlayerAction playerAction, string playerName)
         {
-            get
+            foreach (var item in this.indicatorsWithSingleStreet)
             {
-                return (PositionStorage<RFI>)this.indicators.First(p => p is PositionStorage<RFI>).DeepClone();
+                item.Value.Update(context, playerAction, playerName);
+            }
+
+            foreach (var item in this.indicatorsWithSeveralStreets)
+            {
+                item.Value.Update(context, playerAction, playerName);
             }
         }
 
-        public StreetStorage<ThreeBet> ThreeBet
+        public void Update(IEndRoundContext context)
         {
-            get
+            // TODO: remove duplicate code!
+            foreach (var item in this.indicatorsWithSingleStreet)
             {
-                return (StreetStorage<ThreeBet>)this.indicators.First(p => p is StreetStorage<ThreeBet>).DeepClone();
+                item.Value.Update(context);
+            }
+
+            foreach (var item in this.indicatorsWithSeveralStreets)
+            {
+                item.Value.Update(context);
             }
         }
 
-        public StreetStorage<FourBet> FourBet
+        public void Update(IEndHandContext context, string playerName)
         {
-            get
+            foreach (var item in this.indicatorsWithSingleStreet)
             {
-                return (StreetStorage<FourBet>)this.indicators.First(p => p is StreetStorage<FourBet>).DeepClone();
+                item.Value.Update(context, playerName);
+            }
+
+            foreach (var item in this.indicatorsWithSeveralStreets)
+            {
+                item.Value.Update(context, playerName);
             }
         }
 
-        public StreetStorage<CBet> CBet
+        public void Update(IEndGameContext context)
         {
-            get
+            // TODO: remove duplicate code!
+            foreach (var item in this.indicatorsWithSingleStreet)
             {
-                return (StreetStorage<CBet>)this.indicators.First(p => p is StreetStorage<CBet>).DeepClone();
-            }
-        }
-
-        public StreetStorage<AFq> AFq
-        {
-            get
-            {
-                return (StreetStorage<AFq>)this.indicators.First(p => p is StreetStorage<AFq>).DeepClone();
-            }
-        }
-
-        public BBper100 BBper100
-        {
-            get
-            {
-                return (BBper100)this.indicators.First(p => p is BBper100).DeepClone();
-            }
-        }
-
-        public WTSD WTSD
-        {
-            get
-            {
-                return (WTSD)this.indicators.First(p => p is WTSD).DeepClone();
-            }
-        }
-
-        public WSD WSD
-        {
-            get
-            {
-                return (WSD)this.indicators.First(p => p is WSD).DeepClone();
-            }
-        }
-
-        public WWSF WWSF
-        {
-            get
-            {
-                return (WWSF)this.indicators.First(p => p is WWSF).DeepClone();
-            }
-        }
-
-        public PlayerAction PostingBlind(IPostingBlindContext context)
-        {
-            return this.player.PostingBlind(context);
-        }
-
-        public void StartGame(IStartGameContext context)
-        {
-            this.player.StartGame(context);
-        }
-
-        public void StartHand(IStartHandContext context)
-        {
-            this.player.StartHand(context);
-
-            foreach (var item in this.indicators)
-            {
-                item.StartHandExtract(context);
-            }
-        }
-
-        public void StartRound(IStartRoundContext context)
-        {
-            this.player.StartRound(context);
-
-            foreach (var item in this.indicators)
-            {
-                item.StartRoundExtract(context);
-            }
-        }
-
-        public PlayerAction GetTurn(IGetTurnContext context)
-        {
-            foreach (var item in this.indicators)
-            {
-                // statistics before the action
-                item.GetTurnExtract(context);
+                item.Value.Update(context);
             }
 
-            var madeAction = this.player.GetTurn(new GetTurnExtendedContext(context, this));
-
-            foreach (var item in this.indicators)
+            foreach (var item in this.indicatorsWithSeveralStreets)
             {
-                // statistics after the action
-                item.MadeActionExtract(context, madeAction);
+                item.Value.Update(context);
             }
-
-            return madeAction;
-        }
-
-        public void EndRound(IEndRoundContext context)
-        {
-            this.player.EndRound(context);
-
-            foreach (var item in this.indicators)
-            {
-                item.EndRoundExtract(context);
-            }
-        }
-
-        public void EndHand(IEndHandContext context)
-        {
-            this.player.EndHand(context);
-
-            foreach (var item in this.indicators)
-            {
-                item.EndHandExtract(context);
-            }
-        }
-
-        public void EndGame(IEndGameContext context)
-        {
-            this.player.EndGame(context);
         }
 
         public override string ToString()
         {
             return
-                $"VPIP:{this.VPIP.ToString()}\n" +
-                $"PFR:{this.PFR.ToString()}\n" +
-                $"RFI:{this.RFI.ToString()}\n" +
-                $"3Bet:{this.ThreeBet.ToString()}\n" +
-                $"4Bet:{this.FourBet.ToString()}\n" +
-                $"CBet:{this.CBet.ToString()}\n" +
-                $"AFq:{this.AFq.ToString()}\n" +
-                $"BB/100:{this.BBper100.ToString()}\n" +
-                $"WTSD:{this.WTSD.ToString()}\n" +
-                $"W$SD:{this.WSD.ToString()}\n" +
-                $"W$WSF:{this.WWSF.ToString()}";
-        }
-
-        private Dictionary<SeatNames, T> CreateIndicatorByPositions<T>(T indicator)
-            where T : BaseIndicator
-        {
-            var indicatorByPositions = new Dictionary<SeatNames, T>();
-
-            for (int i = 0; i < Enum.GetNames(typeof(SeatNames)).Length; i++)
-            {
-                indicatorByPositions.Add((SeatNames)i, (T)indicator.DeepClone());
-            }
-
-            return indicatorByPositions;
+                $"VPIP:{this.VPIP().ToString()}\n" +
+                $"PFR:{this.PFR().ToString()}\n" +
+                $"RFI:{this.RFI().ToString()}\n" +
+                $"3Bet:{this.ThreeBet().ToString()}\n" +
+                $"4Bet:{this.FourBet().ToString()}\n" +
+                $"CBet:{this.CBet().ToString()}\n" +
+                $"AFq:{this.AFq().ToString()}\n" +
+                $"BB/100:{this.BBper100().ToString()}\n" +
+                $"WTSD:{this.WTSD().ToString()}\n" +
+                $"W$SD:{this.WSD().ToString()}\n" +
+                $"W$WSF:{this.WWSF().ToString()}";
         }
     }
 }
