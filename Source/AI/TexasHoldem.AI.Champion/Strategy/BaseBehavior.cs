@@ -11,23 +11,15 @@
 
     public abstract class BaseBehavior
     {
-        private readonly IStats playingStyle;
-
-        public BaseBehavior(IStats playingStyle)
+        public BaseBehavior(PlayingStyle playingStyle)
         {
-            this.playingStyle = playingStyle;
+            this.PlayingStyle = playingStyle;
         }
 
-        public IStats PlayingStyle
-        {
-            get
-            {
-                return this.playingStyle;
-            }
-        }
+        public PlayingStyle PlayingStyle { get; }
 
         public abstract PlayerAction OptimalAction(
-            ICardAdapter pocket, IGetTurnContext context, IStats stats, IReadOnlyCollection<Card> communityCards);
+            ICardAdapter pocket, IReadOnlyCollection<Card> communityCards, IGetTurnContext context, Stats stats);
 
         public PlayerAction RaiseOrAllIn(int moneyToRaise, IGetTurnContext context)
         {
@@ -43,9 +35,9 @@
         }
 
         public PlayerEconomy PlayerEconomy(
-            ICardAdapter pocket, IGetTurnContext context, IReadOnlyCollection<Card> communityCards)
+            ICardAdapter pocket, IReadOnlyCollection<Card> communityCards, IGetTurnContext context)
         {
-            var calculator = this.Calculator(pocket, context, communityCards);
+            var calculator = this.Calculator(pocket, communityCards, context);
             var handEconomy = new HandEconomy(calculator);
             return handEconomy.First(p => p.Hero.Pocket.Mask == pocket.Mask);
         }
@@ -61,7 +53,7 @@
         }
 
         private ICalculator Calculator(
-            ICardAdapter pocket, IGetTurnContext context, IReadOnlyCollection<Card> communityCards)
+            ICardAdapter pocket, IReadOnlyCollection<Card> communityCards, IGetTurnContext context)
         {
             var holeCardsOfOpponentsWhoAreInHand = new List<ICardAdapter>();
             holeCardsOfOpponentsWhoAreInHand.Add(pocket);

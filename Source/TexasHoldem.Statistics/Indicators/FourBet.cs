@@ -71,12 +71,12 @@
             return copy;
         }
 
-        public override FourBet Sum(FourBet otherIndicator)
+        public override FourBet Sum(FourBet other)
         {
             return new FourBet(
-                this.Hands + otherIndicator.Hands,
-                this.TotalTimes4Bet + otherIndicator.TotalTimes4Bet,
-                this.Total4BetOpportunities + otherIndicator.Total4BetOpportunities);
+                this.Hands + other.Hands,
+                this.TotalTimes4Bet + other.TotalTimes4Bet,
+                this.Total4BetOpportunities + other.Total4BetOpportunities);
         }
     }
 }

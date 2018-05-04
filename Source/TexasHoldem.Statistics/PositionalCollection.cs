@@ -9,7 +9,7 @@
     using TexasHoldem.Statistics.Extensions;
     using TexasHoldem.Statistics.Indicators;
 
-    public class SingleStreet<TIndicator> : IEnumerable<KeyValuePair<Positions, TIndicator>>, IUpdate
+    public class PositionalCollection<TIndicator> : IEnumerable<KeyValuePair<Positions, TIndicator>>, IUpdate
         where TIndicator : BaseIndicator<TIndicator>, new()
     {
         // http://hm2faq.holdemmanager.com/questions/2062/How+Does+Holdem+Manager+Calculate+Positions+Based+on+the+Number+of+Players+at+the+Table%3F
@@ -72,9 +72,7 @@
 
         private int numberOfPlayers;
 
-        private Positions currentPosition;
-
-        public SingleStreet(ICollection<Positions> excludedPositions)
+        public PositionalCollection(ICollection<Positions> excludedPositions)
         {
             var temp = Enum.GetValues(typeof(Positions)).Cast<Positions>().Except(excludedPositions);
             this.indicators = new Dictionary<Positions, TIndicator>(temp.Count());
@@ -85,9 +83,22 @@
             }
         }
 
-        public TIndicator CurrentPosition()
+        public Positions CurrentPosition { get; private set; }
+
+        public TIndicator StatsOfCurrentPosition()
         {
-            return this.indicators[this.currentPosition];
+            // TODO:
+            // CurrentPosition is not initialized before the start hand.
+            // Do I need to throw an exception?
+            // What if the position is excluded (for example: RFI stats excludes big blind)?
+            try
+            {
+                return this.indicators[this.CurrentPosition];
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         public TIndicator IndicatorBy(Positions position)
@@ -102,7 +113,7 @@
             }
         }
 
-        public TIndicator Total()
+        public TIndicator StatsForAllPositions()
         {
             return this.TotalStats();
         }
@@ -114,35 +125,35 @@
 
         public void Update(IStartHandContext context)
         {
-            this.currentPosition = context.ActionPriority == 10
+            this.CurrentPosition = context.ActionPriority == 10
                 ? positionChart[this.numberOfPlayers - 2][this.numberOfPlayers - 1]
                 : positionChart[this.numberOfPlayers - 2][context.ActionPriority];
-            this.indicators[this.currentPosition].Update(context);
+            this.indicators[this.CurrentPosition].Update(context);
         }
 
         public void Update(IStartRoundContext context)
         {
-            this.indicators[this.currentPosition].Update(context);
+            this.indicators[this.CurrentPosition].Update(context);
         }
 
         public void Update(IGetTurnContext context, string playerName)
         {
-            this.indicators[this.currentPosition].Update(context, playerName);
+            this.indicators[this.CurrentPosition].Update(context, playerName);
         }
 
         public void Update(IGetTurnContext context, PlayerAction playerAction, string playerName)
         {
-            this.indicators[this.currentPosition].Update(context, playerAction, playerName);
+            this.indicators[this.CurrentPosition].Update(context, playerAction, playerName);
         }
 
         public void Update(IEndRoundContext context)
         {
-            this.indicators[this.currentPosition].Update(context);
+            this.indicators[this.CurrentPosition].Update(context);
         }
 
         public void Update(IEndHandContext context, string playerName)
         {
-            this.indicators[this.currentPosition].Update(context, playerName);
+            this.indicators[this.CurrentPosition].Update(context, playerName);
         }
 
         public void Update(IEndGameContext context)

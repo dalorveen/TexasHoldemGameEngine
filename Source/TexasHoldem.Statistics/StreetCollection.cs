@@ -9,48 +9,26 @@
     using TexasHoldem.Logic.Players;
     using TexasHoldem.Statistics.Indicators;
 
-    public class SeveralStreets<TIndicator> : IEnumerable<KeyValuePair<GameRoundType, SingleStreet<TIndicator>>>,
+    public class StreetCollection<TIndicator> : IEnumerable<KeyValuePair<GameRoundType, PositionalCollection<TIndicator>>>,
         IUpdate
         where TIndicator : BaseIndicator<TIndicator>, new()
     {
-        private readonly IDictionary<GameRoundType, SingleStreet<TIndicator>> indicators;
+        private readonly IDictionary<GameRoundType, PositionalCollection<TIndicator>> indicators;
 
         private GameRoundType currentStreet;
 
-        public SeveralStreets(ICollection<GameRoundType> excludedStreets, ICollection<Positions> excludedPositions)
+        public StreetCollection(ICollection<GameRoundType> excludedStreets, ICollection<Positions> excludedPositions)
         {
             var temp = Enum.GetValues(typeof(GameRoundType)).Cast<GameRoundType>().Except(excludedStreets);
-            this.indicators = new Dictionary<GameRoundType, SingleStreet<TIndicator>>(temp.Count());
+            this.indicators = new Dictionary<GameRoundType, PositionalCollection<TIndicator>>(temp.Count());
 
             foreach (var item in temp)
             {
-                this.indicators.Add(item, new SingleStreet<TIndicator>(excludedPositions));
+                this.indicators.Add(item, new PositionalCollection<TIndicator>(excludedPositions));
             }
         }
 
-        public TIndicator CurrentPositionIndicatorBy(GameRoundType street)
-        {
-            try
-            {
-                return this.indicators[street].CurrentPosition();
-            }
-            catch (KeyNotFoundException)
-            {
-                throw new ArgumentException("Street is not found.", nameof(street));
-            }
-        }
-
-        public TIndicator IndicatorBy(GameRoundType street, Positions position)
-        {
-            try
-            {
-                return this.indicators[street].IndicatorBy(position);
-            }
-            catch (KeyNotFoundException)
-            {
-                throw new ArgumentException("Street is not found.", nameof(street));
-            }
-        }
+        public GameRoundType CurrentStreet { get; private set; }
 
         public TIndicator Total()
         {
@@ -58,17 +36,22 @@
 
             foreach (var item in this.indicators)
             {
-                temp.Sum(item.Value.Total());
+                temp.Sum(item.Value.StatsForAllPositions());
             }
 
             return temp;
         }
 
-        public TIndicator TotalBy(GameRoundType street)
+        public PositionalCollection<TIndicator> StatsOfCurrentStreet()
+        {
+            return this.GetStatsBy(this.CurrentStreet);
+        }
+
+        public PositionalCollection<TIndicator> GetStatsBy(GameRoundType street)
         {
             try
             {
-                return this.indicators[street].Total();
+                return this.indicators[street];
             }
             catch (KeyNotFoundException)
             {
@@ -86,6 +69,8 @@
 
         public void Update(IStartHandContext context)
         {
+            this.CurrentStreet = GameRoundType.PreFlop;
+
             foreach (var item in this.indicators)
             {
                 item.Value.Update(context);
@@ -94,6 +79,7 @@
 
         public void Update(IStartRoundContext context)
         {
+            this.CurrentStreet = context.RoundType;
             this.currentStreet = context.RoundType;
             this.indicators[this.currentStreet].Update(context);
         }
@@ -126,9 +112,9 @@
             }
         }
 
-        public IEnumerator<KeyValuePair<GameRoundType, SingleStreet<TIndicator>>> GetEnumerator()
+        public IEnumerator<KeyValuePair<GameRoundType, PositionalCollection<TIndicator>>> GetEnumerator()
         {
-            return (IEnumerator<KeyValuePair<GameRoundType, SingleStreet<TIndicator>>>)this.indicators;
+            return (IEnumerator<KeyValuePair<GameRoundType, PositionalCollection<TIndicator>>>)this.indicators;
         }
 
         IEnumerator IEnumerable.GetEnumerator()

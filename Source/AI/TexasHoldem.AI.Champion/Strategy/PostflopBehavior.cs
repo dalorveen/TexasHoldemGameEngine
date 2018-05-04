@@ -12,15 +12,15 @@
     {
         private const double LowerWagerLimit = 0.42;
 
-        public PostflopBehavior(IStats playingStyle)
+        public PostflopBehavior(PlayingStyle playingStyle)
             : base(playingStyle)
         {
         }
 
         public override PlayerAction OptimalAction(
-            ICardAdapter pocket, IGetTurnContext context, IStats stats, IReadOnlyCollection<Card> communityCards)
+            ICardAdapter pocket, IReadOnlyCollection<Card> communityCards, IGetTurnContext context, Stats stats)
         {
-            var playerEconomy = this.PlayerEconomy(pocket, context, communityCards);
+            var playerEconomy = this.PlayerEconomy(pocket, communityCards, context);
 
             if (playerEconomy.NutHand)
             {

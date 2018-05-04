@@ -17,80 +17,80 @@
         {
             this.indicatorsWithSingleStreet = new Dictionary<Type, IUpdate>
             {
-                { typeof(VPIP), new SingleStreet<VPIP>(new Positions[0]) },
-                { typeof(PFR), new SingleStreet<PFR>(new Positions[0]) },
-                { typeof(RFI), new SingleStreet<RFI>(new Positions[] { Positions.BB }) },
-                { typeof(BBper100), new SingleStreet<BBper100>(new Positions[0]) },
-                { typeof(WTSD), new SingleStreet<WTSD>(new Positions[0]) },
-                { typeof(WSD), new SingleStreet<WSD>(new Positions[0]) },
-                { typeof(WWSF), new SingleStreet<WWSF>(new Positions[0]) }
+                { typeof(VPIP), new PositionalCollection<VPIP>(new Positions[0]) },
+                { typeof(PFR), new PositionalCollection<PFR>(new Positions[0]) },
+                { typeof(RFI), new PositionalCollection<RFI>(new Positions[] { Positions.BB }) },
+                { typeof(BBper100), new PositionalCollection<BBper100>(new Positions[0]) },
+                { typeof(WTSD), new PositionalCollection<WTSD>(new Positions[0]) },
+                { typeof(WSD), new PositionalCollection<WSD>(new Positions[0]) },
+                { typeof(WWSF), new PositionalCollection<WWSF>(new Positions[0]) }
             };
 
             this.indicatorsWithSeveralStreets = new Dictionary<Type, IUpdate>
             {
-                { typeof(ThreeBet), new SeveralStreets<ThreeBet>(new GameRoundType[0], new Positions[0]) },
-                { typeof(FourBet), new SeveralStreets<FourBet>(new GameRoundType[0], new Positions[0]) },
+                { typeof(ThreeBet), new StreetCollection<ThreeBet>(new GameRoundType[0], new Positions[0]) },
+                { typeof(FourBet), new StreetCollection<FourBet>(new GameRoundType[0], new Positions[0]) },
                 {
                     typeof(CBet),
-                    new SeveralStreets<CBet>(new GameRoundType[] { GameRoundType.PreFlop }, new Positions[0])
+                    new StreetCollection<CBet>(new GameRoundType[] { GameRoundType.PreFlop }, new Positions[0])
                 },
-                { typeof(AFq), new SeveralStreets<AFq>(new GameRoundType[0], new Positions[0]) },
+                { typeof(AFq), new StreetCollection<AFq>(new GameRoundType[0], new Positions[0]) },
             };
         }
 
-        public SingleStreet<VPIP> VPIP()
+        public PositionalCollection<VPIP> VPIP()
         {
-            return (SingleStreet<VPIP>)this.indicatorsWithSingleStreet[typeof(VPIP)];
+            return (PositionalCollection<VPIP>)this.indicatorsWithSingleStreet[typeof(VPIP)];
         }
 
-        public SingleStreet<PFR> PFR()
+        public PositionalCollection<PFR> PFR()
         {
-            return (SingleStreet<PFR>)this.indicatorsWithSingleStreet[typeof(PFR)];
+            return (PositionalCollection<PFR>)this.indicatorsWithSingleStreet[typeof(PFR)];
         }
 
-        public SingleStreet<RFI> RFI()
+        public PositionalCollection<RFI> RFI()
         {
-            return (SingleStreet<RFI>)this.indicatorsWithSingleStreet[typeof(RFI)];
+            return (PositionalCollection<RFI>)this.indicatorsWithSingleStreet[typeof(RFI)];
         }
 
-        public SingleStreet<BBper100> BBper100()
+        public PositionalCollection<BBper100> BBper100()
         {
-            return (SingleStreet<BBper100>)this.indicatorsWithSingleStreet[typeof(BBper100)];
+            return (PositionalCollection<BBper100>)this.indicatorsWithSingleStreet[typeof(BBper100)];
         }
 
-        public SingleStreet<WTSD> WTSD()
+        public PositionalCollection<WTSD> WTSD()
         {
-            return (SingleStreet<WTSD>)this.indicatorsWithSingleStreet[typeof(WTSD)];
+            return (PositionalCollection<WTSD>)this.indicatorsWithSingleStreet[typeof(WTSD)];
         }
 
-        public SingleStreet<WSD> WSD()
+        public PositionalCollection<WSD> WSD()
         {
-            return (SingleStreet<WSD>)this.indicatorsWithSingleStreet[typeof(WSD)];
+            return (PositionalCollection<WSD>)this.indicatorsWithSingleStreet[typeof(WSD)];
         }
 
-        public SingleStreet<WWSF> WWSF()
+        public PositionalCollection<WWSF> WWSF()
         {
-            return (SingleStreet<WWSF>)this.indicatorsWithSingleStreet[typeof(WWSF)];
+            return (PositionalCollection<WWSF>)this.indicatorsWithSingleStreet[typeof(WWSF)];
         }
 
-        public SeveralStreets<ThreeBet> ThreeBet()
+        public StreetCollection<ThreeBet> ThreeBet()
         {
-            return (SeveralStreets<ThreeBet>)this.indicatorsWithSeveralStreets[typeof(ThreeBet)];
+            return (StreetCollection<ThreeBet>)this.indicatorsWithSeveralStreets[typeof(ThreeBet)];
         }
 
-        public SeveralStreets<FourBet> FourBet()
+        public StreetCollection<FourBet> FourBet()
         {
-            return (SeveralStreets<FourBet>)this.indicatorsWithSeveralStreets[typeof(FourBet)];
+            return (StreetCollection<FourBet>)this.indicatorsWithSeveralStreets[typeof(FourBet)];
         }
 
-        public SeveralStreets<CBet> CBet()
+        public StreetCollection<CBet> CBet()
         {
-            return (SeveralStreets<CBet>)this.indicatorsWithSeveralStreets[typeof(CBet)];
+            return (StreetCollection<CBet>)this.indicatorsWithSeveralStreets[typeof(CBet)];
         }
 
-        public SeveralStreets<AFq> AFq()
+        public StreetCollection<AFq> AFq()
         {
-            return (SeveralStreets<AFq>)this.indicatorsWithSeveralStreets[typeof(AFq)];
+            return (StreetCollection<AFq>)this.indicatorsWithSeveralStreets[typeof(AFq)];
         }
 
         public void Update(IStartGameContext context)

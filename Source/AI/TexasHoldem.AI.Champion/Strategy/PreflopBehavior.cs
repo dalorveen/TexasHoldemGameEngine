@@ -13,167 +13,150 @@
 
     public class PreflopBehavior : BaseBehavior
     {
-        private VPIPCorrection vpipCorrection;
-
-        private PFRCorrection pfrCorrection;
-
-        private RFICorrection rfiCorrection;
-
-        private ThreeBetCorrection threeBetCorrection;
-
-        private FourBetCorrection fourBetCorrection;
-
-        public PreflopBehavior(IStats playingStyle)
+        public PreflopBehavior(PlayingStyle playingStyle)
             : base(playingStyle)
         {
-            var numberOfHandsToStartCorrection = 30;
-            this.vpipCorrection = new VPIPCorrection(playingStyle, numberOfHandsToStartCorrection);
-            this.pfrCorrection = new PFRCorrection(playingStyle, numberOfHandsToStartCorrection);
-            this.rfiCorrection = new RFICorrection(playingStyle, numberOfHandsToStartCorrection);
-            this.threeBetCorrection = new ThreeBetCorrection(playingStyle, numberOfHandsToStartCorrection);
-            this.fourBetCorrection = new FourBetCorrection(playingStyle, numberOfHandsToStartCorrection);
         }
 
         public override PlayerAction OptimalAction(
-            ICardAdapter pocket, IGetTurnContext context, IStats stats, IReadOnlyCollection<Card> communityCards)
+            ICardAdapter pocket, IReadOnlyCollection<Card> communityCards, IGetTurnContext context, Stats stats)
         {
-            //var startingHand = new StartingHand(pocket);
-            //
-            //if (stats.FourBet().CurrentPositionIndicatorBy(GameRoundType.PreFlop).IsOpportunity)
-            //{
-            //    return this.ReactionToFourBetOpportunity(context, communityCards, startingHand);
-            //}
-            //else if (stats.ThreeBet().CurrentPositionIndicatorBy(GameRoundType.PreFlop).IsOpportunity)
-            //{
-            //    return this.ReactionToThreeBetOpportunity(context, communityCards, startingHand);
-            //}
-            //else if (context.PreviousRoundActions.Count(x => x.Action.Type == PlayerActionType.Raise) == 0)
-            //{
-            //    return this.ReactionToOpenRaiseOpportunity(context, startingHand);
-            //}
-            //else
-            //{
-            //    // faced with four bet and more
-            //    return this.ReactionToFourBetOpportunity(context, communityCards, startingHand);
-            //}
-            return null; // remove it
+            var startingHand = new StartingHand(pocket);
+
+            if (stats.FourBet().GetStatsBy(GameRoundType.PreFlop).StatsOfCurrentPosition().IsOpportunity)
+            {
+                // faced with three bet
+                return this.ReactionToFourBetOpportunity(communityCards, context, startingHand, stats);
+            }
+            else if (stats.ThreeBet().GetStatsBy(GameRoundType.PreFlop).StatsOfCurrentPosition().IsOpportunity)
+            {
+                // faced with raise
+                return this.ReactionToThreeBetOpportunity(communityCards, context, startingHand, stats);
+            }
+            else if (context.PreviousRoundActions.Count(x => x.Action.Type == PlayerActionType.Raise) == 0)
+            {
+                // faced with no action/limp
+                return this.ReactionToOpenRaiseOpportunity(context, startingHand, stats);
+            }
+            else
+            {
+                // faced with four bet and more
+                return this.ReactionToFourBetOpportunity(communityCards, context, startingHand, stats);
+            }
         }
 
         private PlayerAction ReactionToFourBetOpportunity(
-            IGetTurnContext context, IReadOnlyCollection<Card> communityCards, StartingHand startingHand)
+            IReadOnlyCollection<Card> communityCards, IGetTurnContext context, StartingHand startingHand, Stats stats)
         {
-            //if (startingHand.IsPlayablePocket(
-            //    this.PlayingStyle.FourBet.IndicatorByStreets[GameRoundType.PreFlop].Percentage
-            //        * this.fourBetCorrection.CorrectionFactor(context.CurrentStats, context.RoundType)))
-            //{
-            //    if (context.CanRaise)
-            //    {
-            //        if ((double)context.MoneyToCall / (double)context.CurrentPot >= 0.6)
-            //        {
-            //            // opponent bet too much
-            //            // return this.ReactionToAHugeBetFromTheOpponent(context, communityCards, startingHand); Too expensive method.
-            //
-            //            var overWager = this.OverWager(context);
-            //            return this.ToRaise((context.MinRaise * 3) + overWager, context);
-            //        }
-            //        else
-            //        {
-            //            var overWager = this.OverWager(context);
-            //            return this.ToRaise((context.MinRaise * 3) + overWager, context);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        return PlayerAction.CheckOrCall();
-            //    }
-            //}
-            //else if (startingHand.IsPlayablePocket(this.PlayingStyle.ThreeBet.IndicatorByStreets[GameRoundType.PreFlop].Percentage))
-            //{
-            //    if ((double)context.MoneyToCall / (double)context.CurrentPot >= 0.6)
-            //    {
-            //        //var reaction = this.ReactionToAHugeBetFromTheOpponent(context, communityCards, startingHand);
-            //        //if (reaction.Type != PlayerActionType.Fold)
-            //        //{
-            //        //    return PlayerAction.CheckOrCall();
-            //        //}
-            //
-            //        return PlayerAction.CheckOrCall();
-            //    }
-            //    else
-            //    {
-            //        return PlayerAction.CheckOrCall();
-            //    }
-            //}
+            if (this.PlayingStyle.PreflopFourBetDeviation(stats).Percentage <= this.PlayingStyle.PreflopFourBet.Percentage
+                && startingHand.IsPlayablePocket(this.PlayingStyle.PreflopFourBet.Percentage))
+            {
+                if (context.CanRaise)
+                {
+                    if ((double)context.MoneyToCall / (double)context.CurrentPot >= 0.6)
+                    {
+                        // opponent bet too much
+                        // return this.ReactionToAHugeBetFromTheOpponent(context, communityCards, startingHand); Too expensive method.
+
+                        var overWager = this.OverWager(context);
+                        return this.ToRaise((context.MinRaise * 3) + overWager, context);
+                    }
+                    else
+                    {
+                        var overWager = this.OverWager(context);
+                        return this.ToRaise((context.MinRaise * 3) + overWager, context);
+                    }
+                }
+                else
+                {
+                    return PlayerAction.CheckOrCall();
+                }
+            }
+            else if (startingHand.IsPlayablePocket(this.PlayingStyle.PreflopThreeBet.Percentage))
+            {
+                if ((double)context.MoneyToCall / (double)context.CurrentPot >= 0.6)
+                {
+                    //var reaction = this.ReactionToAHugeBetFromTheOpponent(context, communityCards, startingHand);
+                    //if (reaction.Type != PlayerActionType.Fold)
+                    //{
+                    //    return PlayerAction.CheckOrCall();
+                    //}
+
+                    return PlayerAction.CheckOrCall();
+                }
+                else
+                {
+                    return PlayerAction.CheckOrCall();
+                }
+            }
 
             return PlayerAction.Fold();
         }
 
         private PlayerAction ReactionToThreeBetOpportunity(
-            IGetTurnContext context, IReadOnlyCollection<Card> communityCards, StartingHand startingHand)
+            IReadOnlyCollection<Card> communityCards, IGetTurnContext context, StartingHand startingHand, Stats stats)
         {
-            //if (startingHand.IsPlayablePocket(
-            //    this.PlayingStyle.ThreeBet.IndicatorByStreets[GameRoundType.PreFlop].Percentage
-            //        * this.threeBetCorrection.CorrectionFactor(context.CurrentStats, context.RoundType)))
-            //{
-            //    if (context.CanRaise)
-            //    {
-            //        if ((double)context.MoneyToCall / (double)context.CurrentPot >= 0.7)
-            //        {
-            //            // opponent bet too much
-            //            // return this.ReactionToAHugeBetFromTheOpponent(context, communityCards, startingHand); Too expensive method.
-            //
-            //            var overWager = this.OverWager(context);
-            //            return this.ToRaise((context.MinRaise * 3) + overWager, context);
-            //        }
-            //        else
-            //        {
-            //            var overWager = this.OverWager(context);
-            //            return this.ToRaise((context.MinRaise * 3) + overWager, context);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        return PlayerAction.CheckOrCall();
-            //    }
-            //}
-            //else if (startingHand.IsPlayablePocket(
-            //    this.PlayingStyle.VPIP.Percentage * this.vpipCorrection.CorrectionFactor(context.CurrentStats, context.RoundType)))
-            //{
-            //    if ((double)context.MoneyToCall / (double)context.CurrentPot <= 0.625)
-            //    {
-            //        return PlayerAction.CheckOrCall();
-            //    }
-            //}
+            if (this.PlayingStyle.PreflopThreeBetDeviation(stats).Percentage <= this.PlayingStyle.PreflopThreeBet.Percentage
+                && startingHand.IsPlayablePocket(this.PlayingStyle.PreflopThreeBet.Percentage))
+            {
+                if (context.CanRaise)
+                {
+                    if ((double)context.MoneyToCall / (double)context.CurrentPot >= 0.7)
+                    {
+                        // opponent bet too much
+                        // return this.ReactionToAHugeBetFromTheOpponent(context, communityCards, startingHand); Too expensive method.
+
+                        var overWager = this.OverWager(context);
+                        return this.ToRaise((context.MinRaise * 3) + overWager, context);
+                    }
+                    else
+                    {
+                        var overWager = this.OverWager(context);
+                        return this.ToRaise((context.MinRaise * 3) + overWager, context);
+                    }
+                }
+                else
+                {
+                    return PlayerAction.CheckOrCall();
+                }
+            }
+            else if (this.PlayingStyle.VPIPDeviation(stats).Percentage <= this.PlayingStyle.VPIP.Percentage)
+            {
+                if ((double)context.MoneyToCall / (double)context.CurrentPot <= 0.625)
+                {
+                    return PlayerAction.CheckOrCall();
+                }
+            }
 
             return PlayerAction.Fold();
         }
 
         private PlayerAction ReactionToOpenRaiseOpportunity(
-            IGetTurnContext context, IStats stats, StartingHand startingHand)
+            IGetTurnContext context, StartingHand startingHand, Stats stats)
         {
-            //if (stats.RFI().CurrentPosition().IsOpportunitiesToOpenThePot)
-            //{
-            //    if (startingHand.IsPlayablePocket(
-            //        this.PlayingStyle.RFI.IndicatorByPositions[currentPosition.Value].Percentage
-            //            * this.rfiCorrection.CorrectionFactor(context.CurrentStats, context.RoundType)))
-            //    {
-            //        return this.ToRaise(context.MinRaise * 2, context);
-            //    }
-            //}
-            //else if (startingHand.IsPlayablePocket(
-            //    this.PlayingStyle.PFR.Percentage * this.pfrCorrection.CorrectionFactor(context.CurrentStats, context.RoundType)))
-            //{
-            //    if (context.CanRaise)
-            //    {
-            //        var overWager = this.OverWager(context);
-            //        return this.ToRaise((context.MinRaise * 2) + overWager, context);
-            //    }
-            //}
-            //else if (startingHand.IsPlayablePocket(
-            //    this.PlayingStyle.VPIP.Percentage * this.vpipCorrection.CorrectionFactor(context.CurrentStats, context.RoundType)))
-            //{
-            //    return PlayerAction.CheckOrCall();
-            //}
+            var rfi = stats.RFI();
+            if (rfi.StatsOfCurrentPosition() != null && rfi.StatsOfCurrentPosition().IsOpportunitiesToOpenThePot)
+            {
+                if (this.PlayingStyle.RFIDeviation(stats).Percentage <= this.PlayingStyle.RFI[rfi.CurrentPosition].Percentage
+                    && startingHand.IsPlayablePocket(this.PlayingStyle.RFI[rfi.CurrentPosition].Percentage))
+                {
+                    return this.ToRaise(context.MinRaise * 2, context);
+                }
+            }
+            else if (this.PlayingStyle.PFRDeviation(stats).Percentage <= this.PlayingStyle.PFR.Percentage
+                && startingHand.IsPlayablePocket(this.PlayingStyle.PFR.Percentage))
+            {
+                if (context.CanRaise)
+                {
+                    var overWager = this.OverWager(context);
+                    return this.ToRaise((context.MinRaise * 2) + overWager, context);
+                }
+            }
+            else if (this.PlayingStyle.VPIPDeviation(stats).Percentage <= this.PlayingStyle.VPIP.Percentage
+                && startingHand.IsPlayablePocket(this.PlayingStyle.VPIP.Percentage))
+            {
+                return PlayerAction.CheckOrCall();
+            }
 
             return PlayerAction.Fold();
         }
