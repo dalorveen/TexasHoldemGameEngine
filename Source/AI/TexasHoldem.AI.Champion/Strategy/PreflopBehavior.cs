@@ -4,10 +4,8 @@
     using System.Linq;
 
     using HandEvaluatorExtension;
-    using TexasHoldem.AI.Champion.StatsCorrection;
     using TexasHoldem.Logic;
     using TexasHoldem.Logic.Cards;
-    using TexasHoldem.Logic.Extensions;
     using TexasHoldem.Logic.Players;
     using TexasHoldem.Statistics;
 
@@ -48,43 +46,23 @@
         private PlayerAction ReactionToFourBetOpportunity(
             IReadOnlyCollection<Card> communityCards, IGetTurnContext context, StartingHand startingHand, Stats stats)
         {
-            if (this.PlayingStyle.PreflopFourBetDeviation(stats).Percentage <= this.PlayingStyle.PreflopFourBet.Percentage
-                && startingHand.IsPlayablePocket(this.PlayingStyle.PreflopFourBet.Percentage))
+            if (this.PlayingStyle.PreflopFourBetDeviation(stats).Amount <=
+                this.PlayingStyle.PreflopFourBet.Indicator.Amount
+                && this.PlayingStyle.PreflopFourBet.PossibleRange.Contains(startingHand.Pocket.Mask))
             {
-                if (context.CanRaise)
+                if (context.CanRaise && this.IsBestOrTieHand(context, startingHand))
                 {
-                    if ((double)context.MoneyToCall / (double)context.CurrentPot >= 0.6)
-                    {
-                        // opponent bet too much
-                        // return this.ReactionToAHugeBetFromTheOpponent(context, communityCards, startingHand); Too expensive method.
-
-                        var overWager = this.OverWager(context);
-                        return this.ToRaise((context.MinRaise * 3) + overWager, context);
-                    }
-                    else
-                    {
-                        var overWager = this.OverWager(context);
-                        return this.ToRaise((context.MinRaise * 3) + overWager, context);
-                    }
+                    var overWager = this.AddedBetOnPassivePlayers(context);
+                    return this.ToRaise((context.MinRaise * 3) + overWager, context);
                 }
                 else
                 {
                     return PlayerAction.CheckOrCall();
                 }
             }
-            else if (startingHand.IsPlayablePocket(this.PlayingStyle.PreflopThreeBet.Percentage))
+            else if (this.PlayingStyle.PreflopThreeBet.PossibleRange.Contains(startingHand.Pocket.Mask))
             {
-                if ((double)context.MoneyToCall / (double)context.CurrentPot >= 0.6)
-                {
-                    //var reaction = this.ReactionToAHugeBetFromTheOpponent(context, communityCards, startingHand);
-                    //if (reaction.Type != PlayerActionType.Fold)
-                    //{
-                    //    return PlayerAction.CheckOrCall();
-                    //}
-
-                    return PlayerAction.CheckOrCall();
-                }
-                else
+                if (this.IsBestOrTieHand(context, startingHand))
                 {
                     return PlayerAction.CheckOrCall();
                 }
@@ -96,36 +74,24 @@
         private PlayerAction ReactionToThreeBetOpportunity(
             IReadOnlyCollection<Card> communityCards, IGetTurnContext context, StartingHand startingHand, Stats stats)
         {
-            if (this.PlayingStyle.PreflopThreeBetDeviation(stats).Percentage <= this.PlayingStyle.PreflopThreeBet.Percentage
-                && startingHand.IsPlayablePocket(this.PlayingStyle.PreflopThreeBet.Percentage))
+            if (this.PlayingStyle.PreflopThreeBetDeviation(stats).Amount <=
+                this.PlayingStyle.PreflopThreeBet.Indicator.Amount
+                && this.PlayingStyle.PreflopThreeBet.PossibleRange.Contains(startingHand.Pocket.Mask))
             {
                 if (context.CanRaise)
                 {
-                    if ((double)context.MoneyToCall / (double)context.CurrentPot >= 0.7)
-                    {
-                        // opponent bet too much
-                        // return this.ReactionToAHugeBetFromTheOpponent(context, communityCards, startingHand); Too expensive method.
-
-                        var overWager = this.OverWager(context);
-                        return this.ToRaise((context.MinRaise * 3) + overWager, context);
-                    }
-                    else
-                    {
-                        var overWager = this.OverWager(context);
-                        return this.ToRaise((context.MinRaise * 3) + overWager, context);
-                    }
+                    var overWager = this.AddedBetOnPassivePlayers(context);
+                    return this.ToRaise((context.MinRaise * 3) + overWager, context);
                 }
                 else
                 {
                     return PlayerAction.CheckOrCall();
                 }
             }
-            else if (this.PlayingStyle.VPIPDeviation(stats).Percentage <= this.PlayingStyle.VPIP.Percentage)
+            else if (this.PlayingStyle.VPIPDeviation(stats).Amount <= this.PlayingStyle.VPIP.Indicator.Amount
+                && this.PlayingStyle.VPIP.PossibleRange.Contains(startingHand.Pocket.Mask))
             {
-                if ((double)context.MoneyToCall / (double)context.CurrentPot <= 0.625)
-                {
-                    return PlayerAction.CheckOrCall();
-                }
+                return PlayerAction.CheckOrCall();
             }
 
             return PlayerAction.Fold();
@@ -135,45 +101,34 @@
             IGetTurnContext context, StartingHand startingHand, Stats stats)
         {
             var rfi = stats.RFI();
-            if (rfi.StatsOfCurrentPosition() != null && rfi.StatsOfCurrentPosition().IsOpportunitiesToOpenThePot)
+            if (rfi.CurrentPosition != Positions.BB && rfi.StatsOfCurrentPosition().IsOpportunitiesToOpenThePot)
             {
-                if (this.PlayingStyle.RFIDeviation(stats).Percentage <= this.PlayingStyle.RFI[rfi.CurrentPosition].Percentage
-                    && startingHand.IsPlayablePocket(this.PlayingStyle.RFI[rfi.CurrentPosition].Percentage))
+                if (this.PlayingStyle.RFIDeviation(stats).Amount <=
+                    this.PlayingStyle.RFI[rfi.CurrentPosition].Indicator.Amount
+                    && this.PlayingStyle.RFI[rfi.CurrentPosition].PossibleRange.Contains(startingHand.Pocket.Mask))
                 {
                     return this.ToRaise(context.MinRaise * 2, context);
                 }
             }
-            else if (this.PlayingStyle.PFRDeviation(stats).Percentage <= this.PlayingStyle.PFR.Percentage
-                && startingHand.IsPlayablePocket(this.PlayingStyle.PFR.Percentage))
+            else if (this.PlayingStyle.PFRDeviation(stats).Amount <= this.PlayingStyle.PFR.Indicator.Amount
+                && this.PlayingStyle.PFR.PossibleRange.Contains(startingHand.Pocket.Mask))
             {
                 if (context.CanRaise)
                 {
-                    var overWager = this.OverWager(context);
+                    var overWager = this.AddedBetOnPassivePlayers(context);
                     return this.ToRaise((context.MinRaise * 2) + overWager, context);
                 }
             }
-            else if (this.PlayingStyle.VPIPDeviation(stats).Percentage <= this.PlayingStyle.VPIP.Percentage
-                && startingHand.IsPlayablePocket(this.PlayingStyle.VPIP.Percentage))
-            {
-                return PlayerAction.CheckOrCall();
-            }
+            //else if (this.PlayingStyle.VPIPDeviation(stats).Percentage <= this.PlayingStyle.VPIP.Indicator.Percentage
+            //    && this.PlayingStyle.VPIP.PossibleRange.Contains(startingHand.Pocket.Mask))
+            //{
+            //    // the player does not limp
+            //}
 
             return PlayerAction.Fold();
         }
 
-        private PlayerAction ToRaise(int moneyToRaise, IGetTurnContext context)
-        {
-            if (this.IsPush(moneyToRaise, context))
-            {
-                return this.RaiseOrAllIn(int.MaxValue, context);
-            }
-            else
-            {
-                return this.RaiseOrAllIn(moneyToRaise, context);
-            }
-        }
-
-        private int OverWager(IGetTurnContext context)
+        private int AddedBetOnPassivePlayers(IGetTurnContext context)
         {
             var beforeTheRaiser = context.PreviousRoundActions
                 .Reverse()
@@ -182,42 +137,20 @@
             return callers * context.MoneyToCall;
         }
 
-        private PlayerAction ReactionToAHugeBetFromTheOpponent(
-            IGetTurnContext context, IReadOnlyCollection<Card> communityCards, StartingHand startingHand)
+        private bool IsBestOrTieHand(IGetTurnContext context, StartingHand startingHand)
         {
-            //var playerEconomy = this.PlayerEconomy(startingHand.Pocket, context, communityCards);
-            //var investment = (int)playerEconomy.NeutralEVInvestment(context.CurrentPot);
-            //
-            //if (playerEconomy.BestHand)
-            //{
-            //    if (!this.IsInPosition(context) || context.Opponents.Where(p => p.InHand).Count() > 1)
-            //    {
-            //        var overWager = this.OverWager(context);
-            //        return this.ToRaise((context.MinRaise * 3) + overWager, context);
-            //    }
-            //    else
-            //    {
-            //        return PlayerAction.CheckOrCall();
-            //    }
-            //}
-            //else if (investment >= context.MoneyToCall)
-            //{
-            //    if (context.CanRaise)
-            //    {
-            //        if (investment >= context.MoneyToCall + context.MinRaise)
-            //        {
-            //            return this.ToRaise(investment - context.MoneyToCall, context);
-            //        }
-            //    }
-            //
-            //    return PlayerAction.CheckOrCall();
-            //}
-            //else if (startingHand.IsPremiumHand)
-            //{
-            //    return PlayerAction.CheckOrCall();
-            //}
+            var heroForceIndex = StartingHandStrength.ForceIndexOfStartingHand[startingHand.Pocket.Mask];
 
-            return PlayerAction.Fold();
+            foreach (var item in context.Opponents.Where(p => p.InHand))
+            {
+                if (heroForceIndex <
+                    StartingHandStrength.ForceIndexOfStartingHand[new CardAdapter(item.HoleCards).Mask])
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

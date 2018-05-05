@@ -326,33 +326,33 @@
                 $"STATISTICS OF THE BEST AGENT:\n" +
                 $"\tmoney won per hand: [{agent.MoneyWonPerHand():N3}] ([{agent.HandsPlayed}] hands played)\n" +
                 $"PREFLOP:\n" +
-                $"\tVPIP: [{agent.Stats.VPIP().StatsForAllPositions().Percentage:N1}%]; PFR: [{agent.Stats.PFR().StatsForAllPositions().Percentage:N1}%]\n" +
-                $"\t3BET: [{agent.Stats.ThreeBet().GetStatsBy(Logic.GameRoundType.PreFlop).StatsForAllPositions().Percentage:N1}%]; " +
-                $"4BET: [{agent.Stats.FourBet().GetStatsBy(Logic.GameRoundType.PreFlop).StatsForAllPositions().Percentage:N1}%]\n" +
-                $"\tRFI: [{agent.Stats.RFI().StatsForAllPositions().Percentage:N1}%]\n" +
+                $"\tVPIP: [{agent.Stats.VPIP().StatsForAllPositions().Amount:N1}%]; PFR: [{agent.Stats.PFR().StatsForAllPositions().Amount:N1}%]\n" +
+                $"\t3BET: [{agent.Stats.ThreeBet().GetStatsBy(Logic.GameRoundType.PreFlop).StatsForAllPositions().Amount:N1}%]; " +
+                $"4BET: [{agent.Stats.FourBet().GetStatsBy(Logic.GameRoundType.PreFlop).StatsForAllPositions().Amount:N1}%]\n" +
+                $"\tRFI: [{agent.Stats.RFI().StatsForAllPositions().Amount:N1}%]\n" +
                 $"FLOP:\n" +
-                $"\t3BET: [{agent.Stats.ThreeBet().GetStatsBy(Logic.GameRoundType.Flop).StatsForAllPositions().Percentage:N1}%]; " +
-                $"4BET: [{agent.Stats.FourBet().GetStatsBy(Logic.GameRoundType.Flop).StatsForAllPositions().Percentage:N1}%]\n" +
-                $"\tCBET: [{agent.Stats.CBet().GetStatsBy(Logic.GameRoundType.Flop).StatsForAllPositions().Percentage:N1}%];\n" +
-                $"\tAFq: [{agent.Stats.AFq().GetStatsBy(Logic.GameRoundType.Flop).StatsForAllPositions().Percentage:N1}%];\n" +
+                $"\t3BET: [{agent.Stats.ThreeBet().GetStatsBy(Logic.GameRoundType.Flop).StatsForAllPositions().Amount:N1}%]; " +
+                $"4BET: [{agent.Stats.FourBet().GetStatsBy(Logic.GameRoundType.Flop).StatsForAllPositions().Amount:N1}%]\n" +
+                $"\tCBET: [{agent.Stats.CBet().GetStatsBy(Logic.GameRoundType.Flop).StatsForAllPositions().Amount:N1}%];\n" +
+                $"\tAFq: [{agent.Stats.AFq().GetStatsBy(Logic.GameRoundType.Flop).StatsForAllPositions().Amount:N1}%];\n" +
                 $"TURN:\n" +
-                $"\t3BET: [{agent.Stats.ThreeBet().GetStatsBy(Logic.GameRoundType.Turn).StatsForAllPositions().Percentage:N1}%]; " +
-                $"4BET: [{agent.Stats.FourBet().GetStatsBy(Logic.GameRoundType.Turn).StatsForAllPositions().Percentage:N1}%]\n" +
-                $"\tCBET: [{agent.Stats.CBet().GetStatsBy(Logic.GameRoundType.Turn).StatsForAllPositions().Percentage:N1}%];\n" +
-                $"\tAFq: [{agent.Stats.AFq().GetStatsBy(Logic.GameRoundType.Turn).StatsForAllPositions().Percentage:N1}%];\n" +
+                $"\t3BET: [{agent.Stats.ThreeBet().GetStatsBy(Logic.GameRoundType.Turn).StatsForAllPositions().Amount:N1}%]; " +
+                $"4BET: [{agent.Stats.FourBet().GetStatsBy(Logic.GameRoundType.Turn).StatsForAllPositions().Amount:N1}%]\n" +
+                $"\tCBET: [{agent.Stats.CBet().GetStatsBy(Logic.GameRoundType.Turn).StatsForAllPositions().Amount:N1}%];\n" +
+                $"\tAFq: [{agent.Stats.AFq().GetStatsBy(Logic.GameRoundType.Turn).StatsForAllPositions().Amount:N1}%];\n" +
                 $"RIVER:\n" +
-                $"\t3BET: [{agent.Stats.ThreeBet().GetStatsBy(Logic.GameRoundType.River).StatsForAllPositions().Percentage:N1}%]; " +
-                $"4BET: [{agent.Stats.FourBet().GetStatsBy(Logic.GameRoundType.River).StatsForAllPositions().Percentage:N1}%]\n" +
-                $"\tCBET: [{agent.Stats.CBet().GetStatsBy(Logic.GameRoundType.River).StatsForAllPositions().Percentage:N1}%];\n" +
-                $"\tAFq: [{agent.Stats.AFq().GetStatsBy(Logic.GameRoundType.River).StatsForAllPositions().Percentage:N1}%];\n" +
+                $"\t3BET: [{agent.Stats.ThreeBet().GetStatsBy(Logic.GameRoundType.River).StatsForAllPositions().Amount:N1}%]; " +
+                $"4BET: [{agent.Stats.FourBet().GetStatsBy(Logic.GameRoundType.River).StatsForAllPositions().Amount:N1}%]\n" +
+                $"\tCBET: [{agent.Stats.CBet().GetStatsBy(Logic.GameRoundType.River).StatsForAllPositions().Amount:N1}%];\n" +
+                $"\tAFq: [{agent.Stats.AFq().GetStatsBy(Logic.GameRoundType.River).StatsForAllPositions().Amount:N1}%];\n" +
                 $"TOTAL:\n" +
-                $"\t3BET: [{agent.Stats.ThreeBet().Total().Percentage:N1}%]; " +
-                $"4BET: [{agent.Stats.FourBet().Total().Percentage:N1}%]\n" +
-                $"\tCBET: [{agent.Stats.CBet().Total().Percentage:N1}%];\n" +
-                $"\tAFq: [{agent.Stats.AFq().Total().Percentage:N1}%];\n" +
-                $"\tW$SD: [{agent.Stats.WSD().StatsForAllPositions().Percentage:N1}%]; " +
-                $"WTSD: [{agent.Stats.WTSD().StatsForAllPositions().Percentage:N1}%]; " +
-                $"W$WSF: [{agent.Stats.WWSF().StatsForAllPositions().Percentage:N1}%]\n" +
+                $"\t3BET: [{agent.Stats.ThreeBet().Total().Amount:N1}%]; " +
+                $"4BET: [{agent.Stats.FourBet().Total().Amount:N1}%]\n" +
+                $"\tCBET: [{agent.Stats.CBet().Total().Amount:N1}%];\n" +
+                $"\tAFq: [{agent.Stats.AFq().Total().Amount:N1}%];\n" +
+                $"\tW$SD: [{agent.Stats.WSD().StatsForAllPositions().Amount:N1}%]; " +
+                $"WTSD: [{agent.Stats.WTSD().StatsForAllPositions().Amount:N1}%]; " +
+                $"W$WSF: [{agent.Stats.WWSF().StatsForAllPositions().Amount:N1}%]\n" +
                 $"\tBB/100: [{agent.Stats.BBper100().StatsForAllPositions().Amount:N2}]\n";
             Console.Write(str);
         }

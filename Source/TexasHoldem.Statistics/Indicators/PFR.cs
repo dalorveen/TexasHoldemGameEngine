@@ -25,7 +25,7 @@
         /// <value>
         /// Pre-flop raise
         /// </value>
-        public double Percentage
+        public override double Amount
         {
             get
             {
@@ -48,7 +48,7 @@
 
         public override string ToString()
         {
-            return $"{this.Percentage:0.00}%";
+            return $"{this.Amount:0.00}%";
         }
 
         public override PFR DeepClone()

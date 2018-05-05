@@ -30,7 +30,7 @@
         /// [flop continuation bet by betting the turn (and bet again on the river) when they had the opportunity]
         /// </summary>
         /// <value>Percentages of continuation bet</value>
-        public double Percentage
+        public override double Amount
         {
             get
             {
@@ -86,7 +86,7 @@
 
         public override string ToString()
         {
-            return $"{this.Percentage:0.00}%";
+            return $"{this.Amount:0.00}%";
         }
 
         public override CBet DeepClone()

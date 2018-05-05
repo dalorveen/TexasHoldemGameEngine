@@ -47,10 +47,23 @@
             return (double)(context.MoneyLeft - moneyToRaise) / (double)(moneyToRaise + context.CurrentPot) <= 0.5;
         }
 
-        public bool IsInPosition(IGetTurnContext context)
+        public PlayerAction ToRaise(int moneyToRaise, IGetTurnContext context)
         {
-            return !context.Opponents.Any(x => x.InHand && x.ActionPriority > 0);
+            if (this.IsPush(moneyToRaise, context))
+            {
+                return this.RaiseOrAllIn(int.MaxValue, context);
+            }
+            else
+            {
+                return this.RaiseOrAllIn(moneyToRaise, context);
+            }
         }
+
+        //public bool IsInPosition(IGetTurnContext context)
+        //{
+        //    
+        //    return !context.Opponents.Any(x => x.InHand && x.ActionPriority > 0);
+        //}
 
         private ICalculator Calculator(
             ICardAdapter pocket, IReadOnlyCollection<Card> communityCards, IGetTurnContext context)

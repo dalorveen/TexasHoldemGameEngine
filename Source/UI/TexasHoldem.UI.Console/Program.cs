@@ -27,10 +27,17 @@
         {
             var trainedNeuralNetwork = @"..\..\..\..\AI\TexasHoldem.AI.NeuroPlayer\PopulationFiles\bestAgent.xml";
 
-            players.Add(new NeuroPlayer(trainedNeuralNetwork));
-            players.Add(new DummyPlayer());
-            players.Add(new SmartPlayer());
-            players.Add(new DummyPlayer());
+            //players.Add(new NeuroPlayer(trainedNeuralNetwork));
+            //players.Add(new DummyPlayer());
+            //players.Add(new SmartPlayer());
+            //players.Add(new DummyPlayer());
+
+            players.Add(new ConsolePlayer((6 * players.Count) + NumberOfCommonRows));
+            players.Add(new Champion(new PlayingStyle(), 200));
+            players.Add(new Champion(new PlayingStyle(), 200));
+            players.Add(new Champion(new PlayingStyle(), 200));
+            players.Add(new Champion(new PlayingStyle(), 200));
+            players.Add(new Champion(new PlayingStyle(), 200));
 
             var gameHeight = (6 * players.Count) + NumberOfCommonRows;
             Table(gameHeight);

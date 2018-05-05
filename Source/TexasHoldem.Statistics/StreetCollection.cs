@@ -4,12 +4,14 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text;
 
     using TexasHoldem.Logic;
     using TexasHoldem.Logic.Players;
     using TexasHoldem.Statistics.Indicators;
 
-    public class StreetCollection<TIndicator> : IEnumerable<KeyValuePair<GameRoundType, PositionalCollection<TIndicator>>>,
+    public class StreetCollection<TIndicator>
+        : IEnumerable<KeyValuePair<GameRoundType, PositionalCollection<TIndicator>>>,
         IUpdate
         where TIndicator : BaseIndicator<TIndicator>, new()
     {
@@ -17,14 +19,14 @@
 
         private GameRoundType currentStreet;
 
-        public StreetCollection(ICollection<GameRoundType> excludedStreets, ICollection<Positions> excludedPositions)
+        public StreetCollection()
         {
-            var temp = Enum.GetValues(typeof(GameRoundType)).Cast<GameRoundType>().Except(excludedStreets);
+            var temp = Enum.GetValues(typeof(GameRoundType)).Cast<GameRoundType>();
             this.indicators = new Dictionary<GameRoundType, PositionalCollection<TIndicator>>(temp.Count());
 
             foreach (var item in temp)
             {
-                this.indicators.Add(item, new PositionalCollection<TIndicator>(excludedPositions));
+                this.indicators.Add(item, new PositionalCollection<TIndicator>());
             }
         }
 
@@ -114,12 +116,36 @@
 
         public IEnumerator<KeyValuePair<GameRoundType, PositionalCollection<TIndicator>>> GetEnumerator()
         {
-            return (IEnumerator<KeyValuePair<GameRoundType, PositionalCollection<TIndicator>>>)this.indicators;
+            return this.indicators.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            foreach (var item in this.indicators)
+            {
+                sb.Append($"{item.Key} [{item.Value.ToString()}]\n");
+            }
+
+            return sb.Remove(sb.Length - 2, 2).ToString();
+        }
+
+        public string ToSimplifiedString()
+        {
+            var sb = new StringBuilder();
+
+            foreach (var item in this.indicators)
+            {
+                sb.Append($"{item.Key} [{item.Value.StatsForAllPositions().ToString()}]\n");
+            }
+
+            return sb.Remove(sb.Length - 2, 2).ToString();
         }
     }
 }

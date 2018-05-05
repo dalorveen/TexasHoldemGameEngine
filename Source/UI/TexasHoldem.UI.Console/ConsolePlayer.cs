@@ -74,6 +74,12 @@
             }
         }
 
+        public override void EndHand(IEndHandContext context)
+        {
+            base.EndHand(context);
+            Console.ReadLine();
+        }
+
         private int RaiseAmount(int moneyLeft, int minRaise, int moneyToCall, int myMoneyInTheRound)
         {
             var wholeMinRaise = minRaise + myMoneyInTheRound + moneyToCall;

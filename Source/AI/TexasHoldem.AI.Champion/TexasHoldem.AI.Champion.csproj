@@ -40,13 +40,7 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PlayerStyles.cs" />
-    <Compile Include="StatsCorrection\BaseStatsCorrection.cs" />
-    <Compile Include="StatsCorrection\FourBetCorrection.cs" />
-    <Compile Include="StatsCorrection\RFICorrection.cs" />
-    <Compile Include="StatsCorrection\ThreeBetCorrection.cs" />
-    <Compile Include="StatsCorrection\VPIPCorrection.cs" />
-    <Compile Include="StatsCorrection\PFRCorrection.cs" />
+    <Compile Include="StatsSetting.cs" />
     <Compile Include="Strategy\BaseBehavior.cs" />
     <Compile Include="Strategy\HandEconomy.cs" />
     <Compile Include="Strategy\IPlayerEconomy.cs" />
@@ -80,6 +74,7 @@
       <HintPath>..\..\..\ThirdPartyAssemblies\HandEvaluator_2.0\HandEvaluator.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

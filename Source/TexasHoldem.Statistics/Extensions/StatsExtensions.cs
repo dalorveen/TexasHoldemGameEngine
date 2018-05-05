@@ -13,7 +13,7 @@
 
             foreach (var item in source)
             {
-                total.Sum(item.Value);
+                total = total.Sum(item.Value);
             }
 
             return total;

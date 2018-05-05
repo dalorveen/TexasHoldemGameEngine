@@ -29,7 +29,7 @@
         /// <value>
         /// Won Money at Showdown
         /// </value>
-        public double Percentage
+        public override double Amount
         {
             get
             {
@@ -40,6 +40,7 @@
 
         public override void Update(IStartHandContext context)
         {
+            base.Update(context);
             this.moneyInTheBeginningOfTheHand = context.MoneyLeft;
         }
 
@@ -56,7 +57,7 @@
 
         public override string ToString()
         {
-            return $"{this.Percentage:0.00}%";
+            return $"{this.Amount:0.00}%";
         }
 
         public override WSD DeepClone()

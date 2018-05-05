@@ -20,6 +20,7 @@
 
         public Champion(PlayingStyle playingStyle, int buyIn)
         {
+            this.stats = new Stats();
             this.preflopBehavior = new PreflopBehavior(playingStyle);
             this.postflopBehavior = new PostflopBehavior(playingStyle);
             this.BuyIn = buyIn;

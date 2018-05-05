@@ -4,6 +4,7 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text;
 
     using TexasHoldem.Logic.Players;
     using TexasHoldem.Statistics.Extensions;
@@ -72,9 +73,9 @@
 
         private int numberOfPlayers;
 
-        public PositionalCollection(ICollection<Positions> excludedPositions)
+        public PositionalCollection()
         {
-            var temp = Enum.GetValues(typeof(Positions)).Cast<Positions>().Except(excludedPositions);
+            var temp = Enum.GetValues(typeof(Positions)).Cast<Positions>();
             this.indicators = new Dictionary<Positions, TIndicator>(temp.Count());
 
             foreach (var item in temp)
@@ -90,7 +91,6 @@
             // TODO:
             // CurrentPosition is not initialized before the start hand.
             // Do I need to throw an exception?
-            // What if the position is excluded (for example: RFI stats excludes big blind)?
             try
             {
                 return this.indicators[this.CurrentPosition];
@@ -125,7 +125,7 @@
 
         public void Update(IStartHandContext context)
         {
-            this.CurrentPosition = context.ActionPriority == 10
+            this.CurrentPosition = context.ActionPriority == 9
                 ? positionChart[this.numberOfPlayers - 2][this.numberOfPlayers - 1]
                 : positionChart[this.numberOfPlayers - 2][context.ActionPriority];
             this.indicators[this.CurrentPosition].Update(context);
@@ -166,12 +166,24 @@
 
         public IEnumerator<KeyValuePair<Positions, TIndicator>> GetEnumerator()
         {
-            return (IEnumerator<KeyValuePair<Positions, TIndicator>>)this.indicators;
+            return this.indicators.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            foreach (var item in this.indicators)
+            {
+                sb.Append($"{item.Key} [{item.Value.Amount:N1}] | ");
+            }
+
+            return sb.Remove(sb.Length - 3, 3).ToString();
         }
     }
 }

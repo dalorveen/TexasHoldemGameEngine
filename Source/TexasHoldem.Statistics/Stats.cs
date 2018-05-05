@@ -7,7 +7,7 @@
     using TexasHoldem.Logic.Players;
     using TexasHoldem.Statistics.Indicators;
 
-    public class Stats : /*IStats,*/ IUpdate
+    public class Stats : IStats, IUpdate
     {
         private readonly IDictionary<Type, IUpdate> indicatorsWithSingleStreet;
 
@@ -17,24 +17,21 @@
         {
             this.indicatorsWithSingleStreet = new Dictionary<Type, IUpdate>
             {
-                { typeof(VPIP), new PositionalCollection<VPIP>(new Positions[0]) },
-                { typeof(PFR), new PositionalCollection<PFR>(new Positions[0]) },
-                { typeof(RFI), new PositionalCollection<RFI>(new Positions[] { Positions.BB }) },
-                { typeof(BBper100), new PositionalCollection<BBper100>(new Positions[0]) },
-                { typeof(WTSD), new PositionalCollection<WTSD>(new Positions[0]) },
-                { typeof(WSD), new PositionalCollection<WSD>(new Positions[0]) },
-                { typeof(WWSF), new PositionalCollection<WWSF>(new Positions[0]) }
+                { typeof(VPIP), new PositionalCollection<VPIP>() },
+                { typeof(PFR), new PositionalCollection<PFR>() },
+                { typeof(RFI), new PositionalCollection<RFI>() },
+                { typeof(BBper100), new PositionalCollection<BBper100>() },
+                { typeof(WTSD), new PositionalCollection<WTSD>() },
+                { typeof(WSD), new PositionalCollection<WSD>() },
+                { typeof(WWSF), new PositionalCollection<WWSF>() }
             };
 
             this.indicatorsWithSeveralStreets = new Dictionary<Type, IUpdate>
             {
-                { typeof(ThreeBet), new StreetCollection<ThreeBet>(new GameRoundType[0], new Positions[0]) },
-                { typeof(FourBet), new StreetCollection<FourBet>(new GameRoundType[0], new Positions[0]) },
-                {
-                    typeof(CBet),
-                    new StreetCollection<CBet>(new GameRoundType[] { GameRoundType.PreFlop }, new Positions[0])
-                },
-                { typeof(AFq), new StreetCollection<AFq>(new GameRoundType[0], new Positions[0]) },
+                { typeof(ThreeBet), new StreetCollection<ThreeBet>() },
+                { typeof(FourBet), new StreetCollection<FourBet>() },
+                { typeof(CBet), new StreetCollection<CBet>() },
+                { typeof(AFq), new StreetCollection<AFq>() },
             };
         }
 
@@ -205,17 +202,17 @@
         public override string ToString()
         {
             return
-                $"VPIP:{this.VPIP().ToString()}\n" +
-                $"PFR:{this.PFR().ToString()}\n" +
+                $"VPIP:{this.VPIP().StatsForAllPositions().ToString()}\n" +
+                $"PFR:{this.PFR().StatsForAllPositions().ToString()}\n" +
                 $"RFI:{this.RFI().ToString()}\n" +
-                $"3Bet:{this.ThreeBet().ToString()}\n" +
-                $"4Bet:{this.FourBet().ToString()}\n" +
-                $"CBet:{this.CBet().ToString()}\n" +
-                $"AFq:{this.AFq().ToString()}\n" +
-                $"BB/100:{this.BBper100().ToString()}\n" +
-                $"WTSD:{this.WTSD().ToString()}\n" +
-                $"W$SD:{this.WSD().ToString()}\n" +
-                $"W$WSF:{this.WWSF().ToString()}";
+                $"3Bet:{this.ThreeBet().ToSimplifiedString()}\n" +
+                $"4Bet:{this.FourBet().ToSimplifiedString()}\n" +
+                $"CBet:{this.CBet().ToSimplifiedString()}\n" +
+                $"AFq:{this.AFq().ToSimplifiedString()}\n" +
+                $"BB/100:{this.BBper100().StatsForAllPositions().ToString()}\n" +
+                $"WTSD:{this.WTSD().StatsForAllPositions().ToString()}\n" +
+                $"W$SD:{this.WSD().StatsForAllPositions().ToString()}\n" +
+                $"W$WSF:{this.WWSF().StatsForAllPositions().ToString()}";
         }
     }
 }

@@ -10,8 +10,6 @@
 
     public class PostflopBehavior : BaseBehavior
     {
-        private const double LowerWagerLimit = 0.42;
-
         public PostflopBehavior(PlayingStyle playingStyle)
             : base(playingStyle)
         {
@@ -24,108 +22,78 @@
 
             if (playerEconomy.NutHand)
             {
-                return this.ReactionCausedByNutHand(context, playerEconomy);
+                return this.ReactionCausedByNutHand(context, playerEconomy, stats);
             }
             else if (playerEconomy.BestHand)
             {
-                return this.ReactionCausedByBestHand(context, playerEconomy);
+                return this.ReactionCausedByBestHand(context, playerEconomy, stats);
             }
             else
             {
-                return this.ReactionCausedByWeakHand(context, playerEconomy);
+                return this.ReactionCausedByWeakHand(context, playerEconomy, stats);
             }
         }
 
-        private PlayerAction ReactionCausedByNutHand(IGetTurnContext context, PlayerEconomy playerEconomy)
+        private PlayerAction ReactionCausedByNutHand(IGetTurnContext context, PlayerEconomy playerEconomy, Stats stats)
         {
-            //if (context.CanRaise)
-            //{
-            //    if (this.NeedAnRaiseToAdjustTheStats(context))
-            //    {
-            //        return this.ToValueBet(context, playerEconomy);
-            //    }
-            //}
-
-            return PlayerAction.CheckOrCall();
-        }
-
-        private PlayerAction ReactionCausedByBestHand(IGetTurnContext context, PlayerEconomy playerEconomy)
-        {
-            //if (playerEconomy.TiedHandsWithHero > 0)
-            //{
-            //    if (context.CanRaise && playerEconomy.HandsThatLoseToTheHero.Count > 0)
-            //    {
-            //        if (this.NeedAnRaiseToAdjustTheStats(context))
-            //        {
-            //            return this.ToValueBet(context, playerEconomy);
-            //        }
-            //    }
-            //}
-            //else
-            //{
-            //    if (context.CanRaise)
-            //    {
-            //        if (this.NeedAnRaiseToAdjustTheStats(context))
-            //        {
-            //            return this.ToValueBet(context, playerEconomy);
-            //        }
-            //    }
-            //}
-
-            return PlayerAction.CheckOrCall();
-        }
-
-        private PlayerAction ReactionCausedByWeakHand(IGetTurnContext context, PlayerEconomy playerEconomy)
-        {
-            //var investment = (int)playerEconomy.OptimalInvestment(context.CurrentPot);
-            //
-            //if (investment < context.MoneyToCall)
-            //{
-            //    return PlayerAction.Fold();
-            //}
-            //
-            //if (context.CanRaise)
-            //{
-            //    if (investment >= context.MoneyToCall + context.MinRaise)
-            //    {
-            //        if (context.CurrentPot * LowerWagerLimit <= investment && this.NeedAnRaiseToAdjustTheStats(context))
-            //        {
-            //            if (this.IsPush(investment - context.MoneyToCall, context))
-            //            {
-            //                // it's a very losing action
-            //                // return this.RaiseOrAllIn(int.MaxValue, context);
-            //            }
-            //            else
-            //            {
-            //                return this.RaiseOrAllIn(investment - context.MoneyToCall, context);
-            //            }
-            //        }
-            //    }
-            //}
-
-            return PlayerAction.CheckOrCall();
-        }
-
-        private PlayerAction ToValueBet(IGetTurnContext context, PlayerEconomy playerEconomy)
-        {
-            double lowerLimit, upperLimit;
-
-            if (playerEconomy.NutHand)
+            if (context.CanRaise && this.NeedRaiseToMatchThePlaystyle(context, stats))
             {
-                lowerLimit = LowerWagerLimit;
-                upperLimit = 0.75;
+                return this.ToRaise(this.RandomBet(context, 0.4, 1.25), context);
             }
-            else if (playerEconomy.BestHand)
+
+            return PlayerAction.CheckOrCall();
+        }
+
+        private PlayerAction ReactionCausedByBestHand(
+            IGetTurnContext context, PlayerEconomy playerEconomy, Stats stats)
+        {
+            if (playerEconomy.TiedHandsWithHero > 0)
             {
-                lowerLimit = 0.5;
-                upperLimit = 1.25;
+                if (context.CanRaise
+                    && playerEconomy.HandsThatLoseToTheHero.Count > 0
+                    && this.NeedRaiseToMatchThePlaystyle(context, stats))
+                {
+                    return this.ToRaise(this.RandomBet(context, 0.4, 0.6), context);
+                }
             }
             else
             {
-                lowerLimit = LowerWagerLimit;
-                upperLimit = 1.25;
+                if (context.CanRaise && this.NeedRaiseToMatchThePlaystyle(context, stats))
+                {
+                    return this.ToRaise(this.RandomBet(context, 0.6, 1.0), context);
+                }
             }
 
+            return PlayerAction.CheckOrCall();
+        }
+
+        private PlayerAction ReactionCausedByWeakHand(
+            IGetTurnContext context, PlayerEconomy playerEconomy, Stats stats)
+        {
+            var investment = (int)playerEconomy.OptimalInvestment(context.CurrentPot);
+
+            if (investment < context.MoneyToCall)
+            {
+                return PlayerAction.Fold();
+            }
+
+            if (context.CanRaise)
+            {
+                if (investment >= context.MoneyToCall + context.MinRaise)
+                {
+                    if (this.NeedRaiseToMatchThePlaystyle(context, stats))
+                    {
+                        // bluff
+                        return this.ToRaise(this.RandomBet(context, 0.4, 0.6), context);
+                    }
+                }
+            }
+
+            return PlayerAction.CheckOrCall();
+        }
+
+        private int RandomBet(IGetTurnContext context, double lowerLimit, double upperLimit)
+        {
             var min = (int)(context.CurrentPot * lowerLimit) - context.MoneyToCall;
             var max = (int)((context.CurrentPot + 1) * upperLimit) - context.MoneyToCall;
             var difference = max - min;
@@ -133,35 +101,25 @@
             min = min >= context.MinRaise ? min : context.MinRaise;
             max = max > min ? max : min + difference;
 
-            var moneyToRaise = RandomProvider.Next(min, max);
-
-            if (this.IsPush(moneyToRaise, context))
-            {
-                return this.RaiseOrAllIn(int.MaxValue, context);
-            }
-            else
-            {
-                return this.RaiseOrAllIn(moneyToRaise, context);
-            }
+            return RandomProvider.Next(min, max);
         }
 
-        private bool NeedAnRaiseToAdjustTheStats(IGetTurnContext context)
+        private bool NeedRaiseToMatchThePlaystyle(IGetTurnContext context, Stats stats)
         {
-            //if (context.CurrentStats.CBet.IndicatorByStreets[context.RoundType].IsOpportunity)
-            //{
-            //    if (context.CurrentStats.CBet.IndicatorByStreets[context.RoundType].Percentage
-            //        < this.PlayingStyle.CBet.IndicatorByStreets[context.RoundType].Percentage)
-            //    {
-            //        return true;
-            //    }
-            //}
-            //
-            //if (context.CurrentStats.AFq.IndicatorByStreets[context.RoundType].Percentage
-            //    < this.PlayingStyle.AFq.IndicatorByStreets[context.RoundType].Percentage)
-            //{
-            //    // adjust the current stats of AFq to match the style of the player's game
-            //    return true;
-            //}
+            if (stats.CBet().StatsOfCurrentStreet().StatsOfCurrentPosition().IsOpportunity)
+            {
+                if (this.PlayingStyle.CBetDeviation(stats).Amount <=
+                    this.PlayingStyle.CBet[context.RoundType].Amount)
+                {
+                    return true;
+                }
+            }
+
+            if (this.PlayingStyle.PostflopAFqDeviation(stats).Amount <=
+                    this.PlayingStyle.AFq[context.RoundType].Amount)
+            {
+                return true;
+            }
 
             return false;
         }

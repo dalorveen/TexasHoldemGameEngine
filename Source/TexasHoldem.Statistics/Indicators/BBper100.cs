@@ -27,7 +27,7 @@
         /// <value>
         /// Big Blinds per 100 Hands
         /// </value>
-        public double Amount
+        public override double Amount
         {
             get
             {
@@ -37,6 +37,7 @@
 
         public override void Update(IStartHandContext context)
         {
+            base.Update(context);
             this.moneyInTheBeginningOfTheHand = context.MoneyLeft;
             this.smallBlind = context.SmallBlind;
         }

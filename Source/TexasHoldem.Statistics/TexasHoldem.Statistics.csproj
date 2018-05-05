@@ -46,6 +46,7 @@
     <Compile Include="Indicators\CBet.cs" />
     <Compile Include="Indicators\FourBet.cs" />
     <Compile Include="Indicators\BaseIndicator.cs" />
+    <Compile Include="Indicators\IAmount.cs" />
     <Compile Include="Indicators\ISum.cs" />
     <Compile Include="Indicators\PFR.cs" />
     <Compile Include="Indicators\RFI.cs" />

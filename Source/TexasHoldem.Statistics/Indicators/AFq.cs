@@ -27,7 +27,7 @@
         /// Gets the measure of how frequently a player is aggressive
         /// </summary>
         /// <value>Percentages of aggression frequency</value>
-        public double Percentage
+        public override double Amount
         {
             get
             {
@@ -56,7 +56,7 @@
 
         public override string ToString()
         {
-            return $"{this.Percentage:0.00}%";
+            return $"{this.Amount:0.00}%";
         }
 
         public override AFq DeepClone()

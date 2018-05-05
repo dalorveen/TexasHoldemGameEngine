@@ -3,7 +3,7 @@
     using TexasHoldem.Logic;
     using TexasHoldem.Logic.Players;
 
-    public abstract class BaseIndicator<T> : IDeepCloneable<T>, ISum<T>, IUpdate
+    public abstract class BaseIndicator<T> : IDeepCloneable<T>, ISum<T>, IUpdate, IAmount
     {
         public BaseIndicator(int hands = 0)
         {
@@ -17,6 +17,8 @@
         /// Played hands
         /// </value>
         public int Hands { get; private set; }
+
+        public abstract double Amount { get; }
 
         public virtual void Update(IStartGameContext context)
         {

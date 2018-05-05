@@ -29,7 +29,7 @@
         /// Gets the percentage of time a player re-raised a 3Bet
         /// </summary>
         /// <value>Percentages of 4Bet</value>
-        public double Percentage
+        public override double Amount
         {
             get
             {
@@ -61,7 +61,7 @@
 
         public override string ToString()
         {
-            return $"{this.Percentage:0.00}%";
+            return $"{this.Amount:0.00}%";
         }
 
         public override FourBet DeepClone()
