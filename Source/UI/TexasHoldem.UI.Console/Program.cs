@@ -39,6 +39,12 @@
             players.Add(new Champion(new PlayingStyle(), 200));
             players.Add(new Champion(new PlayingStyle(), 200));
 
+            // var gameWithoutAnimation = new TexasHoldemGame(players, 100000);    // remove
+            // var stopWatch = new System.Diagnostics.Stopwatch();                 // remove
+            // stopWatch.Start();                                                  // remove
+            // gameWithoutAnimation.Start();                                       // remove
+            // stopWatch.Stop();                                                   // remove
+
             var gameHeight = (6 * players.Count) + NumberOfCommonRows;
             Table(gameHeight);
 

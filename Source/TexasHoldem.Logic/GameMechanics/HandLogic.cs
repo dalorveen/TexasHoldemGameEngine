@@ -162,7 +162,8 @@
 
                             if (oneOfThePots.ActivePlayer.Count == 0)
                             {
-                                throw new Exception("There are no players in the pot");
+                                throw new Exception("There are no players in the pot. Maybe the player folded " +
+                                    "his cards when he could check.");
                             }
                             else if (oneOfThePots.ActivePlayer.Count == 1)
                             {

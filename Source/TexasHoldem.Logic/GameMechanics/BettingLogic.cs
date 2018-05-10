@@ -189,26 +189,21 @@
 
         private ICollection<Opponent> CreateOpponents(InternalPlayer hero)
         {
-            var shifted = this.allPlayers.ToList();
-            shifted.Add(shifted.First());
-            shifted.RemoveAt(0);
-
-            int heroActionPriority = shifted.TakeWhile(p => p.Name != hero.Name).Count();
-            var opponentActionPriority = -heroActionPriority;
+            var actionPriority = 9;
             var opponents = new List<Opponent>();
 
-            foreach (var item in shifted)
+            foreach (var item in this.allPlayers.ToList())
             {
                 if (item.Name == hero.Name)
                 {
-                    opponentActionPriority++;
+                    actionPriority++;
                     continue;
                 }
 
                 opponents.Add(new Opponent(
                     item.Name,
                     item.Cards,
-                    opponentActionPriority++,
+                    actionPriority++ % 10,
                     item.PlayerMoney.Money,
                     item.PlayerMoney.CurrentRoundBet,
                     item.PlayerMoney.InHand));

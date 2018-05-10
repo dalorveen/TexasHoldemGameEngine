@@ -37,7 +37,7 @@
 
         /// <summary>
         /// Gets the sequence number of the player in the turn queue.
-        /// Small blind = 0, big blind = 1, ..., dealer 10.
+        /// Small blind = 0, big blind = 1, ..., dealer 9.
         /// </summary>
         /// <value>
         /// The value is from zero to 10.

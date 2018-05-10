@@ -1,6 +1,5 @@
 ﻿namespace TexasHoldem.AI.Champion.Strategy
 {
-    using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
@@ -17,7 +16,8 @@
             var listOfhandStrength = calculator.Equity();
             foreach (var item in listOfhandStrength)
             {
-                this.playerEconomy.Add(new PlayerEconomy(item, listOfhandStrength.Where(p => p.Pocket.Mask != item.Pocket.Mask).ToList()));
+                this.playerEconomy.Add(new PlayerEconomy(item, listOfhandStrength
+                    .Where(p => p.Pocket.Mask != item.Pocket.Mask).ToList()));
             }
         }
 

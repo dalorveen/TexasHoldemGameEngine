@@ -3,16 +3,16 @@
     using HoldemHand;
     using TexasHoldem.Statistics.Indicators;
 
-    public class StatsSetting<TIndicator>
+    public class StatsSetting : IAmount
     {
-        public StatsSetting(TIndicator indicator, PocketHands possibleRange)
+        public StatsSetting(double amount, PocketHands possibleRange)
         {
-            this.Indicator = indicator;
-            this.PossibleRange = possibleRange;
+            this.Amount = amount;
+            this.PlayableRange = possibleRange;
         }
 
-        public TIndicator Indicator { get; }
+        public double Amount { get; }
 
-        public PocketHands PossibleRange { get; }
+        public PocketHands PlayableRange { get; }
     }
 }

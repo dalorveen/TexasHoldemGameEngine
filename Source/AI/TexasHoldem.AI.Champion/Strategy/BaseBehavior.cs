@@ -21,6 +21,24 @@
         public abstract PlayerAction OptimalAction(
             ICardAdapter pocket, IReadOnlyCollection<Card> communityCards, IGetTurnContext context, Stats stats);
 
+        public PlayerEconomy PlayerEconomy(
+            ICardAdapter pocket, IReadOnlyCollection<Card> communityCards, IGetTurnContext context)
+        {
+            var calculator = this.Calculator(pocket, communityCards, context);
+            var handEconomy = new HandEconomy(calculator);
+            return handEconomy.First(p => p.Hero.Pocket.Mask == pocket.Mask);
+        }
+
+        public bool IsEnoughMoneyLeftAfterInvestment(int investment, IGetTurnContext context)
+        {
+            if (investment == 0)
+            {
+                return true;
+            }
+
+            return (double)(context.MoneyLeft - investment) / (double)(investment + context.CurrentPot) > 0.5;
+        }
+
         public PlayerAction RaiseOrAllIn(int moneyToRaise, IGetTurnContext context)
         {
             if (moneyToRaise >= context.MoneyLeft - context.MoneyToCall)
@@ -34,22 +52,9 @@
             }
         }
 
-        public PlayerEconomy PlayerEconomy(
-            ICardAdapter pocket, IReadOnlyCollection<Card> communityCards, IGetTurnContext context)
+        public PlayerAction RaiseOrPush(int moneyToRaise, IGetTurnContext context)
         {
-            var calculator = this.Calculator(pocket, communityCards, context);
-            var handEconomy = new HandEconomy(calculator);
-            return handEconomy.First(p => p.Hero.Pocket.Mask == pocket.Mask);
-        }
-
-        public bool IsPush(int moneyToRaise, IGetTurnContext context)
-        {
-            return (double)(context.MoneyLeft - moneyToRaise) / (double)(moneyToRaise + context.CurrentPot) <= 0.5;
-        }
-
-        public PlayerAction ToRaise(int moneyToRaise, IGetTurnContext context)
-        {
-            if (this.IsPush(moneyToRaise, context))
+            if (!this.IsEnoughMoneyLeftAfterInvestment(moneyToRaise, context))
             {
                 return this.RaiseOrAllIn(int.MaxValue, context);
             }
@@ -59,13 +64,7 @@
             }
         }
 
-        //public bool IsInPosition(IGetTurnContext context)
-        //{
-        //    
-        //    return !context.Opponents.Any(x => x.InHand && x.ActionPriority > 0);
-        //}
-
-        private ICalculator Calculator(
+        public ICalculator Calculator(
             ICardAdapter pocket, IReadOnlyCollection<Card> communityCards, IGetTurnContext context)
         {
             var holeCardsOfOpponentsWhoAreInHand = new List<ICardAdapter>();

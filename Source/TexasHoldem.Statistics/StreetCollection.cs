@@ -17,8 +17,6 @@
     {
         private readonly IDictionary<GameRoundType, PositionalCollection<TIndicator>> indicators;
 
-        private GameRoundType currentStreet;
-
         public StreetCollection()
         {
             var temp = Enum.GetValues(typeof(GameRoundType)).Cast<GameRoundType>();
@@ -82,28 +80,27 @@
         public void Update(IStartRoundContext context)
         {
             this.CurrentStreet = context.RoundType;
-            this.currentStreet = context.RoundType;
-            this.indicators[this.currentStreet].Update(context);
+            this.indicators[this.CurrentStreet].Update(context);
         }
 
         public void Update(IGetTurnContext context, string playerName)
         {
-            this.indicators[this.currentStreet].Update(context, playerName);
+            this.indicators[this.CurrentStreet].Update(context, playerName);
         }
 
         public void Update(IGetTurnContext context, PlayerAction playerAction, string playerName)
         {
-            this.indicators[this.currentStreet].Update(context, playerAction, playerName);
+            this.indicators[this.CurrentStreet].Update(context, playerAction, playerName);
         }
 
         public void Update(IEndRoundContext context)
         {
-            this.indicators[this.currentStreet].Update(context);
+            this.indicators[this.CurrentStreet].Update(context);
         }
 
         public void Update(IEndHandContext context, string playerName)
         {
-            this.indicators[this.currentStreet].Update(context, playerName);
+            this.indicators[this.CurrentStreet].Update(context, playerName);
         }
 
         public void Update(IEndGameContext context)
@@ -142,7 +139,7 @@
 
             foreach (var item in this.indicators)
             {
-                sb.Append($"{item.Key} [{item.Value.StatsForAllPositions().ToString()}]\n");
+                sb.Append($"{item.Key} [{item.Value.StatsForAllPositions().ToString()}] \n");
             }
 
             return sb.Remove(sb.Length - 2, 2).ToString();

@@ -43,7 +43,12 @@
     <Compile Include="Extensions\StatsExtensions.cs" />
     <Compile Include="Indicators\AFq.cs" />
     <Compile Include="Indicators\BBper100.cs" />
+    <Compile Include="Indicators\CallThreeBet.cs" />
     <Compile Include="Indicators\CBet.cs" />
+    <Compile Include="Indicators\CheckRaise.cs" />
+    <Compile Include="Indicators\FoldFourBet.cs" />
+    <Compile Include="Indicators\FoldThreeBet.cs" />
+    <Compile Include="Indicators\FoldToCBet.cs" />
     <Compile Include="Indicators\FourBet.cs" />
     <Compile Include="Indicators\BaseIndicator.cs" />
     <Compile Include="Indicators\IAmount.cs" />
@@ -68,6 +73,9 @@
       <Project>{bcf99e8b-2025-444f-83c7-24542fcf33df}</Project>
       <Name>TexasHoldem.Logic</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Auxiliary\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

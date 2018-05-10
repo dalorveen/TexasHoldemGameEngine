@@ -20,8 +20,6 @@
             {
                 var premiumHands = HoldemHand.PocketHands.PocketCards169("AA")
                     + HoldemHand.PocketHands.PocketCards169("KK")
-                    + HoldemHand.PocketHands.PocketCards169("QQ")
-                    + HoldemHand.PocketHands.PocketCards169("JJ")
                     + HoldemHand.PocketHands.PocketCards169("AKs");
 
                 return premiumHands.Contains(this.Pocket.Mask);

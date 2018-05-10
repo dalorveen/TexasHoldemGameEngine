@@ -90,5 +90,43 @@
 
             return result;
         }
+
+        public ICollection<HandStrength> OnlyCurrentRound()
+        {
+            var result = new List<HandStrength>();
+            var share = new Dictionary<ulong, double>();
+            var bestHand = new List<ulong>();
+            var bestMaskValue = 0U;
+
+            foreach (var item in this.pockets)
+            {
+                var maskValue = HoldemHand.Hand.Evaluate(item.Mask | this.communityCards);
+
+                if (maskValue > bestMaskValue)
+                {
+                    bestMaskValue = maskValue;
+                    bestHand.Clear();
+                    bestHand.Add(item.Mask);
+                }
+                else if (maskValue == bestMaskValue)
+                {
+                    bestHand.Add(item.Mask);
+                }
+            }
+
+            foreach (var item in this.pockets)
+            {
+                if (bestHand.Contains(item.Mask))
+                {
+                    result.Add(new HandStrength(item, 1.0 / bestHand.Count()));
+                }
+                else
+                {
+                    result.Add(new HandStrength(item, 0));
+                }
+            }
+
+            return result;
+        }
     }
 }

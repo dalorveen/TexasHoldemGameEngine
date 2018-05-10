@@ -53,16 +53,16 @@
                 {
                     for (int i = 1; i < (int)context.RoundType; i++)
                     {
-                        var previousRoundFirstRaiser = context.PreviousRoundActions
+                        var playerWhoMadeOpeningBetInPreviousRound = context.PreviousRoundActions
                             .Where(p => p.Round == (GameRoundType)i)
                             .Cast<PlayerActionAndName?>()
-                            .LastOrDefault(p => p.Value.Action.Type == PlayerActionType.Raise);
+                            .FirstOrDefault(p => p.Value.Action.Type == PlayerActionType.Raise);
 
-                        if (!previousRoundFirstRaiser.HasValue)
+                        if (!playerWhoMadeOpeningBetInPreviousRound.HasValue)
                         {
                             return;
                         }
-                        else if (previousRoundFirstRaiser.Value.PlayerName != playerName)
+                        else if (playerWhoMadeOpeningBetInPreviousRound.Value.PlayerName != playerName)
                         {
                             return;
                         }

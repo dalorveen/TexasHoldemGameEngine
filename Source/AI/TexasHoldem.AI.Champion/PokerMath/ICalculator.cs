@@ -5,5 +5,7 @@
     public interface ICalculator
     {
         ICollection<HandStrength> Equity();
+
+        ICollection<HandStrength> OnlyCurrentRound();
     }
 }

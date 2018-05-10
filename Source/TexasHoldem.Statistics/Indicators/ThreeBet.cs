@@ -40,7 +40,8 @@
 
         public override void Update(IGetTurnContext context, string playerName)
         {
-            var raises = context.PreviousRoundActions.Count(x => x.Action.Type == PlayerActionType.Raise);
+            var raises = context.PreviousRoundActions.Count(x => x.Round == context.RoundType
+                && x.Action.Type == PlayerActionType.Raise);
 
             if (raises == (context.RoundType == GameRoundType.PreFlop ? 1 : 2))
             {
