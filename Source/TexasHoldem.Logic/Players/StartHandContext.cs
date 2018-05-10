@@ -37,10 +37,10 @@
 
         /// <summary>
         /// Gets the sequence number of the player in the turn queue.
-        /// Small blind = 0, big blind = 1, ..., dealer 9.
+        /// Small blind = 0, big blind = 1, ..., dealer = number of the player - 1.
         /// </summary>
         /// <value>
-        /// The value is from zero to 10.
+        /// The value is from zero to 9.
         /// </value>
         public int ActionPriority { get; }
 

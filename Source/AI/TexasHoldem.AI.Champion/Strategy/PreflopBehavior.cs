@@ -12,6 +12,8 @@
 
     public class PreflopBehavior : BaseBehavior
     {
+        private static object locker = new object();
+
         public PreflopBehavior(PlayingStyle playingStyle)
             : base(playingStyle)
         {
@@ -228,16 +230,19 @@
 
         private double CoefficientOfForceSklansky(StartingHand startingHand)
         {
-            var groupIndex = (int)HoldemHand.PocketHands.GroupType(startingHand.Pocket.Mask);
-            var fracture = 3;
+            lock (locker)
+            {
+                var groupIndex = (int)HoldemHand.PocketHands.GroupType(startingHand.Pocket.Mask);
+                var fracture = 3;
 
-            if (groupIndex <= fracture)
-            {
-                return 1.0 - (groupIndex / fracture);
-            }
-            else
-            {
-                return -((groupIndex - (fracture + 1)) / (8.0 - (fracture + 1)));
+                if (groupIndex <= fracture)
+                {
+                    return 1.0 - (groupIndex / fracture);
+                }
+                else
+                {
+                    return -((groupIndex - (fracture + 1)) / (8.0 - (fracture + 1)));
+                }
             }
         }
     }

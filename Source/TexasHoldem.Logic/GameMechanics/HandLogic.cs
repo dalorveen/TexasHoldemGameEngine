@@ -40,7 +40,7 @@
         {
             this.Rebuy();
 
-            var actionPriority = 9;
+            var actionPriority = this.players.Count - 1;
 
             // Start the hand and deal cards to each player
             foreach (var player in this.players)
@@ -51,7 +51,7 @@
                     this.handNumber,
                     player.PlayerMoney.Money,
                     this.smallBlind,
-                    actionPriority++ % 10,
+                    actionPriority++ % this.players.Count,
                     this.players.First().Name);
                 player.StartHand(startHandContext);
             }

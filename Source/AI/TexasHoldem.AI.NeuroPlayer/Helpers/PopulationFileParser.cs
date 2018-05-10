@@ -60,7 +60,7 @@
                 genomeList = NeatGenomeXmlIO.ReadCompleteGenomeList(xr, false, genomeFactory);
             }
 
-            //var decoder = new NeatGenomeDecoder(NetworkActivationScheme.CreateCyclicFixedTimestepsScheme(1));
+            // var decoder = new NeatGenomeDecoder(NetworkActivationScheme.CreateCyclicFixedTimestepsScheme(1));
             var decoder = new NeatGenomeDecoder(NetworkActivationScheme.CreateAcyclicScheme());
 
             return decoder.Decode(genomeList[0]);

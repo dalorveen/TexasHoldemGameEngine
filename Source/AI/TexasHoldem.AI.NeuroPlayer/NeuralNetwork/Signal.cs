@@ -1,240 +1,72 @@
 ﻿namespace TexasHoldem.AI.NeuroPlayer.NeuralNetwork
 {
+    using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Linq;
 
-    using HandEvaluatorExtension;
-    using HoldemHand;
     using SharpNeat.Phenomes;
-    using TexasHoldem.Logic.Players;
 
     public class Signal
     {
-        private readonly Normalization.Normalization normalization;
-
-        private ICardAdapter pocket;
-
-        private bool isUpdated;
-
-        public Signal(int numberOfPlayers)
+        public Signal(IBlackBox blackBox)
         {
-            this.normalization = new Normalization.Normalization(numberOfPlayers);
+            this.BlackBox = blackBox ?? throw new ArgumentNullException();
         }
 
-        protected IGetTurnContext GetTurnContext { get; private set; }
+        public IBlackBox BlackBox { get; }
 
-        protected IBlackBox BlackBox { get; private set; }
-
-        public void Update(ICardAdapter pocket, ICardAdapter communityCards, IGetTurnContext context, IBlackBox box)
-        {
-            this.pocket = pocket;
-            this.normalization.Update(pocket, communityCards, context);
-            this.GetTurnContext = context;
-            this.BlackBox = box;
-            this.isUpdated = true;
-        }
-
-        public IList<double> InputSignals()
+        public double[] GetInput(InputData data)
         {
             var input = new List<double>();
-            var hero = this.normalization.Hero();
-            var opponents = this.normalization.Opponents();
 
-            input.AddRange(this.normalization.HandStrength());
-            input.AddRange(this.normalization.Draw());
-            input.Add(this.normalization.NormalizedPot());
-            input.AddRange(this.StreetToVector()); //input.AddRange(this.StreetToBinary());
-            //input.AddRange(this.StartingHandsToVector()); //input.AddRange(this.StartingHandsToBinary());
-            input.Add(hero.Money);
-            input.Add(hero.CurrentRoundBet);
-            input.Add(hero.Position);
+            input.Add(data.ImmediatePotOdds());
+            input.Add(data.BetRatio());
+            input.Add(data.HasPutMoneyInThePotThisRound() ? 1 : 0);
+            input.Add(data.OneBetToCall() ? 1 : 0);
+            input.Add(data.TwoOrMoreBetsToCall() ? 1 : 0);
+            input.AddRange(data.Street());
+            input.Add(data.LastBetsCalledByPlayer() ? 1 : 0);
+            input.Add(data.LastActionOfPlayerWasBetOrRaise() ? 1 : 0);
+            input.Add(data.IsHeadsUp() ? 1 : 0);
+            input.Add(data.IsFirstToAct() ? 1 : 0);
+            input.Add(data.IsLastToAct() ? 1 : 0);
+            input.AddRange(data.Position());
+            input.AddRange(data.MatrixOfOdds());
+            input.Add(data.IsStraightDraw() ? 1 : 0);
+            input.Add(data.IsFlushDraw() ? 1 : 0);
 
-            foreach (var item in opponents)
+            if (input.Count != this.BlackBox.InputSignalArray.Length)
             {
-                input.Add(item.Money);
-                input.Add(item.CurrentRoundBet);
-                input.Add(item.InHand);
+                throw new Exception("The number of input signals does not match the number of inputs in the network.");
             }
 
-            return input;
+            return input.ToArray();
         }
 
-        public IList<double> OutputSignals()
+        // Out1 = raise; Out2 = check or call; Out3 = size of raise (0..1)
+        public ISignalArray GetOutput(InputData data)
         {
-            if (this.BlackBox == null)
+            var inputSourceOfSignals = this.GetInput(data);
+            var inputSignalArray = this.BlackBox.InputSignalArray;
+            var outputSignalArray = this.BlackBox.OutputSignalArray;
+
+            this.BlackBox.ResetState();
+
+            for (int i = 0; i < inputSourceOfSignals.Length; i++)
             {
-                // Out1 = raise
-                // Out2 = check or call
-                // Out3 = size of raise
-                return new List<double> { 0, 0, 0 };
+                inputSignalArray[i] = inputSourceOfSignals[i];
             }
-            else
+
+            this.BlackBox.Activate();
+
+            if (!this.BlackBox.IsStateValid)
             {
-                ISignalArray inputSignalArray = this.BlackBox.InputSignalArray;
-                ISignalArray outputSignalArray = this.BlackBox.OutputSignalArray;
-
-                this.BlackBox.ResetState();
-
-                var inputSignals = this.InputSignals();
-
-                for (int i = 0; i < inputSignals.Count; i++)
-                {
-                    Debug.Assert(inputSignals[i] >= -1.0 && inputSignals[i] <= 1, "Outside the range of acceptable values");
-                    inputSignalArray[i] = inputSignals[i];
-                }
-
-                this.BlackBox.Activate();
-
-                if (!this.BlackBox.IsStateValid)
-                {
-                    // Any black box that gets itself into an invalid state is unlikely to be any good, so lets just bail out here
-                    // TODO: how to return a zero fitness
-                    throw new System.Exception();
-                }
-
-                return new List<double> { outputSignalArray[0], outputSignalArray[1], outputSignalArray[2] };
+                // Any black box that gets itself into an invalid state is unlikely to be any good, so lets
+                // just bail out here
+                // TODO: how to return a zero fitness?
+                throw new System.Exception();
             }
-        }
 
-        private double[] StreetToVector()
-        {
-            var vector = new double[3];
-
-            if (!this.isUpdated)
-            {
-                return vector;
-            }
-            else
-            {
-                var roundType = (int)this.GetTurnContext.RoundType;
-
-                if (roundType != 0)
-                {
-                    vector[roundType - 1] = 1.0;
-                }
-
-                return vector;
-            }
-        }
-
-        private double[] StreetToBinary()
-        {
-            var arrayLength = 2;
-
-            if (!this.isUpdated)
-            {
-                return new double[arrayLength];
-            }
-            else
-            {
-                var n = (int)this.GetTurnContext.RoundType;
-
-                return this.IntToBinary(n, arrayLength);
-            }
-        }
-
-        private double[] StartingHandsToVector()
-        {
-            var vector = new double[8];
-
-            if (!this.isUpdated)
-            {
-                return vector;
-            }
-            else
-            {
-                var group = (int)PocketHands.GroupType(this.pocket.Mask);
-
-                if (group != 8)
-                {
-                    vector[group] = 1.0;
-                }
-
-                return vector;
-            }
-        }
-
-        private double[] StartingHandsToBinary()
-        {
-            var arrayLength = 4;
-
-            if (!this.isUpdated)
-            {
-                return new double[arrayLength];
-            }
-            else
-            {
-                var n = (int)PocketHands.GroupType(this.pocket.Mask);
-
-                if (n == 8)
-                {
-                    var ranks = Hand.Cards(this.pocket.Mask).Select(s => Hand.CardRank(Hand.ParseCard(s)));
-
-                    var isContainedAce = Hand.Cards(this.pocket.Mask)
-                        .Select(s => Hand.CardRank(Hand.ParseCard(s)) == Hand.RankAce)
-                        .Any(p => p == true);
-
-                    if (ranks.Contains(Hand.RankAce))
-                    {
-                        n = 8;
-                    }
-                    else if (ranks.Contains(Hand.RankKing))
-                    {
-                        n = 9;
-                    }
-                    else if (Hand.IsSuited(this.pocket.Mask))
-                    {
-                        var gap = Hand.GapCount(this.pocket.Mask);
-
-                        Debug.Assert(gap != 0 && gap != 1, "It is expected that the gap is 2, 3, -1");
-
-                        if (gap == 2)
-                        {
-                            n = 10;
-                        }
-                        else if (gap == 3)
-                        {
-                            n = 11;
-                        }
-                        else
-                        {
-                            n = 12;
-                        }
-                    }
-                    else
-                    {
-                        var gap = Hand.GapCount(this.pocket.Mask);
-
-                        if (gap == 0)
-                        {
-                            // 43o, 32o
-                            n = 13;
-                        }
-                        else if (gap == 1)
-                        {
-                            n = 14;
-                        }
-                        else
-                        {
-                            n = 15;
-                        }
-                    }
-                }
-
-                return this.IntToBinary(n, arrayLength);
-            }
-        }
-
-        private double[] IntToBinary(int number, int arrayLength)
-        {
-            string convertedString = System.Convert.ToString(number, 2);
-
-            double[] bitArray = convertedString.PadLeft(arrayLength, '0')
-                .Select(c => double.Parse(c.ToString()))
-                .ToArray();
-
-            return bitArray;
+            return outputSignalArray;
         }
     }
 }

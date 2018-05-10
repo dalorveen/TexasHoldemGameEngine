@@ -125,9 +125,7 @@
 
         public void Update(IStartHandContext context)
         {
-            this.CurrentPosition = context.ActionPriority == 9
-                ? positionChart[this.numberOfPlayers - 2][this.numberOfPlayers - 1]
-                : positionChart[this.numberOfPlayers - 2][context.ActionPriority];
+            this.CurrentPosition = positionChart[this.numberOfPlayers - 2][context.ActionPriority];
             this.indicators[this.CurrentPosition].Update(context);
         }
 

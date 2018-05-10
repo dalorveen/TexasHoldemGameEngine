@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{B08725CB-95B9-44CB-8C7D-6460D9BDFA7B}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TexasHoldem.AI.NeuroPlayer</RootNamespace>
     <AssemblyName>TexasHoldem.AI.NeuroPlayer</AssemblyName>
@@ -30,6 +30,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="HandEvaluator">
@@ -56,15 +59,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\Agent.cs" />
     <Compile Include="Helpers\PopulationFileParser.cs" />
+    <Compile Include="Learner.cs" />
+    <Compile Include="NeuralNetwork\InputData.cs" />
     <Compile Include="NeuralNetwork\Signal.cs" />
-    <Compile Include="NeuralNetwork\Reaction.cs" />
     <Compile Include="NeuroPlayer.cs" />
-    <Compile Include="Normalization\Normalization.cs" />
-    <Compile Include="Normalization\NormalizedHero.cs" />
-    <Compile Include="Normalization\NormalizedOpponent.cs" />
-    <Compile Include="Normalization\NormalizedWinOdds.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SharpNeatPoker\Evaluator.cs" />
+    <Compile Include="SharpNeatPoker\Experiment.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\HandEvaluatorExtension\HandEvaluatorExtension.csproj">
@@ -78,6 +82,10 @@
     <ProjectReference Include="..\..\TexasHoldem.Statistics\TexasHoldem.Statistics.csproj">
       <Project>{95b47ac4-01dd-48c3-b536-648ca22e3002}</Project>
       <Name>TexasHoldem.Statistics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TexasHoldem.AI.Champion\TexasHoldem.AI.Champion.csproj">
+      <Project>{9e0598f9-5092-484e-a8e8-70aeebb96dc5}</Project>
+      <Name>TexasHoldem.AI.Champion</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
