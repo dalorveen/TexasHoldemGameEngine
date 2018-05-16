@@ -11,12 +11,6 @@
         {
         }
 
-        public VPIP(int hands, int totalTimesVoluntarilyPutMoneyInThePot)
-            : base(hands)
-        {
-            this.TotalTimesVoluntarilyPutMoneyInThePot = totalTimesVoluntarilyPutMoneyInThePot;
-        }
-
         public int TotalTimesVoluntarilyPutMoneyInThePot { get; private set; }
 
         /// <summary>
@@ -34,11 +28,11 @@
             }
         }
 
-        public override void Update(IGetTurnContext context, PlayerAction madeAction, string playerName)
+        public override void Update(IGetTurnContext context, PlayerAction madeAction, IStatsContext statsContext)
         {
             if (context.RoundType == Logic.GameRoundType.PreFlop
                 && !context.PreviousRoundActions.Any(
-                    p => p.PlayerName == playerName && p.Action.Type != PlayerActionType.Post))
+                    p => p.PlayerName == statsContext.PlayerName && p.Action.Type != PlayerActionType.Post))
             {
                 if (madeAction.Type == PlayerActionType.Raise)
                 {
@@ -53,19 +47,7 @@
 
         public override string ToString()
         {
-            return $"{this.Amount:0.00}%";
-        }
-
-        public override VPIP DeepClone()
-        {
-            return new VPIP(this.Hands, this.TotalTimesVoluntarilyPutMoneyInThePot);
-        }
-
-        public override VPIP Sum(VPIP other)
-        {
-            return new VPIP(
-                this.Hands + other.Hands,
-                this.TotalTimesVoluntarilyPutMoneyInThePot + other.TotalTimesVoluntarilyPutMoneyInThePot);
+            return $"[{this.Amount:0.0}%]";
         }
     }
 }

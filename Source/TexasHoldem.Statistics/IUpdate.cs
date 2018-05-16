@@ -10,13 +10,13 @@
 
         void Update(IStartRoundContext context);
 
-        void Update(IGetTurnContext context, string playerName);
+        void Update(IGetTurnContext context, IStatsContext statsContext);
 
-        void Update(IGetTurnContext context, PlayerAction playerAction, string playerName);
+        void Update(IGetTurnContext context, PlayerAction playerAction, IStatsContext statsContext);
 
         void Update(IEndRoundContext context);
 
-        void Update(IEndHandContext context, string playerName);
+        void Update(IEndHandContext context, IStatsContext statsContext);
 
         void Update(IEndGameContext context);
     }

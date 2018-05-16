@@ -40,7 +40,6 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extensions\StatsExtensions.cs" />
     <Compile Include="Indicators\AFq.cs" />
     <Compile Include="Indicators\BBper100.cs" />
     <Compile Include="Indicators\CallThreeBet.cs" />
@@ -52,7 +51,6 @@
     <Compile Include="Indicators\FourBet.cs" />
     <Compile Include="Indicators\BaseIndicator.cs" />
     <Compile Include="Indicators\IAmount.cs" />
-    <Compile Include="Indicators\ISum.cs" />
     <Compile Include="Indicators\PFR.cs" />
     <Compile Include="Indicators\RFI.cs" />
     <Compile Include="Indicators\ThreeBet.cs" />
@@ -61,11 +59,12 @@
     <Compile Include="Indicators\WTSD.cs" />
     <Compile Include="Indicators\WWSF.cs" />
     <Compile Include="IStats.cs" />
+    <Compile Include="IStatsContext.cs" />
     <Compile Include="IUpdate.cs" />
     <Compile Include="Positions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PositionalCollection.cs" />
-    <Compile Include="StreetCollection.cs" />
+    <Compile Include="StatsContext.cs" />
+    <Compile Include="TablePosition.cs" />
     <Compile Include="Stats.cs" />
   </ItemGroup>
   <ItemGroup>

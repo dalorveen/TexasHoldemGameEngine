@@ -1,5 +1,7 @@
 ﻿namespace TexasHoldem.Statistics.Indicators
 {
+    using System;
+    using System.Collections.Generic;
     using System.Linq;
 
     using TexasHoldem.Logic;
@@ -7,23 +9,39 @@
 
     public class CallThreeBet : BaseIndicator<CallThreeBet>
     {
+        private Dictionary<GameRoundType, int> totalTimesCalled3BetByStreet;
+        private Dictionary<GameRoundType, int> totalTimesFaced3BetByStreet;
+
         public CallThreeBet()
             : base(0)
         {
-        }
+            this.totalTimesCalled3BetByStreet = new Dictionary<GameRoundType, int>();
+            this.totalTimesFaced3BetByStreet = new Dictionary<GameRoundType, int>();
 
-        public CallThreeBet(int hands, int totalTimesCalled3Bet, int totalTimesFaced3Bet)
-            : base(hands)
-        {
-            this.TotalTimesCalled3Bet = totalTimesCalled3Bet;
-            this.TotalTimesFaced3Bet = totalTimesFaced3Bet;
+            foreach (var item in Enum.GetValues(typeof(GameRoundType)).Cast<GameRoundType>())
+            {
+                this.totalTimesCalled3BetByStreet.Add(item, 0);
+                this.totalTimesFaced3BetByStreet.Add(item, 0);
+            }
         }
 
         public bool Faced3Bet { get; private set; }
 
-        public int TotalTimesCalled3Bet { get; private set; }
+        public int TotalTimesCalled3Bet
+        {
+            get
+            {
+                return this.totalTimesCalled3BetByStreet.Sum(s => s.Value);
+            }
+        }
 
-        public int TotalTimesFaced3Bet { get; private set; }
+        public int TotalTimesFaced3Bet
+        {
+            get
+            {
+                return this.totalTimesFaced3BetByStreet.Sum(s => s.Value);
+            }
+        }
 
         /// <summary>
         /// Gets the percentage of hands where the player called a 3-bet
@@ -38,23 +56,30 @@
             }
         }
 
-        public override void Update(IGetTurnContext context, string playerName)
+        public double AmountByStreet(GameRoundType street)
+        {
+            return this.totalTimesFaced3BetByStreet[street] == 0
+                    ? 0 : ((double)this.totalTimesCalled3BetByStreet[street]
+                        / (double)this.totalTimesFaced3BetByStreet[street]) * 100.0;
+        }
+
+        public override void Update(IGetTurnContext context, IStatsContext statsContext)
         {
             var raises = context.PreviousRoundActions.Count(x => x.Round == context.RoundType
                 && x.Action.Type == PlayerActionType.Raise);
 
             if (raises == (context.RoundType == GameRoundType.PreFlop ? 2 : 3))
             {
-                this.TotalTimesFaced3Bet++;
+                this.totalTimesFaced3BetByStreet[context.RoundType]++;
                 this.Faced3Bet = true;
             }
         }
 
-        public override void Update(IGetTurnContext context, PlayerAction madeAction, string playerName)
+        public override void Update(IGetTurnContext context, PlayerAction madeAction, IStatsContext statsContext)
         {
             if (this.Faced3Bet && madeAction.Type == PlayerActionType.CheckCall)
             {
-                this.TotalTimesCalled3Bet++;
+                this.totalTimesCalled3BetByStreet[context.RoundType]++;
             }
 
             this.Faced3Bet = false;
@@ -62,22 +87,11 @@
 
         public override string ToString()
         {
-            return $"{this.Amount:0.00}%";
-        }
-
-        public override CallThreeBet DeepClone()
-        {
-            var copy = new CallThreeBet(this.Hands, this.TotalTimesCalled3Bet, this.TotalTimesFaced3Bet);
-            copy.Faced3Bet = this.Faced3Bet;
-            return copy;
-        }
-
-        public override CallThreeBet Sum(CallThreeBet other)
-        {
-            return new CallThreeBet(
-                this.Hands + other.Hands,
-                this.TotalTimesCalled3Bet + other.TotalTimesCalled3Bet,
-                this.TotalTimesFaced3Bet + other.TotalTimesFaced3Bet);
+            return this.ToStreetFormat(
+                this.AmountByStreet(GameRoundType.PreFlop),
+                this.AmountByStreet(GameRoundType.Flop),
+                this.AmountByStreet(GameRoundType.Turn),
+                this.AmountByStreet(GameRoundType.River));
         }
     }
 }

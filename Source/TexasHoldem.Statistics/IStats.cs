@@ -4,16 +4,36 @@
 
     public interface IStats
     {
-        PositionalCollection<VPIP> VPIP();
-        PositionalCollection<PFR> PFR();
-        PositionalCollection<RFI> RFI();
-        PositionalCollection<BBper100> BBper100();
-        PositionalCollection<WTSD> WTSD();
-        PositionalCollection<WSD> WSD();
-        PositionalCollection<WWSF> WWSF();
-        StreetCollection<ThreeBet> ThreeBet();
-        StreetCollection<FourBet> FourBet();
-        StreetCollection<CBet> CBet();
-        StreetCollection<AFq> AFq();
+        VPIP VPIP();
+
+        PFR PFR();
+
+        RFI RFI();
+
+        BBper100 BBper100();
+
+        WTSD WTSD();
+
+        WSD WSD();
+
+        WWSF WWSF();
+
+        ThreeBet ThreeBet();
+
+        FoldThreeBet FoldThreeBet();
+
+        CallThreeBet CallThreeBet();
+
+        FourBet FourBet();
+
+        FoldFourBet FoldFourBet();
+
+        CBet CBet();
+
+        FoldToCBet FoldToCBet();
+
+        AFq AFq();
+
+        CheckRaise CheckRaise();
     }
 }

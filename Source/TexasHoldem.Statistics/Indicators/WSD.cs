@@ -11,13 +11,6 @@
         {
         }
 
-        public WSD(int hands, int totalTimesWonMoneyAtShowdown, int totalTimesWentToShowdown)
-            : base(hands)
-        {
-            this.TotalTimesWonMoneyAtShowdown = totalTimesWonMoneyAtShowdown;
-            this.TotalTimesWentToShowdown = totalTimesWentToShowdown;
-        }
-
         public int TotalTimesWonMoneyAtShowdown { get; private set; }
 
         public int TotalTimesWentToShowdown { get; private set; }
@@ -44,33 +37,20 @@
             this.moneyInTheBeginningOfTheHand = context.MoneyLeft;
         }
 
-        public override void Update(IEndHandContext context, string playerName)
+        public override void Update(IEndHandContext context, IStatsContext statsContext)
         {
             if (context.ShowdownCards.Count > 0)
             {
                 var balance = context.MoneyLeft - this.moneyInTheBeginningOfTheHand;
 
-                this.TotalTimesWentToShowdown += context.ShowdownCards.ContainsKey(playerName) ? 1 : 0;
+                this.TotalTimesWentToShowdown += context.ShowdownCards.ContainsKey(statsContext.PlayerName) ? 1 : 0;
                 this.TotalTimesWonMoneyAtShowdown += balance > 0 ? 1 : 0;
             }
         }
 
         public override string ToString()
         {
-            return $"{this.Amount:0.00}%";
-        }
-
-        public override WSD DeepClone()
-        {
-            return new WSD(this.Hands, this.TotalTimesWonMoneyAtShowdown, this.TotalTimesWentToShowdown);
-        }
-
-        public override WSD Sum(WSD other)
-        {
-            return new WSD(
-                this.Hands + other.Hands,
-                this.TotalTimesWonMoneyAtShowdown + other.TotalTimesWonMoneyAtShowdown,
-                this.TotalTimesWentToShowdown + other.TotalTimesWentToShowdown);
+            return $"[{this.Amount:0.0}%]";
         }
     }
 }

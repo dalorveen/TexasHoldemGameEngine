@@ -13,12 +13,6 @@
         {
         }
 
-        public BBper100(int hands, double totalBigBlindWon)
-            : base(hands)
-        {
-            this.TotalBigBlindWon = totalBigBlindWon;
-        }
-
         public double TotalBigBlindWon { get; private set; }
 
         /// <summary>
@@ -42,7 +36,7 @@
             this.smallBlind = context.SmallBlind;
         }
 
-        public override void Update(IEndHandContext context, string playerName)
+        public override void Update(IEndHandContext context, IStatsContext statsContext)
         {
             var balance = context.MoneyLeft - this.moneyInTheBeginningOfTheHand;
             this.TotalBigBlindWon += (double)balance / (double)(this.smallBlind * 2);
@@ -50,22 +44,7 @@
 
         public override string ToString()
         {
-            return $"{this.Amount:0.00}";
-        }
-
-        public override BBper100 DeepClone()
-        {
-            var copy = new BBper100(this.Hands, this.TotalBigBlindWon);
-            copy.moneyInTheBeginningOfTheHand = this.moneyInTheBeginningOfTheHand;
-            copy.smallBlind = this.smallBlind;
-            return copy;
-        }
-
-        public override BBper100 Sum(BBper100 other)
-        {
-            return new BBper100(
-                this.Hands + other.Hands,
-                this.TotalBigBlindWon + other.TotalBigBlindWon);
+            return $"[{this.Amount:0.00}]";
         }
     }
 }

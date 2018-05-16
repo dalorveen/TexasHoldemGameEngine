@@ -117,5 +117,27 @@
                 losses[i] = losses[i] / count;
             }
         }
+
+        public static bool IsBestHandInCurrentRank(ulong hero, ulong board)
+        {
+            var heroHandValue = Hand.Evaluate(hero | board);
+            var heroHandType = (Hand.HandTypes)Hand.HandType(heroHandValue);
+
+            foreach (var opponent in Hand.Hands(0UL, hero | board, 2))
+            {
+                var opponentHandValue = Hand.Evaluate(opponent | board);
+                var opponentHandType = (Hand.HandTypes)Hand.HandType(opponentHandValue);
+
+                if (heroHandType == opponentHandType)
+                {
+                    if (opponentHandValue > heroHandValue)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
     }
 }

@@ -30,7 +30,7 @@
             players.Add(new Champion(new PlayingStyle(), 200));
             players.Add(new Champion(new PlayingStyle(), 200));
 
-            var game = new TexasHoldemGame(players, 10000);
+            var game = new TexasHoldemGame(players, 20000);
 
             game.Start();
 

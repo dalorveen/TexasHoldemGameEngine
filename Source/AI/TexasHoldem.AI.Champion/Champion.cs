@@ -20,7 +20,7 @@
 
         public Champion(PlayingStyle playingStyle, int buyIn)
         {
-            this.stats = new Stats();
+            this.stats = new Stats(this.Name);
             this.preflopBehavior = new PreflopBehavior(playingStyle);
             this.postflopBehavior = new PostflopBehavior(playingStyle);
             this.BuyIn = buyIn;
@@ -56,7 +56,7 @@
         public override PlayerAction GetTurn(IGetTurnContext context)
         {
             PlayerAction playerAction;
-            this.stats.Update(context, this.Name);
+            this.stats.Update(context);
 
             if (context.RoundType == GameRoundType.PreFlop)
             {
@@ -75,7 +75,7 @@
                     this.stats);
             }
 
-            this.stats.Update(context, playerAction, this.Name);
+            this.stats.Update(context, playerAction);
             return playerAction;
         }
 
@@ -86,7 +86,7 @@
 
         public override void EndHand(IEndHandContext context)
         {
-            this.stats.Update(context, this.Name);
+            this.stats.Update(context);
         }
 
         public override void EndGame(IEndGameContext context)

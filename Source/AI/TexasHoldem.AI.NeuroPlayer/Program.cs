@@ -7,6 +7,7 @@
     using SharpNeat.Core;
     using SharpNeat.EvolutionAlgorithms;
     using SharpNeat.Genomes.Neat;
+    using TexasHoldem.Logic;
 
     internal class Program
     {
@@ -319,41 +320,15 @@
             var str = $"\nUpdated at {DateTime.Now.ToLongTimeString()}\n" +
                 $"generation: [{temp.Statistics._generation}]\n" +
                 $"state: [{temp.RunState}]\n" +
-                $"bestFitness: [{temp.Statistics._maxFitness:N6}]; meanFitness: [{temp.Statistics._meanFitness:N6}]\n" +
-                $"bestComplexity: [{temp.CurrentChampGenome.Complexity:N0}]; meanComplexity: [{temp.Statistics._meanComplexity:N3}]\n" +
+                $"bestFitness: [{temp.Statistics._maxFitness:N6}]; " +
+                $"meanFitness: [{temp.Statistics._meanFitness:N6}]\n" +
+                $"bestComplexity: [{temp.CurrentChampGenome.Complexity:N0}]; " +
+                $"meanComplexity: [{temp.Statistics._meanComplexity:N3}]\n" +
                 $"meanSpecieChampFitness: [{temp.Statistics._meanSpecieChampFitness:N6}]\n" +
                 $"--------------------------------------------------------------------------------\n" +
                 $"STATISTICS OF THE BEST AGENT:\n" +
-                $"\tmoney won per hand: [{agent.MoneyWonPerHand():N3}] ([{agent.HandsPlayed}] hands played)\n" +
-                $"PREFLOP:\n" +
-                $"\tVPIP: [{agent.Stats.VPIP().StatsForAllPositions().Amount:N1}%]; PFR: [{agent.Stats.PFR().StatsForAllPositions().Amount:N1}%]\n" +
-                $"\t3BET: [{agent.Stats.ThreeBet().GetStatsBy(Logic.GameRoundType.PreFlop).StatsForAllPositions().Amount:N1}%]; " +
-                $"4BET: [{agent.Stats.FourBet().GetStatsBy(Logic.GameRoundType.PreFlop).StatsForAllPositions().Amount:N1}%]\n" +
-                $"\tRFI: [{agent.Stats.RFI().StatsForAllPositions().Amount:N1}%]\n" +
-                $"FLOP:\n" +
-                $"\t3BET: [{agent.Stats.ThreeBet().GetStatsBy(Logic.GameRoundType.Flop).StatsForAllPositions().Amount:N1}%]; " +
-                $"4BET: [{agent.Stats.FourBet().GetStatsBy(Logic.GameRoundType.Flop).StatsForAllPositions().Amount:N1}%]\n" +
-                $"\tCBET: [{agent.Stats.CBet().GetStatsBy(Logic.GameRoundType.Flop).StatsForAllPositions().Amount:N1}%];\n" +
-                $"\tAFq: [{agent.Stats.AFq().GetStatsBy(Logic.GameRoundType.Flop).StatsForAllPositions().Amount:N1}%];\n" +
-                $"TURN:\n" +
-                $"\t3BET: [{agent.Stats.ThreeBet().GetStatsBy(Logic.GameRoundType.Turn).StatsForAllPositions().Amount:N1}%]; " +
-                $"4BET: [{agent.Stats.FourBet().GetStatsBy(Logic.GameRoundType.Turn).StatsForAllPositions().Amount:N1}%]\n" +
-                $"\tCBET: [{agent.Stats.CBet().GetStatsBy(Logic.GameRoundType.Turn).StatsForAllPositions().Amount:N1}%];\n" +
-                $"\tAFq: [{agent.Stats.AFq().GetStatsBy(Logic.GameRoundType.Turn).StatsForAllPositions().Amount:N1}%];\n" +
-                $"RIVER:\n" +
-                $"\t3BET: [{agent.Stats.ThreeBet().GetStatsBy(Logic.GameRoundType.River).StatsForAllPositions().Amount:N1}%]; " +
-                $"4BET: [{agent.Stats.FourBet().GetStatsBy(Logic.GameRoundType.River).StatsForAllPositions().Amount:N1}%]\n" +
-                $"\tCBET: [{agent.Stats.CBet().GetStatsBy(Logic.GameRoundType.River).StatsForAllPositions().Amount:N1}%];\n" +
-                $"\tAFq: [{agent.Stats.AFq().GetStatsBy(Logic.GameRoundType.River).StatsForAllPositions().Amount:N1}%];\n" +
-                $"TOTAL:\n" +
-                $"\t3BET: [{agent.Stats.ThreeBet().Total().Amount:N1}%]; " +
-                $"4BET: [{agent.Stats.FourBet().Total().Amount:N1}%]\n" +
-                $"\tCBET: [{agent.Stats.CBet().Total().Amount:N1}%];\n" +
-                $"\tAFq: [{agent.Stats.AFq().Total().Amount:N1}%];\n" +
-                $"\tW$SD: [{agent.Stats.WSD().StatsForAllPositions().Amount:N1}%]; " +
-                $"WTSD: [{agent.Stats.WTSD().StatsForAllPositions().Amount:N1}%]; " +
-                $"W$WSF: [{agent.Stats.WWSF().StatsForAllPositions().Amount:N1}%]\n" +
-                $"\tBB/100: [{agent.Stats.BBper100().StatsForAllPositions().Amount:N2}]\n";
+                $"Money won per hand: [{agent.MoneyWonPerHand():N3}] ([{agent.HandsPlayed}] hands played)\n" +
+                $"{agent.Stats.ToString()}\n";
             Console.Write(str);
         }
 

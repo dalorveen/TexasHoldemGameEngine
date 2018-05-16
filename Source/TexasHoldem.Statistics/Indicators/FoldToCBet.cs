@@ -1,5 +1,7 @@
 ﻿namespace TexasHoldem.Statistics.Indicators
 {
+    using System;
+    using System.Collections.Generic;
     using System.Linq;
 
     using TexasHoldem.Logic;
@@ -7,23 +9,39 @@
 
     public class FoldToCBet : BaseIndicator<FoldToCBet>
     {
+        private Dictionary<GameRoundType, int> totalTimesFoldedToCBetByStreet;
+        private Dictionary<GameRoundType, int> totalTimesFacedCBetByStreet;
+
         public FoldToCBet()
             : base(0)
         {
-        }
+            this.totalTimesFoldedToCBetByStreet = new Dictionary<GameRoundType, int>();
+            this.totalTimesFacedCBetByStreet = new Dictionary<GameRoundType, int>();
 
-        public FoldToCBet(int hands, int totalTimesFoldedToCBet, int totalTimesFacedCBet)
-            : base(hands)
-        {
-            this.TotalTimesFoldedToCBet = totalTimesFoldedToCBet;
-            this.TotalTimesFacedCBet = totalTimesFacedCBet;
+            foreach (var item in Enum.GetValues(typeof(GameRoundType)).Cast<GameRoundType>())
+            {
+                this.totalTimesFoldedToCBetByStreet.Add(item, 0);
+                this.totalTimesFacedCBetByStreet.Add(item, 0);
+            }
         }
 
         public bool IsOpportunity { get; private set; }
 
-        public int TotalTimesFoldedToCBet { get; private set; }
+        public int TotalTimesFoldedToCBet
+        {
+            get
+            {
+                return this.totalTimesFoldedToCBetByStreet.Sum(s => s.Value);
+            }
+        }
 
-        public int TotalTimesFacedCBet { get; private set; }
+        public int TotalTimesFacedCBet
+        {
+            get
+            {
+                return this.totalTimesFacedCBetByStreet.Sum(s => s.Value);
+            }
+        }
 
         /// <summary>
         /// Gets the percentage of times the player folded to a continuation bet
@@ -39,7 +57,15 @@
             }
         }
 
-        public override void Update(IGetTurnContext context, string playerName)
+        public double AmountByStreet(GameRoundType street)
+        {
+            return this.totalTimesFacedCBetByStreet[street] == 0
+                    ? 0
+                    : ((double)this.totalTimesFoldedToCBetByStreet[street]
+                        / (double)this.totalTimesFacedCBetByStreet[street]) * 100.0;
+        }
+
+        public override void Update(IGetTurnContext context, IStatsContext statsContext)
         {
             if (context.RoundType != GameRoundType.PreFlop
                 && context.PreviousRoundActions.Count(p => p.Round == context.RoundType
@@ -50,7 +76,7 @@
                     .Cast<PlayerActionAndName?>()
                     .LastOrDefault(p => p.Value.Action.Type == PlayerActionType.Raise);
 
-                if (preflopRaiser.HasValue && preflopRaiser.Value.PlayerName != playerName)
+                if (preflopRaiser.HasValue && preflopRaiser.Value.PlayerName != statsContext.PlayerName)
                 {
                     for (int i = 1; i <= (int)context.RoundType; i++)
                     {
@@ -69,17 +95,17 @@
                         }
                     }
 
-                    this.TotalTimesFacedCBet++;
+                    this.totalTimesFacedCBetByStreet[context.RoundType]++;
                     this.IsOpportunity = true;
                 }
             }
         }
 
-        public override void Update(IGetTurnContext context, PlayerAction madeAction, string playerName)
+        public override void Update(IGetTurnContext context, PlayerAction madeAction, IStatsContext statsContext)
         {
             if (this.IsOpportunity && madeAction.Type == PlayerActionType.Fold)
             {
-                this.TotalTimesFoldedToCBet++;
+                this.totalTimesFoldedToCBetByStreet[context.RoundType]++;
             }
 
             this.IsOpportunity = false;
@@ -87,22 +113,10 @@
 
         public override string ToString()
         {
-            return $"{this.Amount:0.00}%";
-        }
-
-        public override FoldToCBet DeepClone()
-        {
-            var copy = new FoldToCBet(this.Hands, this.TotalTimesFoldedToCBet, this.TotalTimesFacedCBet);
-            copy.IsOpportunity = this.IsOpportunity;
-            return copy;
-        }
-
-        public override FoldToCBet Sum(FoldToCBet other)
-        {
-            return new FoldToCBet(
-                this.Hands + other.Hands,
-                this.TotalTimesFoldedToCBet + other.TotalTimesFoldedToCBet,
-                this.TotalTimesFacedCBet + other.TotalTimesFacedCBet);
+            return this.ToStreetFormat(
+                this.AmountByStreet(GameRoundType.Flop),
+                this.AmountByStreet(GameRoundType.Turn),
+                this.AmountByStreet(GameRoundType.River));
         }
     }
 }

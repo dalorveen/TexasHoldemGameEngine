@@ -14,14 +14,14 @@
         public NeuroPlayer(string xmlPopulationFile)
         {
             var parser = new Helpers.PopulationFileParser(xmlPopulationFile);
-            this.Stats = new Stats();
+            this.Stats = new Stats(this.Name);
             this.InputData = new InputData(this.Name);
             this.signal = new Signal(parser.BestPhenome());
         }
 
         protected NeuroPlayer(IBlackBox phenome)
         {
-            this.Stats = new Stats();
+            this.Stats = new Stats(this.Name);
             this.InputData = new InputData(this.Name);
             this.signal = new Signal(phenome);
         }
@@ -61,7 +61,7 @@
 
         public override PlayerAction GetTurn(IGetTurnContext context)
         {
-            this.Stats.Update(context, this.Name);
+            this.Stats.Update(context);
             this.InputData.TurnContext = context;
 
             var networkResponse = this.signal.GetOutput(this.InputData);
@@ -106,7 +106,7 @@
                 }
             }
 
-            this.Stats.Update(context, playerAction, this.Name);
+            this.Stats.Update(context, playerAction);
 
             return playerAction;
         }
@@ -118,7 +118,7 @@
 
         public override void EndHand(IEndHandContext context)
         {
-            this.Stats.Update(context, this.Name);
+            this.Stats.Update(context);
         }
 
         public override void EndGame(IEndGameContext context)

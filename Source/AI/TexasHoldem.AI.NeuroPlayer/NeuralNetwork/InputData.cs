@@ -7,7 +7,7 @@
     using HoldemHand;
     using TexasHoldem.Logic.Players;
 
-    // Some materials are taken from here
+    // Some materials are taken from here:
     // Opponent Modeling in Poker: Learning and Acting in a Hostile and Uncertain Environment (2002)
     // by Aaron Davidson
     public class InputData
@@ -47,11 +47,19 @@
 
         public double BetRatio()
         {
-            var query = this.TurnContext.PreviousRoundActions.Where(p => p.Round == this.TurnContext.RoundType);
-            var bets = query.Count(p => p.PlayerName == this.PlayerName && p.Action.Type == PlayerActionType.Raise);
-            var calls = query.SkipWhile(p => p.Action.Type != PlayerActionType.Raise)
+            var bets = this.TurnContext.PreviousRoundActions
+                .Count(p => p.PlayerName == this.PlayerName && p.Action.Type == PlayerActionType.Raise);
+            var checksOrCalls = this.TurnContext.PreviousRoundActions
                 .Count(p => p.PlayerName == this.PlayerName && p.Action.Type == PlayerActionType.CheckCall);
-            return (double)bets / (double)(bets + calls);
+            var sum = bets + checksOrCalls;
+            return sum == 0 ? 0 : (double)bets / (double)sum;
+
+            //var query = this.TurnContext.PreviousRoundActions.Where(p => p.Round == this.TurnContext.RoundType);
+            //var bets = query.Count(p => p.PlayerName == this.PlayerName && p.Action.Type == PlayerActionType.Raise);
+            //var calls = query.SkipWhile(p => p.Action.Type != PlayerActionType.Raise)
+            //    .Count(p => p.PlayerName == this.PlayerName && p.Action.Type == PlayerActionType.CheckCall);
+            //var sum = bets + calls;
+            //return sum == 0 ? 0 : (double)bets / (double)sum;
         }
 
         public bool HasPutMoneyInThePotThisRound()
@@ -192,6 +200,44 @@
         public bool IsFlushDraw()
         {
             return Hand.IsStraightDraw(this.PocketCards().Mask, this.CommunityCards().Mask, 0UL);
+        }
+
+        public bool IsBestHandInCurrentRank()
+        {
+            return HandEx.IsBestHandInCurrentRank(this.PocketCards().Mask, this.CommunityCards().Mask);
+        }
+
+        // If all the players go all-in
+        public double MaxPotOdds()
+        {
+            var balance = this.TurnContext.MoneyLeft - this.TurnContext.MoneyToCall;
+            var potentialProfit = 0;
+
+            if (balance < 0)
+            {
+                throw new Exception("The balance can not be negative.");
+            }
+
+            foreach (var item in this.TurnContext.Opponents.Where(p => p.InHand).Select(s => s.Money))
+            {
+                if (item > balance)
+                {
+                    potentialProfit += balance;
+                }
+                else
+                {
+                    potentialProfit += item;
+                }
+            }
+
+            return (double)balance
+                / (double)(this.TurnContext.CurrentPot + potentialProfit + balance);
+        }
+
+        public double StackRatio()
+        {
+            return (double)this.TurnContext.MoneyLeft
+                / (double)(this.TurnContext.CurrentPot + this.TurnContext.MoneyLeft);
         }
 
         public double[] IntToBinaryCode(int number, int arrayLength)

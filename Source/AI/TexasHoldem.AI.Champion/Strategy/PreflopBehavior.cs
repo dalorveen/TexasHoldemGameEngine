@@ -25,12 +25,12 @@
             var startingHand = new StartingHand(pocket);
             Func<IReadOnlyCollection<Card>, IGetTurnContext, StartingHand, Stats, PlayerAction> handler;
 
-            if (stats.FourBet().GetStatsBy(GameRoundType.PreFlop).StatsOfCurrentPosition().IsOpportunity)
+            if (stats.FourBet().IsOpportunity)
             {
                 // faced with three bet
                 handler = this.ReactionToFourBetOpportunity;
             }
-            else if (stats.ThreeBet().GetStatsBy(GameRoundType.PreFlop).StatsOfCurrentPosition().IsOpportunity)
+            else if (stats.ThreeBet().IsOpportunity)
             {
                 // faced with raise
                 handler = this.ReactionToThreeBetOpportunity;
@@ -92,7 +92,7 @@
                     return PlayerAction.CheckOrCall();
                 }
             }
-            else if (stats.FoldFourBet().StatsOfCurrentStreet().StatsOfCurrentPosition().Faced4Bet)
+            else if (stats.FoldFourBet().Faced4Bet)
             {
                 if (this.PlayingStyle.PreflopFoldFourBetDeviation(stats) > 0
                     && this.PlayingStyle.PFR.PlayableRange.Contains(startingHand.Pocket.Mask))
@@ -172,11 +172,11 @@
         private PlayerAction ReactionToOpenRaiseOpportunity(
             IReadOnlyCollection<Card> communityCards, IGetTurnContext context, StartingHand startingHand, Stats stats)
         {
-            var rfi = stats.RFI();
-            if (rfi.CurrentPosition != Positions.BB && rfi.StatsOfCurrentPosition().IsOpportunitiesToOpenThePot)
+            if (stats.Position.CurrentPosition != Positions.BB && stats.RFI().IsOpportunitiesToOpenThePot)
             {
                 if ((startingHand.IsPremiumHand || this.PlayingStyle.RFIDeviation(stats) < 0)
-                    && this.PlayingStyle.RFI[rfi.CurrentPosition].PlayableRange.Contains(startingHand.Pocket.Mask))
+                    && this.PlayingStyle.RFI[stats.Position.CurrentPosition].PlayableRange
+                        .Contains(startingHand.Pocket.Mask))
                 {
                     return this.RaiseOrPush(context.MinRaise * 2, context);
                 }

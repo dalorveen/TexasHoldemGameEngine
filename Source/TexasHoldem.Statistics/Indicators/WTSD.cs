@@ -12,13 +12,6 @@
         {
         }
 
-        public WTSD(int hands, int totalTimesSawTheFlop, int totalTimesWentToShowdown)
-            : base(hands)
-        {
-            this.TotalTimesSawTheFlop = totalTimesSawTheFlop;
-            this.TotalTimesWentToShowdown = totalTimesWentToShowdown;
-        }
-
         public int TotalTimesSawTheFlop { get; private set; }
 
         public int TotalTimesWentToShowdown { get; private set; }
@@ -38,7 +31,7 @@
             }
         }
 
-        public override void Update(IGetTurnContext context, string playerName)
+        public override void Update(IGetTurnContext context, IStatsContext statsContext)
         {
             if (context.RoundType == GameRoundType.Flop)
             {
@@ -47,11 +40,11 @@
             }
         }
 
-        public override void Update(IEndHandContext context, string playerName)
+        public override void Update(IEndHandContext context, IStatsContext statsContext)
         {
             if (this.didThePlayerSeeTheFlop && context.ShowdownCards.Count > 0)
             {
-                this.TotalTimesWentToShowdown += context.ShowdownCards.ContainsKey(playerName) ? 1 : 0;
+                this.TotalTimesWentToShowdown += context.ShowdownCards.ContainsKey(statsContext.PlayerName) ? 1 : 0;
             }
 
             this.didThePlayerSeeTheFlop = false;
@@ -59,20 +52,7 @@
 
         public override string ToString()
         {
-            return $"{this.Amount:0.00}%";
-        }
-
-        public override WTSD DeepClone()
-        {
-            return new WTSD(this.Hands, this.TotalTimesSawTheFlop, this.TotalTimesWentToShowdown);
-        }
-
-        public override WTSD Sum(WTSD other)
-        {
-            return new WTSD(
-                this.Hands + other.Hands,
-                this.TotalTimesSawTheFlop + other.TotalTimesSawTheFlop,
-                this.TotalTimesWentToShowdown + other.TotalTimesWentToShowdown);
+            return $"[{this.Amount:0.0}%]";
         }
     }
 }

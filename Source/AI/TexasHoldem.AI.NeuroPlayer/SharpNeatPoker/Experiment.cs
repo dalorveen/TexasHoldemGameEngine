@@ -26,7 +26,7 @@
 
         public Experiment()
         {
-            this.InputCount = 39;
+            this.InputCount = 42;
             this.OutputCount = 3;
 
             this.eaParams = new NeatEvolutionAlgorithmParameters();

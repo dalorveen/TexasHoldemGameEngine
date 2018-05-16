@@ -33,6 +33,9 @@
             input.AddRange(data.MatrixOfOdds());
             input.Add(data.IsStraightDraw() ? 1 : 0);
             input.Add(data.IsFlushDraw() ? 1 : 0);
+            input.Add(data.IsBestHandInCurrentRank() ? 1 : 0);
+            input.Add(data.MaxPotOdds());
+            input.Add(data.StackRatio());
 
             if (input.Count != this.BlackBox.InputSignalArray.Length)
             {
@@ -58,13 +61,13 @@
 
             this.BlackBox.Activate();
 
-            if (!this.BlackBox.IsStateValid)
-            {
-                // Any black box that gets itself into an invalid state is unlikely to be any good, so lets
-                // just bail out here
-                // TODO: how to return a zero fitness?
-                throw new System.Exception();
-            }
+            // if (!this.BlackBox.IsStateValid)
+            // {
+            //     // Any black box that gets itself into an invalid state is unlikely to be any good, so lets
+            //     // just bail out here
+            //     // TODO: how to return a zero fitness?
+            //     throw new System.Exception();
+            // }
 
             return outputSignalArray;
         }

@@ -22,8 +22,8 @@
 
                 this.PFR = new StatsSetting(
                     18.0,
-                    Range.Parse("22+, A2s+, K2s+, Q8s+, J8s+, T8s+, 97s+, 86s+, 75s+, 64s+, 54s, 43s, ATo+, KTo+, QTo+," +
-                        "J9o+, T9o, 98o"));
+                    Range.Parse("22+, A2s+, K2s+, Q8s+, J8s+, T8s+, 97s+, 86s+, 75s+, 64s+, 54s, 43s, ATo+," +
+                        "KTo+, QTo+, J9o+, T9o, 98o"));
 
                 this.RFI = new Dictionary<Positions, StatsSetting>
                 {
@@ -133,74 +133,68 @@
 
         public double VPIPDeviation(Stats stats)
         {
-            return stats.VPIP().StatsForAllPositions().Amount - this.VPIP.Amount;
+            return stats.VPIP().Amount - this.VPIP.Amount;
         }
 
         public double PFRDeviation(Stats stats)
         {
-            return stats.PFR().StatsForAllPositions().Amount - this.PFR.Amount;
+            return stats.PFR().Amount - this.PFR.Amount;
         }
 
         public double RFIDeviation(Stats stats)
         {
-            var rfi = stats.RFI();
-            return rfi.StatsOfCurrentPosition().Amount - this.RFI[rfi.CurrentPosition].Amount;
+            if (stats.Position.CurrentPosition == Positions.BB)
+            {
+                return 0;
+            }
+
+            return stats.RFI().AmountByPosition(stats.Position.CurrentPosition)
+                - this.RFI[stats.Position.CurrentPosition].Amount;
         }
 
         public double PreflopThreeBetDeviation(Stats stats)
         {
-            return stats.ThreeBet().GetStatsBy(GameRoundType.PreFlop).StatsForAllPositions().Amount
-                - this.PreflopThreeBet.Amount;
+            return stats.ThreeBet().AmountByStreet(GameRoundType.PreFlop) - this.PreflopThreeBet.Amount;
         }
 
         public double PreflopCallThreeBetDeviation(Stats stats)
         {
-            return stats.CallThreeBet().GetStatsBy(GameRoundType.PreFlop).StatsForAllPositions().Amount
-                - this.PreflopCallThreeBet.Amount;
+            return stats.CallThreeBet().AmountByStreet(GameRoundType.PreFlop) - this.PreflopCallThreeBet.Amount;
         }
 
         public double PreflopFourBetDeviation(Stats stats)
         {
-            return stats.FourBet().GetStatsBy(GameRoundType.PreFlop).StatsForAllPositions().Amount
-                - this.PreflopFourBet.Amount;
+            return stats.FourBet().AmountByStreet(GameRoundType.PreFlop) - this.PreflopFourBet.Amount;
         }
 
         public double PreflopFoldThreeBetDeviation(Stats stats)
         {
-            return stats.FoldThreeBet().GetStatsBy(GameRoundType.PreFlop).StatsForAllPositions().Amount
-                - this.PreflopFoldThreeBet;
+            return stats.FoldThreeBet().AmountByStreet(GameRoundType.PreFlop) - this.PreflopFoldThreeBet;
         }
 
         public double PreflopFoldFourBetDeviation(Stats stats)
         {
-            return stats.FoldFourBet().GetStatsBy(GameRoundType.PreFlop).StatsForAllPositions().Amount
-                - this.PreflopFoldFourBet;
+            return stats.FoldFourBet().AmountByStreet(GameRoundType.PreFlop) - this.PreflopFoldFourBet;
         }
 
         public double CBetDeviation(Stats stats)
         {
-            var cbet = stats.CBet();
-            return cbet.StatsOfCurrentStreet().StatsForAllPositions().Amount - this.CBet[cbet.CurrentStreet];
+            return stats.CBet().AmountByStreet(stats.Street) - this.CBet[stats.Street];
         }
 
         public double FoldToCBetDeviation(Stats stats)
         {
-            var foldToCBet = stats.FoldToCBet();
-            return foldToCBet.StatsOfCurrentStreet().StatsForAllPositions().Amount
-                - this.FoldToCBet[foldToCBet.CurrentStreet];
+            return stats.FoldToCBet().AmountByStreet(stats.Street) - this.FoldToCBet[stats.Street];
         }
 
         public double PostflopAFqDeviation(Stats stats)
         {
-            var afq = stats.AFq();
-            return afq.StatsOfCurrentStreet().StatsForAllPositions().Amount - this.AFq[afq.CurrentStreet];
+            return stats.AFq().AmountByStreet(stats.Street) - this.AFq[stats.Street];
         }
 
         public double CheckRaiseDeviation(Stats stats)
         {
-            var checkRaise = stats.CheckRaise();
-            return checkRaise.StatsOfCurrentStreet().StatsForAllPositions().Amount
-                - this.CheckRaise[checkRaise.CurrentStreet];
+            return stats.CheckRaise().AmountByStreet(stats.Street) - this.CheckRaise[stats.Street];
         }
     }
 }

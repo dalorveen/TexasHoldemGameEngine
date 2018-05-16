@@ -1,5 +1,7 @@
 ﻿namespace TexasHoldem.Statistics.Indicators
 {
+    using System;
+    using System.Collections.Generic;
     using System.Linq;
 
     using TexasHoldem.Logic;
@@ -7,23 +9,39 @@
 
     public class CheckRaise : BaseIndicator<CheckRaise>
     {
+        private Dictionary<GameRoundType, int> totalTimesCheckRaisedByStreet;
+        private Dictionary<GameRoundType, int> totalCheckRaisedOpportunitiesByStreet;
+
         public CheckRaise()
             : base(0)
         {
-        }
+            this.totalTimesCheckRaisedByStreet = new Dictionary<GameRoundType, int>();
+            this.totalCheckRaisedOpportunitiesByStreet = new Dictionary<GameRoundType, int>();
 
-        public CheckRaise(int hands, int totalTimesCheckRaised, int totalCheckRaisedOpportunities)
-            : base(hands)
-        {
-            this.TotalTimesCheckRaised = totalTimesCheckRaised;
-            this.TotalCheckRaisedOpportunities = totalCheckRaisedOpportunities;
+            foreach (var item in Enum.GetValues(typeof(GameRoundType)).Cast<GameRoundType>())
+            {
+                this.totalTimesCheckRaisedByStreet.Add(item, 0);
+                this.totalCheckRaisedOpportunitiesByStreet.Add(item, 0);
+            }
         }
 
         public bool IsOpportunity { get; private set; }
 
-        public int TotalTimesCheckRaised { get; private set; }
+        public int TotalTimesCheckRaised
+        {
+            get
+            {
+                return this.totalTimesCheckRaisedByStreet.Sum(s => s.Value);
+            }
+        }
 
-        public int TotalCheckRaisedOpportunities { get; private set; }
+        public int TotalCheckRaisedOpportunities
+        {
+            get
+            {
+                return this.totalCheckRaisedOpportunitiesByStreet.Sum(s => s.Value);
+            }
+        }
 
         /// <summary>
         /// Gets the percentage of times the player check raised when they had the opportunity
@@ -38,19 +56,26 @@
             }
         }
 
-        public override void Update(IGetTurnContext context, string playerName)
+        public double AmountByStreet(GameRoundType street)
+        {
+            return this.totalCheckRaisedOpportunitiesByStreet[street] == 0
+                    ? 0 : ((double)this.totalTimesCheckRaisedByStreet[street]
+                        / (double)this.totalCheckRaisedOpportunitiesByStreet[street]) * 100.0;
+        }
+
+        public override void Update(IGetTurnContext context, IStatsContext statsContext)
         {
             if (context.RoundType != GameRoundType.PreFlop)
             {
                 var actionsOfCurrentRound = context.PreviousRoundActions.Where(p => p.Round == context.RoundType);
 
-                if (actionsOfCurrentRound.Count(p => p.PlayerName == playerName) == 1)
+                if (actionsOfCurrentRound.Count(p => p.PlayerName == statsContext.PlayerName) == 1)
                 {
                     if (actionsOfCurrentRound
                         .TakeWhile(p => p.Action.Type != PlayerActionType.Raise)
-                        .Any(p => p.PlayerName == playerName))
+                        .Any(p => p.PlayerName == statsContext.PlayerName))
                     {
-                        this.TotalCheckRaisedOpportunities++;
+                        this.totalCheckRaisedOpportunitiesByStreet[context.RoundType]++;
                         this.IsOpportunity = true;
                     }
                 }
@@ -61,11 +86,11 @@
             }
         }
 
-        public override void Update(IGetTurnContext context, PlayerAction madeAction, string playerName)
+        public override void Update(IGetTurnContext context, PlayerAction madeAction, IStatsContext statsContext)
         {
             if (this.IsOpportunity && madeAction.Type == PlayerActionType.Raise)
             {
-                this.TotalTimesCheckRaised++;
+                this.totalTimesCheckRaisedByStreet[context.RoundType]++;
             }
 
             this.IsOpportunity = false;
@@ -73,22 +98,10 @@
 
         public override string ToString()
         {
-            return $"{this.Amount:0.00}%";
-        }
-
-        public override CheckRaise DeepClone()
-        {
-            var copy = new CheckRaise(this.Hands, this.TotalTimesCheckRaised, this.TotalCheckRaisedOpportunities);
-            copy.IsOpportunity = this.IsOpportunity;
-            return copy;
-        }
-
-        public override CheckRaise Sum(CheckRaise other)
-        {
-            return new CheckRaise(
-                this.Hands + other.Hands,
-                this.TotalTimesCheckRaised + other.TotalTimesCheckRaised,
-                this.TotalCheckRaisedOpportunities + other.TotalCheckRaisedOpportunities);
+            return this.ToStreetFormat(
+                this.AmountByStreet(GameRoundType.Flop),
+                this.AmountByStreet(GameRoundType.Turn),
+                this.AmountByStreet(GameRoundType.River));
         }
     }
 }

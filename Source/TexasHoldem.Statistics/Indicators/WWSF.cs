@@ -14,13 +14,6 @@
         {
         }
 
-        public WWSF(int hands, int totalTimesWonMoneyAfterSeeingTheFlop, int totalTimesSawTheFlop)
-            : base(hands)
-        {
-            this.TotalTimesWonMoneyAfterSeeingTheFlop = totalTimesWonMoneyAfterSeeingTheFlop;
-            this.TotalTimesSawTheFlop = totalTimesSawTheFlop;
-        }
-
         public int TotalTimesWonMoneyAfterSeeingTheFlop { get; private set; }
 
         public int TotalTimesSawTheFlop { get; private set; }
@@ -47,7 +40,7 @@
             this.moneyInTheBeginningOfTheHand = context.MoneyLeft;
         }
 
-        public override void Update(IGetTurnContext context, string playerName)
+        public override void Update(IGetTurnContext context, IStatsContext statsContext)
         {
             if (context.RoundType == GameRoundType.Flop)
             {
@@ -56,7 +49,7 @@
             }
         }
 
-        public override void Update(IEndHandContext context, string playerName)
+        public override void Update(IEndHandContext context, IStatsContext statsContext)
         {
             if (this.didThePlayerSeeTheFlop)
             {
@@ -70,20 +63,7 @@
 
         public override string ToString()
         {
-            return $"{this.Amount:0.00}%";
-        }
-
-        public override WWSF DeepClone()
-        {
-            return new WWSF(this.Hands, this.TotalTimesWonMoneyAfterSeeingTheFlop, this.TotalTimesSawTheFlop);
-        }
-
-        public override WWSF Sum(WWSF other)
-        {
-            return new WWSF(
-                this.Hands + other.Hands,
-                this.TotalTimesWonMoneyAfterSeeingTheFlop + other.TotalTimesWonMoneyAfterSeeingTheFlop,
-                this.TotalTimesSawTheFlop + other.TotalTimesSawTheFlop);
+            return $"[{this.Amount:0.0}%]";
         }
     }
 }

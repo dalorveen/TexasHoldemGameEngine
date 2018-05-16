@@ -43,7 +43,7 @@
             {
                 if (context.CanRaise
                     && playerEconomy.HandsThatLoseToTheHero.Count > 0
-                    && stats.CBet().StatsOfCurrentStreet().StatsOfCurrentPosition().IsOpportunity
+                    && stats.CBet().IsOpportunity
                     && this.PlayingStyle.CBetDeviation(stats) < 0)
                 {
                     // Correct the CBet
@@ -62,7 +62,7 @@
                         return PlayerAction.CheckOrCall();
                     }
                     else if (context.CanRaise
-                        && stats.CheckRaise().StatsOfCurrentStreet().StatsOfCurrentPosition().IsOpportunity)
+                        && stats.CheckRaise().IsOpportunity)
                     {
                         // Correct the CheckRaise
                         return this.RaiseOrPush(this.RandomBet(context, 0.9, 1.3), context);
@@ -70,7 +70,7 @@
                 }
 
                 if (context.CanRaise
-                    && stats.CBet().StatsOfCurrentStreet().StatsOfCurrentPosition().IsOpportunity
+                    && stats.CBet().IsOpportunity
                     && this.PlayingStyle.CBetDeviation(stats) < 0)
                 {
                     // Correct the CBet
@@ -87,7 +87,7 @@
                         context.CanCheck ? this.RandomBet(context, 0.5, 0.7) : this.RandomBet(context, 0.9, 1.3),
                         context);
                 }
-                else if (!stats.CheckRaise().StatsOfCurrentStreet().StatsOfCurrentPosition().IsOpportunity)
+                else if (!stats.CheckRaise().IsOpportunity)
                 {
                     return this.RaiseOrPush(
                         context.CanCheck ? this.RandomBet(context, 0.6, 0.7) : this.RandomBet(context, 0.7, 0.9),
@@ -104,7 +104,7 @@
             //var investment = (int)playerEconomy.OptimalInvestment(context.CurrentPot);
 
             if (!context.CanCheck &&
-                (stats.FoldToCBet().StatsOfCurrentStreet().StatsOfCurrentPosition().IsOpportunity
+                (stats.FoldToCBet().IsOpportunity
                     && this.PlayingStyle.FoldToCBetDeviation(stats) < 0))
             {
                 // Correct the FoldToCBet
